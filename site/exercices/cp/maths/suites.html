@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Suites logiques · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Logique : continuer un motif (🔴🔵🔴🔵…) ou une suite de nombres (2, 3, 4…) */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --q:#7048e8; --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#7048e8; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --q:#9775fa; --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#9775fa;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  display:flex;flex-direction:column;padding-block:12px 16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--q);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home{display:inline-flex;align-items:center;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,3.5vh,32px);padding-top:10px}
+.stars{display:flex;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.suite{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1.2vw,12px);background:var(--panel);border-radius:24px;padding:clamp(12px,2.5vh,22px);box-shadow:var(--shadow);max-width:100%}
+.suite span{width:clamp(56px,9vw,92px);height:clamp(56px,9vw,92px);display:flex;align-items:center;justify-content:center;font-size:clamp(34px,5.6vw,58px);font-weight:700;border-radius:16px;background:var(--bg);font-variant-numeric:tabular-nums}
+.suite span.q{border:4px dashed var(--q);color:var(--q);background:transparent}
+.suite span.q.ok{border-style:solid;border-color:var(--ok-ink);background:var(--ok);color:var(--ok-ink)}
+.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,640px)}
+.ch{background:var(--panel);border:3px solid var(--line);border-radius:22px;padding:clamp(12px,2.5vh,24px) 0;font-size:clamp(44px,7vh,68px);font-weight:700;box-shadow:var(--shadow);font-variant-numeric:tabular-nums}
+.ch.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.ch.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.end .big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🧩 Suites logiques</h1>
+  <div class="seg" role="group" aria-label="Niveau" id="niveaux"></div>
+</header>
+<main id="main"></main>
+<script>
+const SYMBOLES = ["🔴","🔵","🟡","🟢","⭐","🌙","🍎","🍌","🐱","🐶","🐟","🌷","🚗","⚽"];
+/* Motifs de début de CP : AB, AAB, ABB, ABC */
+const MOTIFS = ["AB","AAB","ABB","ABC","AB","ABC"];
+/* Suites de nombres jusqu'à 10 (et 20 pour le +2) */
+const PAS = [1,1,2,-1];
+const NIVEAUX = { motifs:"Motifs", nombres:"Nombres", mix:"Mélange" };
+const TOURS = 10, KEY = "cp-suites-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+function motif(){
+  const m = MOTIFS[rnd(0,MOTIFS.length-1)];
+  const lettres = [...new Set(m)], sym = shuffle(SYMBOLES.slice()).slice(0, lettres.length + 1);
+  const map = Object.fromEntries(lettres.map((l,i)=>[l,sym[i]]));
+  const long = Math.max(6, m.length*2 + 1 + rnd(0,1));
+  const suite = Array.from({length:long+1},(_,i)=>map[m[i % m.length]]);
+  const rep = suite.pop();
+  const leurres = shuffle([...lettres.map(l=>map[l]).filter(s=>s!==rep), sym[lettres.length]]).slice(0,2);
+  return { suite, rep, choix: shuffle([rep, ...leurres]) };
+}
+function nombres(){
+  const pas = PAS[rnd(0,PAS.length-1)], n = 5;
+  let debut = pas>0 ? rnd(0, (pas===2?20:10) - pas*n) : rnd(n, 10);
+  const suite = Array.from({length:n},(_,i)=>debut+i*pas);
+  const rep = debut + n*pas;
+  const leurres = shuffle([rep+1, rep-1, rep+pas, rep-pas].filter(x=>x>=0 && x!==rep)).concat([rep+2, rep+3]);
+  const choix = [...new Set([rep, ...leurres])].slice(0,3);
+  return { suite, rep, choix: shuffle(choix) };
+}
+let niveau = NIVEAUX[lsGet(KEY+"-niveau")] ? lsGet(KEY+"-niveau") : "motifs";
+$("#niveaux").innerHTML = Object.entries(NIVEAUX).map(([k,n])=>'<button data-n="'+k+'">'+n+'</button>').join("");
+document.querySelectorAll("#niveaux button").forEach(b=>b.onclick=()=>{ niveau=b.dataset.n; lsSet(KEY+"-niveau",niveau); partie() });
+
+let jeu;
+function partie(){
+  document.querySelectorAll("#niveaux button").forEach(b=>b.classList.toggle("on",b.dataset.n===niveau));
+  jeu = { tour:0, reussis:[], essai:0 }; tour();
+}
+function etoiles(){
+  return '<div class="stars">' + Array.from({length:TOURS},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.reussis[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
+}
+function tour(){
+  if (jeu.tour>=TOURS) return fin();
+  const typeMotif = niveau==="motifs" || (niveau==="mix" && Math.random()<.5);
+  const q = typeMotif ? motif() : nombres(); jeu.essai=0;
+  $("#main").innerHTML = etoiles() +
+    '<p class="consigne">'+(typeMotif?"Qu'est-ce qui vient après ?":"Quel nombre vient après ?")+'</p>' +
+    '<div class="suite">' + q.suite.map(s=>'<span>'+s+'</span>').join("") + '<span class="q" id="q">?</span></div>' +
+    '<div class="choices">' + q.choix.map(c=>'<button class="ch" data-v="'+c+'">'+c+'</button>').join("") + '</div>';
+  document.querySelectorAll(".ch").forEach(b=>b.onclick=()=>{
+    if (b.dataset.v===String(q.rep)) {
+      b.classList.add("ok"); const s=$("#q"); s.textContent=q.rep; s.classList.add("ok"); buzz();
+      jeu.reussis[jeu.tour]=jeu.essai===0; jeu.tour++;
+      document.querySelectorAll(".ch").forEach(x=>x.disabled=true);
+      setTimeout(tour,1100);
+    } else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+  });
+}
+function fin(){
+  const n=jeu.reussis.filter(Boolean).length, k=KEY+"-best-"+niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>' +
+    '<p class="hint">'+NIVEAUX[niveau]+' · trouvés du premier coup · Record : '+best+' / '+TOURS+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>
