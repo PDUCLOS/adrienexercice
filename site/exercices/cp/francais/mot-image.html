@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Le mot et l'image · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Jeu « relie le mot au dessin » : une image, trois mots, on touche le bon */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#1c7ed6; --on-accent:#ffffff;
+  --star:#f59f00; --mute:#adb5bd; --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#4dabf7; --mute:#6b7178;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  display:flex;flex-direction:column;padding-block:12px 16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.look{display:flex;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.look button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.look button.on{background:var(--panel);box-shadow:var(--shadow)}
+.look .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,28px);padding-top:10px}
+.stars{display:flex;gap:6px;font-size:clamp(22px,4vw,34px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6;transform:scale(1.15)}
+.pic{font-size:clamp(110px,24vh,220px);line-height:1;background:var(--panel);border-radius:32px;padding:clamp(14px,3vh,30px) clamp(24px,5vw,50px);box-shadow:var(--shadow)}
+.speak{font-size:22px}
+.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,960px)}
+@media (max-width:640px){.choices{grid-template-columns:1fr}}
+.word{background:var(--panel);border:3px solid var(--line);border-radius:22px;padding:clamp(14px,3vh,28px) 10px;font-size:clamp(28px,4.4vw,46px);font-weight:700;box-shadow:var(--shadow);min-width:0}
+body.cursive .word{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:clamp(24px,3.6vw,38px)}
+.word .m{color:var(--mute)}
+.word.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.word.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.end .big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🖼️ Le mot et l'image</h1>
+  <div class="look" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script>
+/*
+  Mots tirés des fiches de CP (lettres vues : a e é i o u · p l t r s n).
+  Une lettre entre crochets est muette : elle s'affiche en gris, comme le point sous la lettre sur les fiches.
+*/
+const MOTS = [
+  ["la pile","🔋"],["la tulipe","🌷"],["la pelote","🧶"],["le ra[t]","🐀"],["un pirate","🏴‍☠️"],
+  ["le ri[z]","🍚"],["la tortue","🐢"],["une épée","🗡️"],["une télé","📺"],["un piano","🎹"],
+  ["la lune","🌙"],["un ananas","🍍"],["un renar[d]","🦊"],["une note","🎵"],["un ni[d]","🪺"],
+  ["une lapine","🐇"],["un stylo","🖊️"],["un parasol","⛱️"],["une tasse","☕"],["un os","🦴"],
+  ["une rose","🌹"],["une sole","🐟"],["une tarte","🥧"],["une tortue","🐢"]
+].filter((m,i,a)=>a.findIndex(x=>x[1]===m[1])===i);
+const TOURS = 10, KEY = "cp-mot-image-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const plain = w => w.replace(/[\[\]]/g,"");
+const html = w => w.replace(/\[(.+?)\]/g,'<span class="m">$1</span>');
+const nom = w => plain(w).split(" ").slice(1).join(" ");
+function speak(t){ try{ const u=new SpeechSynthesisUtterance(t); u.lang="fr-FR"; u.rate=.8; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){} }
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+/* écriture script / cursive, partagée avec l'exercice des syllabes */
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+let jeu;
+function nouvellePartie(){
+  jeu = { liste: shuffle(MOTS.slice()).slice(0,TOURS), tour: 0, reussis: [], essai: 0 };
+  tour();
+}
+function choixPour(bon){
+  // distracteurs : de préférence un mot qui commence pareil (pile / pipe / pelote…)
+  const autres = shuffle(MOTS.filter(m => m[1]!==bon[1]));
+  const proches = autres.filter(m => nom(m[0])[0]===nom(bon[0])[0]);
+  const pris = [...proches.slice(0,1), ...autres.filter(m=>!proches.slice(0,1).includes(m))].slice(0,2);
+  return shuffle([bon, ...pris]);
+}
+function etoiles(){
+  return '<div class="stars" aria-label="Progression">' + Array.from({length:TOURS},(_,i)=>
+    '<span class="'+(i<jeu.tour?(jeu.reussis[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
+}
+function tour(){
+  if (jeu.tour >= TOURS) return fin();
+  const bon = jeu.liste[jeu.tour]; jeu.essai = 0;
+  $("#main").innerHTML = etoiles() +
+    '<div class="pic" role="img" aria-label="Image à lire">'+bon[1]+'</div>' +
+    '<div class="choices">' + choixPour(bon).map(m => '<button class="word" data-e="'+m[1]+'">'+html(m[0])+'</button>').join("") + '</div>' +
+    '<p class="hint">Touche le mot qui va avec l\'image. <button class="pill speak" id="bSay" aria-label="Écouter les mots">🔊</button></p>';
+  $("#bSay").onclick = () => speak([...document.querySelectorAll(".word")].map(b=>plain(b.textContent)).join(". "));
+  document.querySelectorAll(".word").forEach(b => b.onclick = () => {
+    if (b.dataset.e === bon[1]) {
+      b.classList.add("ok"); buzz(); speak(plain(bon[0]));
+      jeu.reussis[jeu.tour] = jeu.essai === 0; jeu.tour++;
+      document.querySelectorAll(".word").forEach(x => x.disabled = true);
+      setTimeout(tour, 1100);
+    } else {
+      jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad");
+    }
+  });
+}
+function fin(){
+  const n = jeu.reussis.filter(Boolean).length;
+  const best = Math.max(n, +(lsGet(KEY) || 0)); lsSet(KEY, best);
+  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue de s'entraîner !";
+  $("#main").innerHTML = '<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>' +
+    '<p class="hint">Trouvés du premier coup · Record : '+best+' / '+TOURS+'</p>' +
+    '<button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick = nouvellePartie;
+}
+nouvellePartie();
+</script>
+</body>
+</html>

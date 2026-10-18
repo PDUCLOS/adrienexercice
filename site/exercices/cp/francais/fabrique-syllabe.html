@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Fabrique la syllabe · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Jeu des « étoiles » des fiches (p → a, i, o…) : on assemble une consonne et une voyelle */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --cons:#1c7ed6; --cons-soft:#e7f1fc; --voy:#e8590c; --voy-soft:#fff0e6;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#1c7ed6; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --cons:#4dabf7; --cons-soft:#1d2d3d; --voy:#ff922b; --voy-soft:#3a2a1c;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#4dabf7;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  display:flex;flex-direction:column;padding-block:12px 16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.seg{display:flex;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.5vh,24px);padding-top:10px}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.cible{font-size:clamp(70px,14vh,130px);font-weight:700;line-height:1.1;min-height:1.1em}
+.slot{display:flex;gap:10px;min-height:clamp(80px,13vh,120px)}
+.slot span{width:clamp(70px,11vh,104px);height:clamp(80px,13vh,120px);border-radius:18px;border:3px dashed var(--line);display:flex;align-items:center;justify-content:center;
+  font-size:clamp(46px,8vh,76px);font-weight:700;background:var(--panel)}
+.slot span.c{border:3px solid var(--cons);color:var(--cons)}
+.slot span.v{border:3px solid var(--voy);color:var(--voy)}
+.slot.ok span{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.slot.bad{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+body.cursive .cible,body.cursive .slot span,body.cursive .key{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+body.cursive .cible{font-size:clamp(56px,11vh,104px)}
+.keys{display:flex;flex-direction:column;gap:10px;width:min(100%,820px)}
+.row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:clamp(6px,1.4vw,14px)}
+.key{border-radius:18px;padding:clamp(10px,2vh,20px) 0;font-size:clamp(34px,5vh,52px);font-weight:700;box-shadow:var(--shadow)}
+.key.c{background:var(--cons-soft);color:var(--cons)}
+.key.v{background:var(--voy-soft);color:var(--voy)}
+.key:active{transform:scale(.94)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.score{font-size:20px}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.end .big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🔤 Fabrique la syllabe</h1>
+  <div class="seg" role="group" aria-label="Mode">
+    <button id="mDefi" class="on">Défi</button>
+    <button id="mLibre">Libre</button>
+  </div>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script>
+/* Lettres déjà vues sur les fiches de CP (septembre–octobre). Ajouter une lettre ici quand une nouvelle fiche arrive. */
+const CONSONNES = ["p","l","t","r","s","n"];
+const VOYELLES  = ["a","e","é","i","o","u"];
+const TOURS = 10, KEY = "cp-fabrique-syllabe-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+function speak(t){ try{ const u=new SpeechSynthesisUtterance(t); u.lang="fr-FR"; u.rate=.7; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){} }
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+const isV = l => VOYELLES.includes(l);
+function clavier(){
+  return '<div class="keys">' +
+    '<div class="row">' + CONSONNES.map(l=>'<button class="key c" data-l="'+l+'">'+l+'</button>').join("") + '</div>' +
+    '<div class="row">' + VOYELLES.map(l=>'<button class="key v" data-l="'+l+'">'+l+'</button>').join("") + '</div></div>';
+}
+function slotHtml(lettres, n){
+  return Array.from({length:n},(_,i)=>{ const l=lettres[i]; return '<span class="'+(l?(isV(l)?"v":"c"):"")+'">'+(l||"")+'</span>' }).join("");
+}
+
+/* ----- Défi : lire la syllabe écrite, puis la fabriquer avec les lettres ----- */
+let defi;
+function nouvelleSyllabe(prec){
+  let s;
+  do { const c=pick(CONSONNES), v=pick(VOYELLES);
+       s = Math.random()<.6 ? c+v : (v==="e" ? "e"+c : v+c);   // syllabes « pa » et « ap », comme sur les fiches
+  } while (s===prec);
+  return s;
+}
+function startDefi(){ defi={tour:0,reussis:0,erreur:false,cible:nouvelleSyllabe(),tape:[]}; renderDefi() }
+function renderDefi(){
+  if (defi.tour>=TOURS) return finDefi();
+  $("#main").innerHTML =
+    '<p class="consigne">Lis la syllabe, puis fabrique-la avec les lettres</p>' +
+    '<div class="cible">'+defi.cible+'</div>' +
+    '<div class="slot" id="slot">'+slotHtml(defi.tape,2)+'</div>' + clavier() +
+    '<div class="tools"><span class="pill score">'+(defi.tour+1)+' / '+TOURS+' · ⭐ '+defi.reussis+'</span>' +
+    '<button class="pill" id="bSay">🔊 Écouter</button><button class="pill" id="bClear">↩ Effacer</button></div>';
+  $("#bSay").onclick=()=>speak(defi.cible);
+  $("#bClear").onclick=()=>{ defi.tape=[]; $("#slot").innerHTML=slotHtml(defi.tape,2) };
+  document.querySelectorAll(".key").forEach(k=>k.onclick=()=>tapeDefi(k.dataset.l));
+}
+function tapeDefi(l){
+  if (defi.tape.length>=2) return;
+  buzz(); defi.tape.push(l);
+  const slot=$("#slot"); slot.innerHTML=slotHtml(defi.tape,2);
+  const fait=defi.tape.join("");
+  if (!defi.cible.startsWith(fait)) {
+    defi.erreur=true; slot.classList.remove("bad"); void slot.offsetWidth; slot.classList.add("bad");
+    setTimeout(()=>{ defi.tape=[]; slot.innerHTML=slotHtml(defi.tape,2) },500);
+  } else if (fait===defi.cible) {
+    slot.classList.add("ok"); speak(defi.cible);
+    if (!defi.erreur) defi.reussis++;
+    setTimeout(()=>{ defi.tour++; defi.erreur=false; defi.tape=[]; defi.cible=nouvelleSyllabe(defi.cible); renderDefi() },1000);
+  }
+}
+function finDefi(){
+  const n=defi.reussis, best=Math.max(n,+(lsGet(KEY)||0)); lsSet(KEY,best);
+  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>' +
+    '<p class="hint">Réussis sans erreur · Record : '+best+' / '+TOURS+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=startDefi;
+}
+
+/* ----- Libre : on assemble ce qu'on veut, la tablette lit la syllabe ----- */
+let libre=[];
+function renderLibre(){
+  $("#main").innerHTML =
+    '<p class="consigne">Touche une consonne et une voyelle : la tablette lit la syllabe</p>' +
+    '<div class="slot" id="slot">'+slotHtml(libre,Math.max(2,libre.length))+'</div>' + clavier() +
+    '<div class="tools"><button class="pill" id="bSay">🔊 Relire</button><button class="pill" id="bClear">↩ Effacer</button></div>';
+  $("#bSay").onclick=()=>libre.length&&speak(libre.join(""));
+  $("#bClear").onclick=()=>{ libre=[]; renderLibre() };
+  document.querySelectorAll(".key").forEach(k=>k.onclick=()=>{
+    if (libre.length>=3) libre=[];
+    buzz(); libre.push(k.dataset.l); renderLibre();
+    if (libre.length>=2) speak(libre.join(""));
+  });
+}
+
+function setMode(m){
+  $("#mDefi").classList.toggle("on",m==="defi"); $("#mLibre").classList.toggle("on",m==="libre");
+  m==="defi" ? startDefi() : (libre=[], renderLibre());
+}
+$("#mDefi").onclick=()=>setMode("defi"); $("#mLibre").onclick=()=>setMode("libre");
+setMode("defi");
+</script>
+</body>
+</html>

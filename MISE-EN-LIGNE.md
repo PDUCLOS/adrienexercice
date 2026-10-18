@@ -13,9 +13,9 @@ Le dossier `site/` contient tout le site. Pas besoin de programmer : on l'envoie
 
 ### Variante recommandée : relier GitHub (mise à jour automatique)
 
-Le code est sur https://github.com/PDUCLOS/adrienexercice
+Le code est sur votre dépôt GitHub.
 
-1. **Compute (Workers & Pages)** → **Create** → onglet **Pages** → **Connect to Git** → choisissez le dépôt `adrienexercice`.
+1. **Compute (Workers & Pages)** → **Create** → onglet **Pages** → **Connect to Git** → choisissez votre dépôt.
 2. Réglages de build :
    - **Framework preset** : None
    - **Build command** : (laisser vide)
