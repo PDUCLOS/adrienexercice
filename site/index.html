@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Exercices d'Adrien</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Accueil : grille des classes, puis une page par classe avec une colonne par matière */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --fr:#1c7ed6; --fr-soft:#e7f1fc; --ma:#e8590c; --ma-soft:#fff0e6; --on-accent:#ffffff;
+  --cp:#2f9e44; --ce1:#1c7ed6; --ce2:#7048e8; --cm1:#e8590c; --cm2:#c2255c;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --fr:#4dabf7; --fr-soft:#1d2d3d; --ma:#ff922b; --ma-soft:#3a2a1c;
+    --cp:#37b24d; --ce1:#4dabf7; --ce2:#9775fa; --cm1:#ff922b; --cm2:#f06595;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;min-height:100vh;
+  padding-block:20px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:inherit}
+.wrap{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+h1{font-size:clamp(28px,5vw,44px);margin:0;text-wrap:balance}
+.sub{color:var(--muted);font-size:18px;margin:0}
+.classes{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px}
+.classe{display:flex;flex-direction:column;justify-content:space-between;gap:10px;min-height:150px;padding:18px;border-radius:20px;
+  background:var(--c);color:var(--on-accent);text-decoration:none;box-shadow:var(--shadow);transition:transform .12s}
+.classe:active,.classe:hover{transform:translateY(-3px)}
+.classe b{font-size:48px;line-height:1}
+.classe span{font-size:16px;opacity:.95}
+.back{display:inline-flex;align-items:center;gap:6px;padding:10px 16px;border-radius:12px;background:var(--chip);text-decoration:none;font-weight:700;font-size:17px;align-self:flex-start}
+.head{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.badge{background:var(--c);color:var(--on-accent);font-weight:700;font-size:28px;padding:6px 16px;border-radius:14px}
+.matieres{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+.matiere{background:var(--panel);border-radius:20px;padding:18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px;min-width:0}
+.matiere h2{margin:0;font-size:24px;color:var(--m)}
+.ex{display:flex;align-items:center;gap:14px;padding:14px;border-radius:14px;background:var(--ms);text-decoration:none;font-size:19px;font-weight:700}
+.ex small{display:block;font-weight:400;color:var(--muted);font-size:15px}
+.ex .ico{font-size:30px}
+.vide{color:var(--muted);font-size:16px;padding:12px;border:2px dashed var(--line);border-radius:14px;text-align:center}
+a:focus-visible{outline:3px solid var(--fr);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"></main>
+<script>
+/*
+  CATALOGUE : pour ajouter un exercice, ajoute une ligne dans la bonne classe et la bonne matière :
+  { titre: "…", detail: "…", icone: "…", lien: "exercices/<classe>/<matiere>/<fichier>.html" }
+*/
+const CATALOGUE = {
+  cp:  { nom:"CP",  couleur:"--cp",  francais:[
+          { titre:"Lire les syllabes", detail:"Tableau chronométré, progrès, jeu", icone:"📖", lien:"exercices/cp/francais/syllabes.html" }
+        ], maths:[] },
+  ce1: { nom:"CE1", couleur:"--ce1", francais:[], maths:[] },
+  ce2: { nom:"CE2", couleur:"--ce2", francais:[], maths:[] },
+  cm1: { nom:"CM1", couleur:"--cm1", francais:[], maths:[] },
+  cm2: { nom:"CM2", couleur:"--cm2", francais:[], maths:[] }
+};
+const MATIERES = [
+  { cle:"francais", nom:"Français",      couleur:"--fr", fond:"--fr-soft" },
+  { cle:"maths",    nom:"Mathématiques", couleur:"--ma", fond:"--ma-soft" }
+];
+const app = document.getElementById("app");
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function accueil(){
+  document.title = "Exercices d'Adrien";
+  app.innerHTML = '<h1>Exercices d\'Adrien</h1><p class="sub">Choisis ta classe</p><div class="classes">' +
+    Object.entries(CATALOGUE).map(([k,c]) => {
+      const n = MATIERES.reduce((t,m) => t + c[m.cle].length, 0);
+      return '<a class="classe" style="--c:var('+c.couleur+')" href="#'+k+'"><b>'+c.nom+'</b><span>'+
+        (n ? n+' exercice'+(n>1?'s':'') : 'Bientôt')+'</span></a>';
+    }).join("") + '</div>';
+}
+function classe(k){
+  const c = CATALOGUE[k];
+  document.title = c.nom + " · Exercices d'Adrien";
+  app.innerHTML = '<a class="back" href="#">← Toutes les classes</a>' +
+    '<div class="head"><span class="badge" style="--c:var('+c.couleur+')">'+c.nom+'</span><p class="sub">Choisis une matière et un exercice</p></div>' +
+    '<div class="matieres">' + MATIERES.map(m =>
+      '<section class="matiere" style="--m:var('+m.couleur+');--ms:var('+m.fond+')"><h2>'+m.nom+'</h2>' +
+      (c[m.cle].length
+        ? c[m.cle].map(e => '<a class="ex" href="'+esc(e.lien)+'"><span class="ico">'+e.icone+'</span><span>'+esc(e.titre)+'<small>'+esc(e.detail)+'</small></span></a>').join("")
+        : '<div class="vide">Pas encore d\'exercice</div>') +
+      '</section>').join("") + '</div>';
+}
+function route(){
+  const k = location.hash.slice(1);
+  CATALOGUE[k] ? classe(k) : accueil();
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange", route);
+route();
+</script>
+</body>
+</html>
