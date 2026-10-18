@@ -11,6 +11,17 @@ Le dossier `site/` contient tout le site. Pas besoin de programmer : on l'envoie
 5. Le site est en ligne à l'adresse `https://exercices-adrien.pages.dev`.
 
 
+### Variante recommandée : relier GitHub (mise à jour automatique)
+
+Le code est sur https://github.com/PDUCLOS/adrienexercice
+
+1. **Compute (Workers & Pages)** → **Create** → onglet **Pages** → **Connect to Git** → choisissez le dépôt `adrienexercice`.
+2. Réglages de build :
+   - **Framework preset** : None
+   - **Build command** : (laisser vide)
+   - **Build output directory** : `site`
+3. **Save and Deploy**. Ensuite, chaque envoi sur GitHub (`git push`) met le site à jour tout seul.
+
 ## 2. Protéger le site (seule la famille peut entrer)
 
 1. Dans le projet Pages : **Settings** → **General** → **Access policy** → **Enable**.
