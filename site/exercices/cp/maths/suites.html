@@ -32,14 +32,14 @@ header h1{font-size:22px;margin:0 auto 0 0}
 .seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
 .seg button.on{background:var(--panel);box-shadow:var(--shadow)}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(14px,3.5vh,32px);padding-top:10px}
-.stars{display:flex;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
 .stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
 .consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
 .suite{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1.2vw,12px);background:var(--panel);border-radius:24px;padding:clamp(12px,2.5vh,22px);box-shadow:var(--shadow);max-width:100%}
 .suite span{width:clamp(56px,9vw,92px);height:clamp(56px,9vw,92px);display:flex;align-items:center;justify-content:center;font-size:clamp(34px,5.6vw,58px);font-weight:700;border-radius:16px;background:var(--bg);font-variant-numeric:tabular-nums}
 .suite span.q{border:4px dashed var(--q);color:var(--q);background:transparent}
 .suite span.q.ok{border-style:solid;border-color:var(--ok-ink);background:var(--ok);color:var(--ok-ink)}
-.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,640px)}
+.choices{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,820px)}
 .ch{background:var(--panel);border:3px solid var(--line);border-radius:22px;padding:clamp(12px,2.5vh,24px) 0;font-size:clamp(44px,7vh,68px);font-weight:700;box-shadow:var(--shadow);font-variant-numeric:tabular-nums}
 .ch.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
 .ch.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
@@ -59,14 +59,21 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
   <div class="seg" role="group" aria-label="Niveau" id="niveaux"></div>
 </header>
 <main id="main"></main>
+<script src="../../../assets/reglages.js"></script>
 <script>
 const SYMBOLES = ["🔴","🔵","🟡","🟢","⭐","🌙","🍎","🍌","🐱","🐶","🐟","🌷","🚗","⚽"];
-/* Motifs de début de CP : AB, AAB, ABB, ABC */
-const MOTIFS = ["AB","AAB","ABB","ABC","AB","ABC"];
-/* Suites de nombres jusqu'à 10 (et 20 pour le +2) */
-const PAS = [1,1,2,-1];
+/* Motifs et suites de nombres selon le niveau choisi dans ⚙️ */
+const MOTIFS = { facile:["AB"], moyen:["AB","AAB","ABB","ABC"], difficile:["AABB","ABCD","ABAC","AABC","ABBC"] };
+const PAS    = { facile:[1], moyen:[1,1,2,-1], difficile:[2,-1,-2,5,10] };
+const MAXI   = { facile:10, moyen:20, difficile:60 };
+const NB_CHOIX = { facile:3, moyen:3, difficile:4 };
 const NIVEAUX = { motifs:"Motifs", nombres:"Nombres", mix:"Mélange" };
-const TOURS = 10, KEY = "cp-suites-v1";
+const KEY = "cp-suites-v1";
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Motifs à 2 dessins (🔴🔵🔴🔵) · compter de 1 en 1 jusqu'à 10.",
+  moyen: "Motifs à 2 ou 3 dessins · de 1 en 1, de 2 en 2, à rebours, jusqu'à 20.",
+  difficile: "Motifs plus longs (AABB, ABCD…) · de 2 en 2, de 5 en 5, de 10 en 10, jusqu'à 60 · 4 choix." } });
+const T = () => R().questions;
 const $ = s => document.querySelector(s);
 const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
 const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
@@ -75,22 +82,22 @@ const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.r
 function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
 
 function motif(){
-  const m = MOTIFS[rnd(0,MOTIFS.length-1)];
+  const liste = MOTIFS[R().niveau], m = liste[rnd(0,liste.length-1)];
   const lettres = [...new Set(m)], sym = shuffle(SYMBOLES.slice()).slice(0, lettres.length + 1);
   const map = Object.fromEntries(lettres.map((l,i)=>[l,sym[i]]));
   const long = Math.max(6, m.length*2 + 1 + rnd(0,1));
   const suite = Array.from({length:long+1},(_,i)=>map[m[i % m.length]]);
   const rep = suite.pop();
-  const leurres = shuffle([...lettres.map(l=>map[l]).filter(s=>s!==rep), sym[lettres.length]]).slice(0,2);
+  const leurres = shuffle([...lettres.map(l=>map[l]).filter(s=>s!==rep), sym[lettres.length], ...SYMBOLES.filter(s=>!sym.includes(s)).slice(0,2)]).slice(0,NB_CHOIX[R().niveau]-1);
   return { suite, rep, choix: shuffle([rep, ...leurres]) };
 }
 function nombres(){
-  const pas = PAS[rnd(0,PAS.length-1)], n = 5;
-  let debut = pas>0 ? rnd(0, (pas===2?20:10) - pas*n) : rnd(n, 10);
+  const niv = R().niveau, liste = PAS[niv], pas = liste[rnd(0,liste.length-1)], n = 5, max = MAXI[niv];
+  const debut = pas>0 ? rnd(0, Math.max(0, max - pas*n)) : rnd(-pas*n, Math.max(-pas*n, Math.min(max, niv==="moyen"?10:max)));
   const suite = Array.from({length:n},(_,i)=>debut+i*pas);
   const rep = debut + n*pas;
   const leurres = shuffle([rep+1, rep-1, rep+pas, rep-pas].filter(x=>x>=0 && x!==rep)).concat([rep+2, rep+3]);
-  const choix = [...new Set([rep, ...leurres])].slice(0,3);
+  const choix = [...new Set([rep, ...leurres])].slice(0,NB_CHOIX[niv]);
   return { suite, rep, choix: shuffle(choix) };
 }
 let niveau = NIVEAUX[lsGet(KEY+"-niveau")] ? lsGet(KEY+"-niveau") : "motifs";
@@ -100,22 +107,25 @@ document.querySelectorAll("#niveaux button").forEach(b=>b.onclick=()=>{ niveau=b
 let jeu;
 function partie(){
   document.querySelectorAll("#niveaux button").forEach(b=>b.classList.toggle("on",b.dataset.n===niveau));
-  jeu = { tour:0, reussis:[], essai:0 }; tour();
+  Reglages.stop(); jeu = { tour:0, reussis:[], essai:0 }; tour();
 }
 function etoiles(){
-  return '<div class="stars">' + Array.from({length:TOURS},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.reussis[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
+  return '<div class="stars">' + Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.reussis[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
 }
 function tour(){
-  if (jeu.tour>=TOURS) return fin();
+  if (jeu.tour>=T()) return fin();
   const typeMotif = niveau==="motifs" || (niveau==="mix" && Math.random()<.5);
   const q = typeMotif ? motif() : nombres(); jeu.essai=0;
   $("#main").innerHTML = etoiles() +
     '<p class="consigne">'+(typeMotif?"Qu'est-ce qui vient après ?":"Quel nombre vient après ?")+'</p>' +
     '<div class="suite">' + q.suite.map(s=>'<span>'+s+'</span>').join("") + '<span class="q" id="q">?</span></div>' +
     '<div class="choices">' + q.choix.map(c=>'<button class="ch" data-v="'+c+'">'+c+'</button>').join("") + '</div>';
+  $(".choices").style.setProperty("--n", q.choix.length);
+  Reglages.chrono(()=>{ jeu.reussis[jeu.tour]=false; jeu.tour++; const s=$("#q"); s.textContent=q.rep; s.classList.add("ok");
+    document.querySelectorAll(".ch").forEach(x=>{ x.disabled=true; if(x.dataset.v===String(q.rep)) x.classList.add("ok") }); setTimeout(tour,1500) });
   document.querySelectorAll(".ch").forEach(b=>b.onclick=()=>{
     if (b.dataset.v===String(q.rep)) {
-      b.classList.add("ok"); const s=$("#q"); s.textContent=q.rep; s.classList.add("ok"); buzz();
+      Reglages.stop(); b.classList.add("ok"); const s=$("#q"); s.textContent=q.rep; s.classList.add("ok"); buzz();
       jeu.reussis[jeu.tour]=jeu.essai===0; jeu.tour++;
       document.querySelectorAll(".ch").forEach(x=>x.disabled=true);
       setTimeout(tour,1100);
@@ -123,10 +133,10 @@ function tour(){
   });
 }
 function fin(){
-  const n=jeu.reussis.filter(Boolean).length, k=KEY+"-best-"+niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
-  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue !";
-  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>' +
-    '<p class="hint">'+NIVEAUX[niveau]+' · trouvés du premier coup · Record : '+best+' / '+TOURS+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  const T_=T(), n=jeu.reussis.filter(Boolean).length, k=KEY+"-best-"+niveau+"-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>' +
+    '<p class="hint">'+NIVEAUX[niveau]+' · trouvés du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
   $("#bAgain").onclick=partie;
 }
 partie();

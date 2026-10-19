@@ -34,7 +34,7 @@ header h1{font-size:22px;margin:0 auto 0 0}
 .seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
 .seg button.on{background:var(--panel);box-shadow:var(--shadow)}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.5vh,24px);padding-top:10px}
-.stars{display:flex;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
 .stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
 .calc{font-size:clamp(64px,13vh,120px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
 .calc .q{display:inline-block;min-width:1.2em;text-align:center;border-bottom:6px solid var(--line)}
@@ -62,34 +62,43 @@ body.noaide .dots{visibility:hidden}
 <header>
   <a class="home" href="../../../index.html#cp">← CP</a>
   <h1>➕ Additions et soustractions</h1>
-  <div class="seg" role="group" aria-label="Niveau" id="niveaux"></div>
+  <div class="seg" role="group" aria-label="Opération" id="niveaux"></div>
 </header>
 <main id="main"></main>
+<script src="../../../assets/reglages.js"></script>
 <script>
-const NIVEAUX = {
-  plus5:  { nom:"+ jusqu'à 5",  gen:()=>add(5) },
-  plus10: { nom:"+ jusqu'à 10", gen:()=>add(10) },
-  moins10:{ nom:"− jusqu'à 10", gen:()=>sub(10) },
-  mix:    { nom:"Mélange",      gen:()=>Math.random()<.5?add(10):sub(10) }
-};
-const TOURS = 10, KEY = "cp-calcul-v1";
+const TYPES = { plus:"＋ Additions", moins:"− Soustractions", mix:"Mélange" };
+const KEY = "cp-calcul-v1";
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Nombres jusqu'à 5, avec les points pour compter.",
+  moyen: "Nombres jusqu'à 10. Les points peuvent être cachés.",
+  difficile: "Jusqu'à 10, sans les points, et des calculs à trou : 3 + ? = 7." } });
+const T = () => R().questions;
 const $ = s => document.querySelector(s);
 const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
 const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
 const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
 function add(max){ const r=rnd(2,max), a=rnd(1,r-1); return {a, b:r-a, op:"+", r} }
 function sub(max){ const a=rnd(2,max), b=rnd(1,a); return {a, b, op:"−", r:a-b} }
+function question(){
+  const max = R().niveau==="facile" ? 5 : 10;
+  const q = type==="plus" ? add(max) : type==="moins" ? sub(max) : (Math.random()<.5 ? add(max) : sub(max));
+  q.trou = R().niveau==="difficile" && Math.random()<.5;   // 3 + ? = 7 : on cherche le 2e nombre
+  q.rep = q.trou ? q.b : q.r;
+  return q;
+}
 function speak(t){ try{ const u=new SpeechSynthesisUtterance(t); u.lang="fr-FR"; u.rate=.85; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){} }
 function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
 
-let niveau = NIVEAUX[lsGet(KEY+"-niveau")] ? lsGet(KEY+"-niveau") : "plus5";
+let type = TYPES[lsGet(KEY+"-type")] ? lsGet(KEY+"-type") : "plus";
 let aide = lsGet(KEY+"-aide") !== "0";
-$("#niveaux").innerHTML = Object.entries(NIVEAUX).map(([k,n])=>'<button data-n="'+k+'">'+n.nom+'</button>').join("");
-document.querySelectorAll("#niveaux button").forEach(b=>b.onclick=()=>{ niveau=b.dataset.n; lsSet(KEY+"-niveau",niveau); partie() });
+$("#niveaux").innerHTML = Object.entries(TYPES).map(([k,n])=>'<button data-n="'+k+'">'+n+'</button>').join("");
+document.querySelectorAll("#niveaux button").forEach(b=>b.onclick=()=>{ type=b.dataset.n; lsSet(KEY+"-type",type); partie() });
 
 let jeu;
 function partie(){
-  document.querySelectorAll("#niveaux button").forEach(b=>b.classList.toggle("on",b.dataset.n===niveau));
+  Reglages.stop();
+  document.querySelectorAll("#niveaux button").forEach(b=>b.classList.toggle("on",b.dataset.n===type));
   jeu = { tour:0, reussis:[], essai:0, q:null, prec:"" };
   tour();
 }
@@ -98,37 +107,42 @@ function points(q){
   return '<i class="a"></i>'.repeat(q.a-q.b) + '<i class="x">✕</i>'.repeat(q.b);
 }
 function etoiles(){
-  return '<div class="stars">' + Array.from({length:TOURS},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.reussis[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
+  return '<div class="stars">' + Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.reussis[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
 }
 function tour(){
-  if (jeu.tour>=TOURS) return fin();
-  let q; do { q=NIVEAUX[niveau].gen() } while (q.a+q.op+q.b===jeu.prec);
+  if (jeu.tour>=T()) return fin();
+  let q; do { q=question() } while (q.a+q.op+q.b===jeu.prec);
   jeu.q=q; jeu.prec=q.a+q.op+q.b; jeu.essai=0;
-  document.body.classList.toggle("noaide",!aide);
+  const difficile = R().niveau==="difficile", montrer = aide && !difficile && !q.trou;
+  document.body.classList.toggle("noaide",!montrer);
+  const ligne = q.trou ? q.a+' '+q.op+' <span class="q" id="q">?</span> = '+q.r : q.a+' '+q.op+' '+q.b+' = <span class="q" id="q">?</span>';
   $("#main").innerHTML = etoiles() +
-    '<div class="calc" id="calc">'+q.a+' '+q.op+' '+q.b+' = <span class="q" id="q">?</span></div>' +
-    '<div class="dots" aria-hidden="true">'+points(q)+'</div>' +
+    '<div class="calc" id="calc">'+ligne+'</div>' +
+    '<div class="dots" aria-hidden="true">'+(q.trou?"":points(q))+'</div>' +
     '<div class="pad">' + Array.from({length:11},(_,n)=>'<button class="num" data-n="'+n+'">'+n+'</button>').join("") + '</div>' +
-    '<div class="tools"><button class="pill" id="bAide">'+(aide?"🙈 Cacher les points":"👀 Montrer les points")+'</button>' +
+    '<div class="tools">'+(difficile?'':'<button class="pill" id="bAide">'+(aide?"🙈 Cacher les points":"👀 Montrer les points")+'</button>') +
     '<button class="pill" id="bSay">🔊 Écouter</button></div>';
-  const phrase = q.a+(q.op==="+"?" plus ":" moins ")+q.b;
+  const mot = q.op==="+"?" plus ":" moins ";
+  const phrase = q.trou ? q.a+mot+"combien égale "+q.r : q.a+mot+q.b;
+  const complet = q.a+mot+q.b+" égale "+q.r;
   $("#bSay").onclick=()=>speak(phrase);
-  $("#bAide").onclick=()=>{ aide=!aide; lsSet(KEY+"-aide",aide?"1":"0"); document.body.classList.toggle("noaide",!aide); $("#bAide").textContent=aide?"🙈 Cacher les points":"👀 Montrer les points" };
+  if ($("#bAide")) $("#bAide").onclick=()=>{ aide=!aide; lsSet(KEY+"-aide",aide?"1":"0"); document.body.classList.toggle("noaide",!aide); $("#bAide").textContent=aide?"🙈 Cacher les points":"👀 Montrer les points" };
+  const bons = () => { $("#q").textContent=q.rep; $("#calc").classList.add("ok"); document.querySelectorAll(".num").forEach(x=>x.disabled=true) };
+  Reglages.chrono(()=>{ jeu.reussis[jeu.tour]=false; jeu.tour++; bons(); document.querySelector('.num[data-n="'+q.rep+'"]').classList.add("ok"); setTimeout(tour,1600) });
   document.querySelectorAll(".num").forEach(b=>b.onclick=()=>{
-    if (+b.dataset.n===q.r) {
-      b.classList.add("ok"); $("#q").textContent=q.r; $("#calc").classList.add("ok"); buzz();
-      speak(phrase+" égale "+q.r);
+    if (+b.dataset.n===q.rep) {
+      Reglages.stop(); b.classList.add("ok"); bons(); buzz();
+      if (R().son) speak(complet);
       jeu.reussis[jeu.tour]=jeu.essai===0; jeu.tour++;
-      document.querySelectorAll(".num").forEach(x=>x.disabled=true);
       setTimeout(tour,1300);
     } else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
   });
 }
 function fin(){
-  const n=jeu.reussis.filter(Boolean).length, k=KEY+"-best-"+niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
-  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue !";
-  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>' +
-    '<p class="hint">'+NIVEAUX[niveau].nom+' · trouvés du premier coup · Record : '+best+' / '+TOURS+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  const T_=T(), n=jeu.reussis.filter(Boolean).length, k=KEY+"-best-"+type+"-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>' +
+    '<p class="hint">'+TYPES[type]+' · trouvés du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
   $("#bAgain").onclick=partie;
 }
 partie();

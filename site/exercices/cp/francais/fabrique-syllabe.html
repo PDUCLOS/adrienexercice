@@ -77,11 +77,17 @@ body.cursive .cible{font-size:clamp(56px,11vh,104px)}
   </div>
 </header>
 <main id="main"></main>
+<script src="../../../assets/reglages.js"></script>
 <script>
 /* Lettres déjà vues sur les fiches de CP (septembre–octobre). Ajouter une lettre ici quand une nouvelle fiche arrive. */
 const CONSONNES = ["p","l","t","r","s","n"];
 const VOYELLES  = ["a","e","é","i","o","u"];
-const TOURS = 10, KEY = "cp-fabrique-syllabe-v1";
+const KEY = "cp-fabrique-syllabe-v1";
+const R = Reglages.init({ key: KEY, onChange: () => setMode(modeActuel), niveaux: {
+  facile: "Consonne + voyelle : pa, li, ru…",
+  moyen: "Dans les deux sens, comme sur les fiches : pa et ap, lo et ol…",
+  difficile: "Syllabes de 3 lettres (nar, pil, sol…), et la syllabe se cache après 3 secondes." } });
+const T = () => R().questions;
 const $ = s => document.querySelector(s);
 const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
 const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
@@ -107,44 +113,51 @@ function slotHtml(lettres, n){
 /* ----- Défi : lire la syllabe écrite, puis la fabriquer avec les lettres ----- */
 let defi;
 function nouvelleSyllabe(prec){
-  let s;
+  let s; const niv=R().niveau;
   do { const c=pick(CONSONNES), v=pick(VOYELLES);
-       s = Math.random()<.6 ? c+v : (v==="e" ? "e"+c : v+c);   // syllabes « pa » et « ap », comme sur les fiches
+       if (niv==="facile") s = c+v;
+       else if (niv==="moyen") s = Math.random()<.6 ? c+v : v+c;   // « pa » et « ap », comme sur les fiches
+       else s = c + pick(["a","i","o","u"]) + pick(["l","r","p"]); // nar, pil, sol… (finale qui s'entend, pas de t/s muet)
   } while (s===prec);
   return s;
 }
 function startDefi(){ defi={tour:0,reussis:0,erreur:false,cible:nouvelleSyllabe(),tape:[]}; renderDefi() }
 function renderDefi(){
-  if (defi.tour>=TOURS) return finDefi();
+  if (defi.tour>=T()) return finDefi();
+  const L=[...defi.cible].length;
   $("#main").innerHTML =
     '<p class="consigne">Lis la syllabe, puis fabrique-la avec les lettres</p>' +
     '<div class="cible">'+defi.cible+'</div>' +
-    '<div class="slot" id="slot">'+slotHtml(defi.tape,2)+'</div>' + clavier() +
-    '<div class="tools"><span class="pill score">'+(defi.tour+1)+' / '+TOURS+' · ⭐ '+defi.reussis+'</span>' +
+    '<div class="slot" id="slot">'+slotHtml(defi.tape,L)+'</div>' + clavier() +
+    '<div class="tools"><span class="pill score">'+(defi.tour+1)+' / '+T()+' · ⭐ '+defi.reussis+'</span>' +
     '<button class="pill" id="bSay">🔊 Écouter</button><button class="pill" id="bClear">↩ Effacer</button></div>';
   $("#bSay").onclick=()=>speak(defi.cible);
-  $("#bClear").onclick=()=>{ defi.tape=[]; $("#slot").innerHTML=slotHtml(defi.tape,2) };
+  $("#bClear").onclick=()=>{ defi.tape=[]; $("#slot").innerHTML=slotHtml(defi.tape,L) };
+  if (R().niveau==="difficile") setTimeout(()=>{ const c=document.querySelector(".cible"); if(c) c.style.visibility="hidden" },3000);
+  Reglages.chrono(()=>{ defi.erreur=true; document.querySelector(".cible").style.visibility="visible";
+    setTimeout(()=>{ defi.tour++; defi.erreur=false; defi.tape=[]; defi.cible=nouvelleSyllabe(defi.cible); renderDefi() },1500) });
   document.querySelectorAll(".key").forEach(k=>k.onclick=()=>tapeDefi(k.dataset.l));
 }
 function tapeDefi(l){
-  if (defi.tape.length>=2) return;
+  const L=[...defi.cible].length;
+  if (defi.tape.length>=L) return;
   buzz(); defi.tape.push(l);
-  const slot=$("#slot"); slot.innerHTML=slotHtml(defi.tape,2);
+  const slot=$("#slot"); slot.innerHTML=slotHtml(defi.tape,L);
   const fait=defi.tape.join("");
   if (!defi.cible.startsWith(fait)) {
     defi.erreur=true; slot.classList.remove("bad"); void slot.offsetWidth; slot.classList.add("bad");
-    setTimeout(()=>{ defi.tape=[]; slot.innerHTML=slotHtml(defi.tape,2) },500);
+    setTimeout(()=>{ defi.tape=[]; slot.innerHTML=slotHtml(defi.tape,L) },500);
   } else if (fait===defi.cible) {
-    slot.classList.add("ok"); speak(defi.cible);
+    Reglages.stop(); slot.classList.add("ok"); if (R().son) speak(defi.cible);
     if (!defi.erreur) defi.reussis++;
     setTimeout(()=>{ defi.tour++; defi.erreur=false; defi.tape=[]; defi.cible=nouvelleSyllabe(defi.cible); renderDefi() },1000);
   }
 }
 function finDefi(){
-  const n=defi.reussis, best=Math.max(n,+(lsGet(KEY)||0)); lsSet(KEY,best);
-  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue !";
-  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>' +
-    '<p class="hint">Réussis sans erreur · Record : '+best+' / '+TOURS+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  const T_=T(), n=defi.reussis, k=KEY+"-best-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>' +
+    '<p class="hint">Réussis sans erreur · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
   $("#bAgain").onclick=startDefi;
 }
 
@@ -164,7 +177,9 @@ function renderLibre(){
   });
 }
 
+let modeActuel="defi";
 function setMode(m){
+  modeActuel=m; Reglages.stop();
   $("#mDefi").classList.toggle("on",m==="defi"); $("#mLibre").classList.toggle("on",m==="libre");
   m==="defi" ? startDefi() : (libre=[], renderLibre());
 }

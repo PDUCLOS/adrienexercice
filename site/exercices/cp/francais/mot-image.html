@@ -33,11 +33,11 @@ header h1{font-size:22px;margin:0 auto 0 0}
 .look button.on{background:var(--panel);box-shadow:var(--shadow)}
 .look .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,28px);padding-top:10px}
-.stars{display:flex;gap:6px;font-size:clamp(22px,4vw,34px)}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(22px,4vw,34px)}
 .stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6;transform:scale(1.15)}
 .pic{font-size:clamp(110px,24vh,220px);line-height:1;background:var(--panel);border-radius:32px;padding:clamp(14px,3vh,30px) clamp(24px,5vw,50px);box-shadow:var(--shadow)}
 .speak{font-size:22px}
-.choices{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,960px)}
+.choices{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,960px)}
 @media (max-width:640px){.choices{grid-template-columns:1fr}}
 .word{background:var(--panel);border:3px solid var(--line);border-radius:22px;padding:clamp(14px,3vh,28px) 10px;font-size:clamp(28px,4.4vw,46px);font-weight:700;box-shadow:var(--shadow);min-width:0}
 body.cursive .word{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:clamp(24px,3.6vw,38px)}
@@ -63,6 +63,7 @@ body.cursive .word{font-family:"Playwrite FR Moderne","Andika",cursive;font-weig
   </div>
 </header>
 <main id="main"></main>
+<script src="../../../assets/reglages.js"></script>
 <script>
 /*
   Mots tirés des fiches de CP (lettres vues : a e é i o u · p l t r s n).
@@ -75,7 +76,10 @@ const MOTS = [
   ["une lapine","🐇"],["un stylo","🖊️"],["un parasol","⛱️"],["une tasse","☕"],["un os","🦴"],
   ["une rose","🌹"],["une sole","🐟"],["une tarte","🥧"],["une tortue","🐢"]
 ].filter((m,i,a)=>a.findIndex(x=>x[1]===m[1])===i);
-const TOURS = 10, KEY = "cp-mot-image-v1";
+const KEY = "cp-mot-image-v1";
+const R = Reglages.init({ key: KEY, onChange: () => nouvellePartie(), niveaux: {
+  facile: "2 mots au choix.", moyen: "3 mots au choix, dont un qui commence pareil.", difficile: "4 mots qui se ressemblent (même début)." } });
+const T = () => R().questions;
 const $ = s => document.querySelector(s);
 const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
 const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
@@ -94,31 +98,39 @@ $("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(tru
 
 let jeu;
 function nouvellePartie(){
-  jeu = { liste: shuffle(MOTS.slice()).slice(0,TOURS), tour: 0, reussis: [], essai: 0 };
+  jeu = { liste: shuffle(MOTS.slice()).slice(0,T()), tour: 0, reussis: [], essai: 0 };
   tour();
 }
 function choixPour(bon){
   // distracteurs : de préférence un mot qui commence pareil (pile / pipe / pelote…)
+  const n = { facile:2, moyen:3, difficile:4 }[R().niveau];
   const autres = shuffle(MOTS.filter(m => m[1]!==bon[1]));
   const proches = autres.filter(m => nom(m[0])[0]===nom(bon[0])[0]);
-  const pris = [...proches.slice(0,1), ...autres.filter(m=>!proches.slice(0,1).includes(m))].slice(0,2);
+  const pris = proches.slice(0, R().niveau==="difficile" ? n-1 : R().niveau==="moyen" ? 1 : 0);
+  for (const m of autres) if (pris.length < n-1 && !pris.includes(m)) pris.push(m);
   return shuffle([bon, ...pris]);
 }
 function etoiles(){
-  return '<div class="stars" aria-label="Progression">' + Array.from({length:TOURS},(_,i)=>
+  return '<div class="stars" aria-label="Progression">' + Array.from({length:T()},(_,i)=>
     '<span class="'+(i<jeu.tour?(jeu.reussis[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
 }
 function tour(){
-  if (jeu.tour >= TOURS) return fin();
+  if (jeu.tour >= T()) return fin();
   const bon = jeu.liste[jeu.tour]; jeu.essai = 0;
   $("#main").innerHTML = etoiles() +
     '<div class="pic" role="img" aria-label="Image à lire">'+bon[1]+'</div>' +
     '<div class="choices">' + choixPour(bon).map(m => '<button class="word" data-e="'+m[1]+'">'+html(m[0])+'</button>').join("") + '</div>' +
     '<p class="hint">Touche le mot qui va avec l\'image. <button class="pill speak" id="bSay" aria-label="Écouter les mots">🔊</button></p>';
+  $(".choices").style.setProperty("--n", document.querySelectorAll(".word").length);
+  Reglages.chrono(() => {
+    jeu.reussis[jeu.tour] = false; jeu.tour++;
+    document.querySelectorAll(".word").forEach(x => { x.disabled = true; if (x.dataset.e === bon[1]) x.classList.add("ok") });
+    setTimeout(tour, 1500);
+  });
   $("#bSay").onclick = () => speak([...document.querySelectorAll(".word")].map(b=>plain(b.textContent)).join(". "));
   document.querySelectorAll(".word").forEach(b => b.onclick = () => {
     if (b.dataset.e === bon[1]) {
-      b.classList.add("ok"); buzz(); speak(plain(bon[0]));
+      Reglages.stop(); b.classList.add("ok"); buzz(); if (R().son) speak(plain(bon[0]));
       jeu.reussis[jeu.tour] = jeu.essai === 0; jeu.tour++;
       document.querySelectorAll(".word").forEach(x => x.disabled = true);
       setTimeout(tour, 1100);
@@ -129,10 +141,10 @@ function tour(){
 }
 function fin(){
   const n = jeu.reussis.filter(Boolean).length;
-  const best = Math.max(n, +(lsGet(KEY) || 0)); lsSet(KEY, best);
-  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue de s'entraîner !";
-  $("#main").innerHTML = '<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>' +
-    '<p class="hint">Trouvés du premier coup · Record : '+best+' / '+TOURS+'</p>' +
+  const T_ = T(), k = KEY+"-best-"+R().niveau, best = Math.max(n, +(lsGet(k) || 0)); lsSet(k, best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue de s'entraîner !";
+  $("#main").innerHTML = '<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>' +
+    '<p class="hint">Trouvés du premier coup · Record : '+best+' / '+T_+'</p>' +
     '<button class="go" id="bAgain">▶ Rejouer</button></div>';
   $("#bAgain").onclick = nouvellePartie;
 }

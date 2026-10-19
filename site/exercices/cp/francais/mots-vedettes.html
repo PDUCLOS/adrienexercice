@@ -36,7 +36,7 @@ header h1{font-size:22px;margin:0 auto 0 0}
 .seg button.on{background:var(--panel);box-shadow:var(--shadow)}
 .seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,26px);padding-top:10px}
-.stars{display:flex;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
 .stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
 .consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
 .listen{background:var(--star);color:var(--on-accent);border-radius:50%;width:clamp(90px,15vh,130px);height:clamp(90px,15vh,130px);font-size:clamp(40px,7vh,60px);box-shadow:var(--shadow)}
@@ -104,6 +104,7 @@ td.w{font-weight:700;font-size:20px;white-space:nowrap}
   </div>
 </header>
 <main id="main"></main>
+<script src="../../../assets/reglages.js"></script>
 <script>
 /*
   LISTE DE DÉPART DES MOTS VEDETTES.
@@ -128,7 +129,13 @@ const MOTS_DEPART = [
   { mot:"est",     phrase:"La tarte ___ sur le plat.",           leurres:["et","c'est"] },
   { mot:"et",      phrase:"Papa ___ maman.",                     leurres:["est","sur"] }
 ];
-const TOURS = 10, KEY = "cp-mots-vedettes-v1";
+const KEY = "cp-mots-vedettes-v1";
+const R = Reglages.init({ key: KEY, onChange: () => setMode(mode), niveaux: {
+  facile: "Lire : 3 mots · Écrire : le mot reste affiché, pas de lettre piège · Comprendre : 2 mots au choix.",
+  moyen: "Lire : 6 mots · Écrire : le mot se cache après 2,5 s, 2 lettres pièges · Comprendre : 3 mots.",
+  difficile: "Lire : 9 mots · Écrire : le mot se cache après 1 s, 4 lettres pièges · Comprendre : 4 mots." } });
+const T = () => R().questions;
+const NIV = () => ({ facile:{cartes:3,cache:0,pieges:0,choix:2}, moyen:{cartes:6,cache:2500,pieges:2,choix:3}, difficile:{cartes:9,cache:1000,pieges:4,choix:4} })[R().niveau];
 const $ = s => document.querySelector(s);
 const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
 const lsSet = (k,v) => { try { localStorage.setItem(k,v); return true } catch(e) { return false } };
@@ -163,15 +170,15 @@ try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch
 $("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
 
 let mode="lire", jeu;
-function etoiles(){ return '<div class="stars">'+Array.from({length:TOURS},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
-function suivant(ok){ jeu.res[jeu.tour]=ok; note(jeu.liste[jeu.tour].mot, ok); jeu.tour++; setTimeout(()=>jeu.tour>=TOURS?fin():ACT[mode](),1100) }
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+function suivant(ok){ Reglages.stop(); jeu.res[jeu.tour]=ok; note(jeu.liste[jeu.tour].mot, ok); jeu.tour++; setTimeout(()=>jeu.tour>=T()?fin():ACT[mode](),1100) }
 function fin(){
-  const n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+mode, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+mode+"-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
   const rates=[...new Set(jeu.liste.filter((m,i)=>!jeu.res[i]).map(m=>m.mot))];
-  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue !";
-  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>'+
+  const T_=T(); const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
     (rates.length?'<p class="hint">À revoir : <b>'+rates.map(esc).join(" · ")+'</b></p>':'')+
-    '<p class="hint">Record : '+best+' / '+TOURS+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+    '<p class="hint">Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
   $("#bAgain").onclick=()=>setMode(mode);
 }
 function marquer(btns, b, bon, onOk){
@@ -183,20 +190,21 @@ const ACT = {
   /* LIRE : la tablette dit le mot, Adrien le trouve parmi d'autres */
   lire(){
     const m=jeu.liste[jeu.tour]; jeu.essai=0;
-    const autres=shuffle(mots.filter(x=>x.mot.toLowerCase()!==m.mot.toLowerCase())).slice(0,Math.min(5,mots.length-1));
+    const autres=shuffle(mots.filter(x=>x.mot.toLowerCase()!==m.mot.toLowerCase())).slice(0,Math.min(NIV().cartes-1,mots.length-1));
     $("#main").innerHTML=etoiles()+'<p class="consigne">Écoute, puis touche le mot</p>'+
       '<button class="listen" id="bSay" aria-label="Écouter le mot">🔊</button>'+
       '<div class="cards">'+shuffle([m,...autres]).map(x=>'<button class="card" data-w="'+esc(x.mot)+'">'+esc(x.mot)+'</button>').join("")+'</div>';
     $("#bSay").onclick=()=>speak(m.mot); setTimeout(()=>speak(m.mot),300);
     const btns=[...document.querySelectorAll(".card")];
     btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===m.mot,()=>{}));
+    Reglages.chrono(()=>{ btns.forEach(x=>{ x.disabled=true; if(x.dataset.w===m.mot) x.classList.add("ok") }); suivant(false) });
   },
   /* ÉCRIRE : on montre le mot, on le cache, Adrien le reconstruit avec les lettres */
   ecrire(){
     const m=jeu.liste[jeu.tour]; jeu.essai=0;
     const chars=[...m.mot], fixe=c=>c===" "||c==="'";
     const lettres=chars.filter(c=>!fixe(c));
-    const extra=shuffle("aeilnoprstu".split("").filter(c=>!lettres.includes(c))).slice(0,2);
+    const extra=shuffle("aeilnoprstu".split("").filter(c=>!lettres.includes(c))).slice(0,NIV().pieges);
     const tuiles=shuffle([...lettres,...extra]);
     let tape=[];
     $("#main").innerHTML=etoiles()+'<p class="consigne">Regarde bien le mot, puis écris-le avec les lettres</p>'+
@@ -209,16 +217,17 @@ const ACT = {
     }).join("") };
     const reset=()=>{ tape=[]; document.querySelectorAll(".tile").forEach(t=>t.classList.remove("used")); draw() };
     draw(); speak(m.mot);
-    const cacher=()=>$("#model").classList.add("hide");
-    setTimeout(cacher,2500);
+    const cacher=()=>{ if (NIV().cache) $("#model").classList.add("hide") };
+    if (NIV().cache) setTimeout(cacher,NIV().cache);
     $("#bSay").onclick=()=>speak(m.mot);
     $("#bPeek").onclick=()=>{ jeu.essai++; $("#model").classList.remove("hide"); setTimeout(cacher,1500) };
     $("#bClear").onclick=reset;
+    Reglages.chrono(()=>{ $("#model").classList.remove("hide"); document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(false) });
     document.querySelectorAll(".tile").forEach(t=>t.onclick=()=>{
       cacher(); const i=+t.dataset.i; if (tape.length>=lettres.length) return;
       if (tuiles[i]!==lettres[tape.length]) { jeu.essai++; const s=$("#slot"); s.classList.remove("bad"); void s.offsetWidth; s.classList.add("bad"); return }
       buzz(); tape.push(i); t.classList.add("used"); draw();
-      if (tape.length===lettres.length){ $("#slot").classList.add("ok"); speak(m.mot); document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(jeu.essai===0) }
+      if (tape.length===lettres.length){ $("#slot").classList.add("ok"); if (R().son) speak(m.mot); document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(jeu.essai===0) }
     });
   },
   /* COMPRENDRE : une phrase à trou, on choisit le bon mot vedette */
@@ -227,8 +236,9 @@ const ACT = {
     const m=jeu.liste[jeu.tour]; jeu.essai=0;
     const debut=/(^|[.!?])\s*$/.test(m.phrase.split("___")[0]);   // le trou commence une phrase → majuscule
     const forme=w=>debut?cap(w):w;
-    let leurres=(m.leurres&&m.leurres.length?m.leurres:[]).slice(0,2);
-    if (leurres.length<2) leurres=leurres.concat(shuffle(avec.map(x=>x.mot).filter(w=>w.toLowerCase()!==m.mot.toLowerCase()&&!leurres.includes(w))).slice(0,2-leurres.length));
+    const nl=NIV().choix-1;
+    let leurres=(m.leurres&&m.leurres.length?m.leurres:[]).slice(0,nl);
+    if (leurres.length<nl) leurres=leurres.concat(shuffle(avec.map(x=>x.mot).filter(w=>w.toLowerCase()!==m.mot.toLowerCase()&&!leurres.map(l=>l.toLowerCase()).includes(w.toLowerCase()))).slice(0,nl-leurres.length));
     const choix=shuffle([forme(m.mot),...leurres.map(forme)]);
     $("#main").innerHTML=etoiles()+'<p class="consigne">Quel mot va dans la phrase ?</p>'+
       '<div class="phrase">'+esc(m.phrase).replace("___",'<span class="trou" id="trou">?</span>')+'</div>'+
@@ -236,7 +246,8 @@ const ACT = {
       '<div class="tools"><button class="pill" id="bSay">🔊 Lire la phrase</button></div>';
     $("#bSay").onclick=()=>speak(m.phrase.replace("___","hmm"));
     const btns=[...document.querySelectorAll(".card")];
-    btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===forme(m.mot),()=>{ const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); speak(m.phrase.replace("___",m.mot)) }));
+    btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===forme(m.mot),()=>{ const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); if (R().son) speak(m.phrase.replace("___",m.mot)) }));
+    Reglages.chrono(()=>{ jeu.essai=1; const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); btns.forEach(x=>{ x.disabled=true; if(x.dataset.w===forme(m.mot)) x.classList.add("ok") }); suivant(false) });
   },
   /* MES MOTS : ajouter / retirer des mots, voir où en est Adrien */
   parents(){
@@ -271,11 +282,11 @@ const ACT = {
 };
 
 function setMode(m){
-  mode=m; document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  mode=m; Reglages.stop(); document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
   if (m==="parents") return ACT.parents();
   const liste = m==="comprendre" ? mots.filter(x=>x.phrase&&x.phrase.includes("___")) : mots;
   if (liste.length<3) { $("#main").innerHTML='<p class="consigne">Il faut au moins 3 mots'+(m==="comprendre"?" avec une phrase":"")+'. Ajoutez-en dans « ⚙️ Mes mots ».</p>'; return }
-  jeu={ tour:0, res:[], essai:0, liste:tirage(liste,TOURS) };
+  jeu={ tour:0, res:[], essai:0, liste:tirage(liste,T()) };
   ACT[m]();
 }
 document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
