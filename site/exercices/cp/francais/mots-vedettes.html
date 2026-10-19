@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Mots vedettes · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Mots vedettes : trois activités (lire, écrire, comprendre) + une page « Mes mots » pour les parents */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --star:#e8590c; --star-soft:#fff0e6; --tile:#e7f1fc; --tile-ink:#1c7ed6;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#e8590c; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --star:#ff922b; --star-soft:#3a2a1c; --tile:#1d2d3d; --tile-ink:#4dabf7;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#ff922b;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:12px 16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button,input{font:inherit;color:inherit}
+button{border:0;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button:focus-visible,input:focus-visible{outline:3px solid var(--tile-ink);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,26px);padding-top:10px}
+.stars{display:flex;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.listen{background:var(--star);color:var(--on-accent);border-radius:50%;width:clamp(90px,15vh,130px);height:clamp(90px,15vh,130px);font-size:clamp(40px,7vh,60px);box-shadow:var(--shadow)}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,18px);width:min(100%,900px)}
+@media (max-width:640px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{background:var(--panel);border:3px solid var(--line);border-radius:22px;padding:clamp(14px,3vh,26px) 8px;font-size:clamp(30px,4.6vw,48px);font-weight:700;box-shadow:var(--shadow);min-width:0}
+.card.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.card.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.phrase{font-size:clamp(30px,5vw,52px);font-weight:700;text-align:center;background:var(--panel);border-radius:24px;padding:clamp(14px,3vh,28px) clamp(16px,3vw,36px);box-shadow:var(--shadow);max-width:100%}
+.trou{display:inline-block;min-width:3ch;border-bottom:5px solid var(--star);color:var(--star);padding:0 .2em}
+.trou.ok{color:var(--ok-ink);border-color:var(--ok-ink)}
+.slot{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;min-height:clamp(72px,12vh,104px)}
+.slot span{min-width:clamp(52px,8vh,72px);height:clamp(72px,12vh,104px);border-radius:16px;border:3px dashed var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:clamp(40px,7vh,64px);font-weight:700;padding:0 6px}
+.slot span.f{border-style:solid;border-color:var(--tile-ink);color:var(--tile-ink)}
+.slot span.fix{border:0;background:transparent;min-width:18px}
+.slot.ok span.f{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.slot.bad{animation:shake .35s}
+.tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,1.4vw,14px);max-width:900px}
+.tile{background:var(--tile);color:var(--tile-ink);border-radius:16px;min-width:clamp(60px,9vh,84px);padding:clamp(10px,2vh,18px) 12px;font-size:clamp(34px,5.6vh,52px);font-weight:700;box-shadow:var(--shadow)}
+.tile.used{visibility:hidden}
+body.cursive .card,body.cursive .phrase,body.cursive .slot span,body.cursive .tile,body.cursive .model{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+body.cursive .card{font-size:clamp(24px,3.8vw,40px)}
+body.cursive .phrase{font-size:clamp(24px,4vw,42px)}
+.model{font-size:clamp(46px,8vh,76px);font-weight:700;color:var(--muted)}
+.model.hide{visibility:hidden}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.end .big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+/* page Mes mots */
+.parents{width:min(100%,900px);display:flex;flex-direction:column;gap:14px;justify-content:flex-start;align-self:center}
+.box{background:var(--panel);border-radius:18px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.box h2{margin:0;font-size:20px}
+.form{display:grid;grid-template-columns:1fr 2fr auto;gap:8px}
+@media (max-width:640px){.form{grid-template-columns:1fr}}
+.form input{padding:12px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-size:17px;min-width:0}
+.add{background:var(--accent);color:var(--on-accent);border-radius:12px;padding:12px 18px;font-weight:700}
+table{width:100%;border-collapse:collapse;font-size:17px}
+th{text-align:left;color:var(--muted);font-weight:400;font-size:14px;padding:6px}
+td{padding:8px 6px;border-top:1px solid var(--line);vertical-align:middle}
+td.w{font-weight:700;font-size:20px;white-space:nowrap}
+.tag{display:inline-block;padding:3px 10px;border-radius:999px;font-size:14px;font-weight:700}
+.tag.good{background:var(--ok);color:var(--ok-ink)}.tag.work{background:var(--err);color:var(--err-ink)}.tag.new{background:var(--chip);color:var(--muted)}
+.del{background:var(--chip);border-radius:10px;padding:8px 12px}
+.scroll{overflow-x:auto}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🌟 Mots vedettes</h1>
+  <div class="seg" role="group" aria-label="Activité" id="modes">
+    <button data-m="lire" class="on">👀 Lire</button>
+    <button data-m="ecrire">✏️ Écrire</button>
+    <button data-m="comprendre">💡 Comprendre</button>
+    <button data-m="parents">⚙️ Mes mots</button>
+  </div>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script>
+/*
+  LISTE DE DÉPART DES MOTS VEDETTES.
+  On peut aussi ajouter des mots sans toucher au code : bouton « ⚙️ Mes mots » dans le jeu.
+  phrase : la phrase avec ___ à la place du mot (pour « Comprendre »).
+  leurres : mots faux mais proches, proposés à côté du bon mot (facultatif).
+*/
+const MOTS_DEPART = [
+  { mot:"Bonjour", phrase:"___ Papa !",                          leurres:["Sur","Dans"] },
+  { mot:"une",     phrase:"Il y a ___ tortue.",                  leurres:["un","le"] },
+  { mot:"un",      phrase:"Il y a ___ rat.",                     leurres:["une","la"] },
+  { mot:"la",      phrase:"___ tulipe est rouge.",               leurres:["le","un"] },
+  { mot:"le",      phrase:"___ renard est roux.",                leurres:["la","une"] },
+  { mot:"lui",     phrase:"Léo a un pull. Le pull est à ___.",   leurres:["sur","dans"] },
+  { mot:"il",      phrase:"Léo est petit. ___ a six ans.",       leurres:["Elle","Un"] },
+  { mot:"il y a",  phrase:"___ une tarte sur le plat.",          leurres:["pour","elle"] },
+  { mot:"elle",    phrase:"Lila est là. ___ lit.",               leurres:["Il","Un"] },
+  { mot:"c'est",   phrase:"La tasse ? ___ pour maman.",          leurres:["est","et"] },
+  { mot:"pour",    phrase:"La tulipe ? C'est ___ maman.",        leurres:["sur","dans"] },
+  { mot:"sur",     phrase:"Le chat est ___ le tapis.",           leurres:["pour","et"] },
+  { mot:"dans",    phrase:"Le poisson est ___ l'eau.",           leurres:["pour","et"] },
+  { mot:"est",     phrase:"La tarte ___ sur le plat.",           leurres:["et","c'est"] },
+  { mot:"et",      phrase:"Papa ___ maman.",                     leurres:["est","sur"] }
+];
+const TOURS = 10, KEY = "cp-mots-vedettes-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v); return true } catch(e) { return false } };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+function speak(t){ try{ const u=new SpeechSynthesisUtterance(t); u.lang="fr-FR"; u.rate=.8; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){} }
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+/* ----- données : liste de mots (modifiable) + réussites par mot ----- */
+let mots = (()=>{ try{ const l=JSON.parse(lsGet(KEY+"-liste")); return Array.isArray(l)&&l.length?l:MOTS_DEPART.slice() }catch(e){ return MOTS_DEPART.slice() } })();
+let stats = (()=>{ try{ return JSON.parse(lsGet(KEY+"-stats"))||{} }catch(e){ return {} } })();
+const saveMots = () => lsSet(KEY+"-liste", JSON.stringify(mots));
+function note(mot, ok){ const s=stats[mot]||(stats[mot]={ok:0,ko:0}); ok?s.ok++:s.ko++; lsSet(KEY+"-stats",JSON.stringify(stats)) }
+/* tirage : les mots les moins réussis sortent plus souvent */
+function tirage(liste, n){
+  const poids = m => { const s=stats[m.mot]||{ok:0,ko:0}; return 1 + s.ko*2 / (1+s.ok) + (s.ok+s.ko===0?1:0) };
+  const out=[]; let prec=null;
+  for (let i=0;i<n;i++){
+    const cands=liste.filter(m=>m!==prec); const tot=cands.reduce((t,m)=>t+poids(m),0);
+    let r=Math.random()*tot, pick=cands[0];
+    for (const m of cands){ r-=poids(m); if (r<=0){ pick=m; break } }
+    out.push(pick); prec=pick;
+  }
+  return out;
+}
+
+/* ----- écriture script / cursive (réglage commun aux exercices) ----- */
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+let mode="lire", jeu;
+function etoiles(){ return '<div class="stars">'+Array.from({length:TOURS},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+function suivant(ok){ jeu.res[jeu.tour]=ok; note(jeu.liste[jeu.tour].mot, ok); jeu.tour++; setTimeout(()=>jeu.tour>=TOURS?fin():ACT[mode](),1100) }
+function fin(){
+  const n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+mode, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const rates=[...new Set(jeu.liste.filter((m,i)=>!jeu.res[i]).map(m=>m.mot))];
+  const msg = n===TOURS ? "Parfait ! 🎉" : n>=7 ? "Très bien !" : n>=5 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+TOURS+' ⭐</div>'+
+    (rates.length?'<p class="hint">À revoir : <b>'+rates.map(esc).join(" · ")+'</b></p>':'')+
+    '<p class="hint">Record : '+best+' / '+TOURS+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=()=>setMode(mode);
+}
+function marquer(btns, b, bon, onOk){
+  if (bon){ b.classList.add("ok"); buzz(); btns.forEach(x=>x.disabled=true); onOk(); suivant(jeu.essai===0) }
+  else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+}
+
+const ACT = {
+  /* LIRE : la tablette dit le mot, Adrien le trouve parmi d'autres */
+  lire(){
+    const m=jeu.liste[jeu.tour]; jeu.essai=0;
+    const autres=shuffle(mots.filter(x=>x.mot.toLowerCase()!==m.mot.toLowerCase())).slice(0,Math.min(5,mots.length-1));
+    $("#main").innerHTML=etoiles()+'<p class="consigne">Écoute, puis touche le mot</p>'+
+      '<button class="listen" id="bSay" aria-label="Écouter le mot">🔊</button>'+
+      '<div class="cards">'+shuffle([m,...autres]).map(x=>'<button class="card" data-w="'+esc(x.mot)+'">'+esc(x.mot)+'</button>').join("")+'</div>';
+    $("#bSay").onclick=()=>speak(m.mot); setTimeout(()=>speak(m.mot),300);
+    const btns=[...document.querySelectorAll(".card")];
+    btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===m.mot,()=>{}));
+  },
+  /* ÉCRIRE : on montre le mot, on le cache, Adrien le reconstruit avec les lettres */
+  ecrire(){
+    const m=jeu.liste[jeu.tour]; jeu.essai=0;
+    const chars=[...m.mot], fixe=c=>c===" "||c==="'";
+    const lettres=chars.filter(c=>!fixe(c));
+    const extra=shuffle("aeilnoprstu".split("").filter(c=>!lettres.includes(c))).slice(0,2);
+    const tuiles=shuffle([...lettres,...extra]);
+    let tape=[];
+    $("#main").innerHTML=etoiles()+'<p class="consigne">Regarde bien le mot, puis écris-le avec les lettres</p>'+
+      '<div class="model" id="model">'+esc(m.mot)+'</div>'+
+      '<div class="slot" id="slot"></div><div class="tiles">'+tuiles.map((c,i)=>'<button class="tile" data-i="'+i+'">'+esc(c)+'</button>').join("")+'</div>'+
+      '<div class="tools"><button class="pill" id="bSay">🔊 Écouter</button><button class="pill" id="bPeek">👀 Revoir le mot</button><button class="pill" id="bClear">↩ Effacer</button></div>';
+    const draw=()=>{ let k=0; $("#slot").innerHTML=chars.map(c=>{
+      if (fixe(c)) return '<span class="fix">'+(c==="'"?"'":"&nbsp;")+'</span>';
+      const idx=tape[k++]; return idx!==undefined?'<span class="f">'+esc(tuiles[idx])+'</span>':'<span></span>';
+    }).join("") };
+    const reset=()=>{ tape=[]; document.querySelectorAll(".tile").forEach(t=>t.classList.remove("used")); draw() };
+    draw(); speak(m.mot);
+    const cacher=()=>$("#model").classList.add("hide");
+    setTimeout(cacher,2500);
+    $("#bSay").onclick=()=>speak(m.mot);
+    $("#bPeek").onclick=()=>{ jeu.essai++; $("#model").classList.remove("hide"); setTimeout(cacher,1500) };
+    $("#bClear").onclick=reset;
+    document.querySelectorAll(".tile").forEach(t=>t.onclick=()=>{
+      cacher(); const i=+t.dataset.i; if (tape.length>=lettres.length) return;
+      if (tuiles[i]!==lettres[tape.length]) { jeu.essai++; const s=$("#slot"); s.classList.remove("bad"); void s.offsetWidth; s.classList.add("bad"); return }
+      buzz(); tape.push(i); t.classList.add("used"); draw();
+      if (tape.length===lettres.length){ $("#slot").classList.add("ok"); speak(m.mot); document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(jeu.essai===0) }
+    });
+  },
+  /* COMPRENDRE : une phrase à trou, on choisit le bon mot vedette */
+  comprendre(){
+    const avec=mots.filter(x=>x.phrase&&x.phrase.includes("___"));
+    const m=jeu.liste[jeu.tour]; jeu.essai=0;
+    const debut=/(^|[.!?])\s*$/.test(m.phrase.split("___")[0]);   // le trou commence une phrase → majuscule
+    const forme=w=>debut?cap(w):w;
+    let leurres=(m.leurres&&m.leurres.length?m.leurres:[]).slice(0,2);
+    if (leurres.length<2) leurres=leurres.concat(shuffle(avec.map(x=>x.mot).filter(w=>w.toLowerCase()!==m.mot.toLowerCase()&&!leurres.includes(w))).slice(0,2-leurres.length));
+    const choix=shuffle([forme(m.mot),...leurres.map(forme)]);
+    $("#main").innerHTML=etoiles()+'<p class="consigne">Quel mot va dans la phrase ?</p>'+
+      '<div class="phrase">'+esc(m.phrase).replace("___",'<span class="trou" id="trou">?</span>')+'</div>'+
+      '<div class="cards">'+choix.map(w=>'<button class="card" data-w="'+esc(w)+'">'+esc(w)+'</button>').join("")+'</div>'+
+      '<div class="tools"><button class="pill" id="bSay">🔊 Lire la phrase</button></div>';
+    $("#bSay").onclick=()=>speak(m.phrase.replace("___","hmm"));
+    const btns=[...document.querySelectorAll(".card")];
+    btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===forme(m.mot),()=>{ const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); speak(m.phrase.replace("___",m.mot)) }));
+  },
+  /* MES MOTS : ajouter / retirer des mots, voir où en est Adrien */
+  parents(){
+    const etat=m=>{ const s=stats[m.mot]; if(!s||s.ok+s.ko===0) return '<span class="tag new">pas encore vu</span>';
+      if (s.ok+s.ko<3) return '<span class="tag new">commencé ('+s.ok+'/'+(s.ok+s.ko)+')</span>';
+      return s.ok>=3&&s.ok>=s.ko*3 ? '<span class="tag good">✓ su ('+s.ok+'/'+(s.ok+s.ko)+')</span>' : '<span class="tag work">à revoir ('+s.ok+'/'+(s.ok+s.ko)+')</span>' };
+    $("#main").innerHTML='<div class="parents">'+
+      '<div class="box"><h2>Ajouter un mot vedette</h2>'+
+      '<div class="form"><input id="iMot" placeholder="Mot, ex. : avec" autocomplete="off" autocapitalize="off">'+
+      '<input id="iPhrase" placeholder="Phrase avec ___ (facultatif), ex. : Léo joue ___ Lila." autocomplete="off">'+
+      '<button class="add" id="bAdd">＋ Ajouter</button></div>'+
+      '<p class="hint" style="text-align:left">La phrase sert à l\'activité « Comprendre ». Mettez ___ (trois tirets bas) à la place du mot. Sans phrase, le mot sert pour « Lire » et « Écrire ».</p></div>'+
+      '<div class="box"><h2>Les '+mots.length+' mots d\'Adrien</h2><div class="scroll"><table><tr><th>Mot</th><th>Phrase</th><th>Où il en est</th><th></th></tr>'+
+      mots.map((m,i)=>'<tr><td class="w">'+esc(m.mot)+'</td><td>'+(m.phrase?esc(m.phrase):'<span class="hint">—</span>')+'</td><td>'+etat(m)+'</td><td><button class="del" data-i="'+i+'" aria-label="Retirer '+esc(m.mot)+'">🗑</button></td></tr>').join("")+
+      '</table></div></div>'+
+      '<div class="tools"><button class="pill" id="bReset">↺ Revenir à la liste de départ</button><button class="pill" id="bZero">↺ Remettre les résultats à zéro</button></div></div>';
+    $("#bAdd").onclick=()=>{
+      const mot=$("#iMot").value.trim().replace(/\s+/g," "), phrase=$("#iPhrase").value.trim();
+      if (!mot) { $("#iMot").focus(); return }
+      if (mots.some(m=>m.mot.toLowerCase()===mot.toLowerCase())) { $("#iMot").value=""; $("#iMot").placeholder="« "+mot+" » est déjà dans la liste"; return }
+      mots.push({ mot, phrase: phrase.includes("___")?phrase:"", leurres:[] }); saveMots(); ACT.parents();
+    };
+    $("#iPhrase").onkeydown=$("#iMot").onkeydown=e=>{ if(e.key==="Enter") $("#bAdd").click() };
+    document.querySelectorAll(".del").forEach(b=>b.onclick=()=>{
+      if (b.dataset.armed) { mots.splice(+b.dataset.i,1); saveMots(); ACT.parents(); }
+      else { b.dataset.armed="1"; b.textContent="Retirer ?"; setTimeout(()=>{ if(b.isConnected){ delete b.dataset.armed; b.textContent="🗑" } },3000) }
+    });
+    const confirmer=(b,txt,fn)=>{ if(b.dataset.armed){ fn(); ACT.parents() } else { b.dataset.armed="1"; b.textContent=txt; setTimeout(()=>{ if(b.isConnected){ ACT.parents() } },3000) } };
+    $("#bReset").onclick=e=>confirmer(e.currentTarget,"Sûr ? Appuyez encore",()=>{ mots=MOTS_DEPART.slice(); saveMots() });
+    $("#bZero").onclick=e=>confirmer(e.currentTarget,"Sûr ? Appuyez encore",()=>{ stats={}; lsSet(KEY+"-stats","{}") });
+  }
+};
+
+function setMode(m){
+  mode=m; document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  if (m==="parents") return ACT.parents();
+  const liste = m==="comprendre" ? mots.filter(x=>x.phrase&&x.phrase.includes("___")) : mots;
+  if (liste.length<3) { $("#main").innerHTML='<p class="consigne">Il faut au moins 3 mots'+(m==="comprendre"?" avec une phrase":"")+'. Ajoutez-en dans « ⚙️ Mes mots ».</p>'; return }
+  jeu={ tour:0, res:[], essai:0, liste:tirage(liste,TOURS) };
+  ACT[m]();
+}
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+setMode("lire");
+</script>
+</body>
+</html>
