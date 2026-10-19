@@ -7,6 +7,7 @@
     R().son        → true | false (lecture automatique)
     Reglages.chrono(quandFini)  → lance le chrono de la question (rien si « Pas de chrono »)
     Reglages.stop()             → arrête le chrono (bonne réponse)
+  Option champs:["niveau","son"] pour n'afficher que certains réglages.
   Les réglages sont gardés sur l'appareil, un jeu à la fois.
 */
 (function(){
@@ -17,7 +18,7 @@
     son:       { titre:"Lecture à voix haute", choix:[[true,"🔊 Oui"],[false,"🔇 Non"]] }
   };
   const DEFAUT = { niveau:"moyen", questions:10, chrono:0, son:true };
-  let key, etat, niveaux, onChange, timer = null;
+  let key, etat, niveaux, onChange, champs = null, timer = null;
 
   const css = `
   .rg-btn{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;border:0;cursor:pointer;color:inherit;font-family:inherit}
@@ -58,7 +59,7 @@
     const ov = document.createElement("div"); ov.className = "rg-ov";
     const dessiner = () => {
       ov.innerHTML = '<div class="rg-box" role="dialog" aria-label="Réglages"><h2>⚙️ Réglages</h2>' +
-        Object.entries(OPTIONS).map(([k,o]) => '<div class="rg-sec"><b>'+o.titre+'</b><div class="rg-row">' +
+        Object.entries(OPTIONS).filter(([k]) => !champs || champs.includes(k)).map(([k,o]) => '<div class="rg-sec"><b>'+o.titre+'</b><div class="rg-row">' +
           o.choix.map(([v,l]) => '<button type="button" data-k="'+k+'" data-v="'+v+'" class="'+(String(brouillon[k])===String(v)?"on":"")+'">'+l+'</button>').join("") +
           '</div>' + (k==="niveau" && niveaux ? '<p class="rg-aide">'+(niveaux[brouillon.niveau]||"")+'</p>' : '') + '</div>').join("") +
         '<button type="button" class="rg-ok" id="rgOk">✓ Valider et rejouer</button></div>';
@@ -91,7 +92,7 @@
   function stop(){ if (timer) { cancelAnimationFrame(timer.raf); timer.bar.remove(); timer = null } }
 
   function init(o){
-    key = o.key + "-reglages"; niveaux = o.niveaux; onChange = o.onChange;
+    key = o.key + "-reglages"; niveaux = o.niveaux; onChange = o.onChange; champs = o.champs || null;
     etat = charger();
     if (!document.getElementById("rg-css")) { const s = document.createElement("style"); s.id = "rg-css"; s.textContent = css; document.head.appendChild(s) }
     bouton();

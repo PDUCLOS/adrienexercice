@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Petites histoires · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Lecture de petites histoires : bibliothèque par niveau → lecture (syllabes colorées, lettres muettes, voix, chrono) → questions */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --s1:#1c7ed6; --s2:#e03131; --mute:#adb5bd; --hl:#ffe066;
+  --f:#2f9e44; --m:#1c7ed6; --d:#e8590c;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#1c7ed6; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --s1:#4dabf7; --s2:#ff8787; --mute:#6b7178; --hl:#5c4d00;
+    --f:#37b24d; --m:#4dabf7; --d:#ff922b;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#4dabf7;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:12px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.pill.on{background:var(--ink);color:var(--panel)}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;gap:18px;padding-top:14px;width:min(100%,1000px);margin:0 auto}
+/* bibliothèque */
+.levels{display:flex;gap:8px;flex-wrap:wrap}
+.lv{padding:12px 18px;border-radius:14px;background:var(--chip);font-weight:700;font-size:19px}
+.lv.on{background:var(--c);color:var(--on-accent)}
+.books{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:14px}
+.book{background:var(--panel);border-radius:20px;padding:18px;box-shadow:var(--shadow);text-align:left;display:flex;flex-direction:column;gap:8px;border-top:6px solid var(--c)}
+.book b{font-size:22px}
+.book small{color:var(--muted);font-size:15px}
+/* lecture */
+.top{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.top h2{margin:0 auto 0 0;font-size:clamp(24px,3.6vw,34px)}
+.texte{background:var(--panel);border-radius:24px;padding:clamp(18px,3vw,36px);box-shadow:var(--shadow);font-size:clamp(30px,4.4vw,46px);line-height:1.9}
+.texte p{margin:0}
+body.cursive .texte,body.cursive .rep{font-family:"Playwrite FR Moderne","Andika",cursive;font-size:clamp(24px,3.6vw,38px);line-height:2.1}
+.w{border-radius:8px;padding:0 .08em;cursor:pointer;display:inline-block}
+.w.hl{background:var(--hl)}
+.w .m{color:var(--mute)}
+body.syl .w .s1{color:var(--s1)} body.syl .w .s2{color:var(--s2)}
+.ligne.hl{background:color-mix(in srgb,var(--hl) 45%,transparent);border-radius:10px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.go{background:var(--accent);color:var(--on-accent);padding:16px 26px;border-radius:16px;font-size:22px;font-weight:700;box-shadow:var(--shadow)}
+.go.stop{background:var(--d)}
+.fluence{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.hint{color:var(--muted);font-size:15px;margin:0}
+/* illustrations : scènes en emojis */
+.scene{position:relative;border-radius:18px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;padding:8px 14px;background:var(--sky);min-height:120px}
+.scene::after{content:"";position:absolute;left:0;right:0;bottom:0;height:34%;background:var(--ground)}
+.scene .h,.scene .b{position:relative;z-index:1;display:flex;gap:6px}
+.scene .h{justify-content:flex-end;font-size:28px}
+.scene .b{justify-content:center;align-items:flex-end;font-size:52px;gap:10px;line-height:1}
+.scene.grand{min-height:clamp(150px,22vh,210px)}
+.scene.grand .h{font-size:40px}.scene.grand .b{font-size:clamp(60px,10vh,92px)}
+.f-jour{--sky:linear-gradient(#a5d8ff,#e7f5ff);--ground:#b2f2bb}
+.f-jardin{--sky:linear-gradient(#c5f6fa,#f3fbe9);--ground:#8ce99a}
+.f-nuit{--sky:linear-gradient(#1c2a4a,#364fc7);--ground:#2b3a55}
+.f-mer{--sky:linear-gradient(#74c0fc,#d0ebff);--ground:linear-gradient(#4dabf7 0 35%,#ffe8a1 35%)}
+.f-maison{--sky:linear-gradient(#fff4e6,#ffe8cc);--ground:#d9a066}
+.book .scene{min-height:110px}
+/* questions */
+.qbox{background:var(--panel);border-radius:24px;padding:clamp(18px,3vw,32px);box-shadow:var(--shadow);display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center}
+.qbox h3{margin:0;font-size:clamp(26px,4vw,40px)}
+.reps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:100%}
+@media (max-width:640px){.reps{grid-template-columns:1fr}}
+.rep{background:var(--bg);border:3px solid var(--line);border-radius:18px;padding:18px 8px;font-size:clamp(22px,3vw,30px);font-weight:700;min-width:0}
+.rep.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.rep.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>📚 Petites histoires</h1>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js"></script>
+<script src="histoires-data.js"></script>
+<script>
+const HISTOIRES = window.HISTOIRES;   /* les histoires sont dans histoires-data.js */
+const NIVEAUX = { facile:["🙂 Facile","--f"], moyen:["😃 Moyen","--m"], difficile:["🔥 Difficile","--d"] };
+const KEY = "cp-histoires-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const plain = t => t.replace(/[·\[\]]/g,"");
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+function speak(t, fin){ try{ const u=new SpeechSynthesisUtterance(t); u.lang="fr-FR"; u.rate=.75; if(fin) u.onend=fin; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){ fin&&fin() } }
+
+const R = Reglages.init({ key: KEY, champs: ["niveau","son"], onChange: () => biblio(R().niveau), niveaux: {
+  facile: "Histoires de 4 à 5 phrases courtes.",
+  moyen: "Histoires de 6 phrases, avec des mots vedettes.",
+  difficile: "Histoires plus longues, avec des questions qui demandent de bien comprendre." } });
+
+/* écriture script / cursive + syllabes colorées (réglages gardés sur l'appareil) */
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+let syl = lsGet(KEY+"-syl") !== "0"; document.body.classList.toggle("syl", syl);
+
+/* résultats : meilleur nombre de mots par minute et questions réussies, par histoire */
+let res = (()=>{ try{ return JSON.parse(lsGet(KEY+"-res"))||{} }catch(e){ return {} } })();
+const saveRes = () => lsSet(KEY+"-res", JSON.stringify(res));
+
+/* un mot du texte → HTML : syllabes alternées en 2 couleurs, lettres muettes en gris */
+function motHtml(mot, idx){
+  if (!/[a-zà-ÿ]/i.test(mot)) return mot;   // ponctuation seule (!, «, …) : pas un mot
+  const m = mot.match(/^(.*?)([.,!?;:]*)$/);
+  const corps = m[1], ponct = m[2];
+  const syls = corps.split("·").map((s,i)=>'<span class="s'+(i%2+1)+'">'+s.replace(/\[(.+?)\]/g,'<span class="m">$1</span>')+'</span>').join("");
+  return '<span class="w" data-i="'+idx+'" data-t="'+plain(corps)+'">'+syls+'</span>'+ponct;
+}
+const emojis = t => window.Intl&&Intl.Segmenter ? [...new Intl.Segmenter("fr",{granularity:"grapheme"}).segment(t)].map(x=>x.segment) : (t.match(/\p{Extended_Pictographic}(\u200d\p{Extended_Pictographic}|\ufe0f|\u200d|\u2620)*/gu)||[]);
+function scene(h, grand){
+  const sc=h.scene||{fond:"jour",haut:"",bas:"📖"};
+  return '<div class="scene f-'+sc.fond+(grand?' grand':'')+'" role="img" aria-label="Illustration"><div class="h">'+(sc.haut||"")+'</div><div class="b">'+emojis(sc.bas).map(x=>'<span>'+x+'</span>').join("")+'</div></div>';
+}
+const nbMots = h => h.lignes.join(" ").split(/\s+/).filter(w=>/[a-zà-ÿ]/i.test(w)).length;
+
+function biblio(niv){
+  niv = NIVEAUX[niv] ? niv : R().niveau;
+  $("#main").innerHTML =
+    '<div class="levels">'+Object.entries(NIVEAUX).map(([k,[n,c]])=>'<button class="lv'+(k===niv?" on":"")+'" style="--c:var('+c+')" data-n="'+k+'">'+n+'</button>').join("")+'</div>'+
+    '<div class="books">'+HISTOIRES.filter(h=>h.niveau===niv).map(h=>{ const r=res[h.id];
+      return '<button class="book" style="--c:var('+NIVEAUX[h.niveau][1]+')" data-id="'+h.id+'">'+scene(h)+'<b>'+plain(h.titre)+'</b>'+
+        '<small>'+nbMots(h)+' mots'+(r&&r.mpm?' · record : '+r.mpm+' mots/min':'')+(r&&r.q!==undefined?' · questions : '+r.q+'/'+h.questions.length:'')+'</small></button>' }).join("")+'</div>'+
+    '<p class="hint">Touchez un mot pour l\'entendre. Le chrono mesure la vitesse de lecture (au CP, l\'objectif de fin d\'année est d\'environ 30 mots par minute).</p>';
+  document.querySelectorAll(".lv").forEach(b=>b.onclick=()=>biblio(b.dataset.n));
+  document.querySelectorAll(".book").forEach(b=>b.onclick=()=>lire(HISTOIRES.find(h=>h.id===b.dataset.id)));
+}
+
+let chrono=null;
+function lire(h){
+  speechSynthesis.cancel(); chrono=null;
+  let i=0;
+  $("#main").innerHTML =
+    '<div class="top"><button class="pill" id="bBack">← Histoires</button><h2>'+motHtml(h.titre.replace(/ /g," "),-1).replace(/ /g," ")+'</h2>'+
+    '<button class="pill'+(syl?" on":"")+'" id="bSyl">🌈 Syllabes</button></div>'+
+    scene(h,true)+'<div class="texte" id="texte">'+h.lignes.map((l,li)=>'<p class="ligne" data-l="'+li+'">'+l.split(" ").map(w=>motHtml(w,i++)).join(" ")+'</p>').join("")+'</div>'+
+    '<div class="tools"><button class="go" id="bChrono">⏱ Je lis (chrono)</button><span class="fluence" id="flu"></span>'+
+    '<button class="pill" id="bEcoute">🔊 Écouter l\'histoire</button><button class="go" id="bQ" style="margin-left:auto">❓ Questions</button></div>';
+  $("#bBack").onclick=()=>{ speechSynthesis.cancel(); biblio(h.niveau) };
+  $("#bSyl").onclick=()=>{ syl=!syl; lsSet(KEY+"-syl",syl?"1":"0"); document.body.classList.toggle("syl",syl); $("#bSyl").classList.toggle("on",syl) };
+  document.querySelectorAll("#texte .w").forEach(w=>w.onclick=()=>{
+    document.querySelectorAll(".w.hl").forEach(x=>x.classList.remove("hl")); w.classList.add("hl"); speak(w.dataset.t);
+  });
+  /* chrono de lecture : l'enfant lit tout haut, le parent appuie sur Fini */
+  $("#bChrono").onclick=()=>{
+    const b=$("#bChrono");
+    if (!chrono){ chrono=performance.now(); b.textContent="✋ Fini !"; b.classList.add("stop"); $("#flu").textContent="Lis l'histoire à voix haute…"; return }
+    const sec=(performance.now()-chrono)/1000; chrono=null; b.textContent="⏱ Relire (chrono)"; b.classList.remove("stop");
+    if (sec < nbMots(h)/3) { $("#flu").textContent="Trop rapide : relis toute l'histoire à voix haute 🙂"; return }   // plus de 180 mots/min : pas une vraie lecture
+    const mpm=Math.round(nbMots(h)/sec*60); const r=res[h.id]||(res[h.id]={});
+    const record=!r.mpm||mpm>r.mpm; if(record) r.mpm=mpm; saveRes();
+    $("#flu").textContent=Math.round(sec)+" s · "+mpm+" mots/min"+(record?" 🏆":"");
+  };
+  /* lecture à voix haute, phrase par phrase, avec la phrase surlignée */
+  $("#bEcoute").onclick=()=>{
+    const lignes=[...document.querySelectorAll(".ligne")]; let k=0;
+    const next=()=>{ lignes.forEach(x=>x.classList.remove("hl")); if(k>=lignes.length) return; lignes[k].classList.add("hl"); speak(plain(h.lignes[k]), ()=>{ k++; setTimeout(next,250) }) };
+    next();
+  };
+  $("#bQ").onclick=()=>{ speechSynthesis.cancel(); questions(h) };
+}
+
+function questions(h){
+  let n=0, bons=0, essai=0;
+  const qs=h.questions;
+  const show=()=>{
+    if (n>=qs.length){
+      const r=res[h.id]||(res[h.id]={}); r.q=Math.max(bons, r.q||0); saveRes();
+      $("#main").innerHTML='<div class="qbox"><h3>'+(bons===qs.length?"Bravo ! Tu as tout compris 🎉":"Bien joué !")+'</h3><div class="big">'+bons+' / '+qs.length+' ⭐</div>'+
+        '<div class="tools"><button class="pill" id="bRelire">📖 Relire l\'histoire</button><button class="go" id="bAutre">📚 Autre histoire</button></div></div>';
+      $("#bRelire").onclick=()=>lire(h); $("#bAutre").onclick=()=>biblio(h.niveau); return;
+    }
+    const q=qs[n], bon=q.r[0]; essai=0;
+    $("#main").innerHTML='<div class="top"><button class="pill" id="bBack">← Relire</button><h2>Question '+(n+1)+' / '+qs.length+'</h2></div>'+
+      '<div class="qbox">'+scene(h)+'<h3>'+q.q+'</h3><button class="pill" id="bSay">🔊 Écouter</button>'+
+      '<div class="reps">'+shuffle(q.r.slice()).map(r=>'<button class="rep" data-r="'+r+'">'+r+'</button>').join("")+'</div></div>';
+    $("#bBack").onclick=()=>lire(h);
+    $("#bSay").onclick=()=>speak(q.q+" "+q.r.join(", "));
+    if (R().son) speak(q.q);
+    document.querySelectorAll(".rep").forEach(b=>b.onclick=()=>{
+      if (b.dataset.r===bon){ b.classList.add("ok"); buzz(); if(essai===0) bons++; document.querySelectorAll(".rep").forEach(x=>x.disabled=true); n++; setTimeout(show,1100) }
+      else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+    });
+  };
+  show();
+}
+biblio(R().niveau);
+</script>
+</body>
+</html>
