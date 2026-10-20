@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>La chanson des mots vedettes · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Chanson des mots vedettes (air de « Frère Jacques ») : mode « Trouve le mot » (le mot est caché, on l'entend) + mode « Paroles » */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --star:#e8590c; --star-soft:#fff0e6; --accent:#7048e8; --on-accent:#ffffff;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --star:#ff922b; --star-soft:#3a2a1c; --accent:#9775fa;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:12px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,26px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.vers{font-size:clamp(32px,5vw,54px);font-weight:700;text-align:center;background:var(--panel);border-radius:24px;padding:clamp(16px,3vh,30px) clamp(16px,3vw,36px);box-shadow:var(--shadow);max-width:100%}
+.trou{display:inline-flex;align-items:center;justify-content:center;min-width:3.2ch;padding:0 .3em;border-radius:14px;border:4px dashed var(--star);color:var(--star);background:var(--star-soft)}
+.trou.ok{border-style:solid;border-color:var(--ok-ink);background:var(--ok);color:var(--ok-ink)}
+.listen{background:var(--accent);color:var(--on-accent);border-radius:50%;width:clamp(84px,14vh,120px);height:clamp(84px,14vh,120px);font-size:clamp(38px,6.5vh,56px);box-shadow:var(--shadow)}
+.cards{display:grid;grid-template-columns:repeat(var(--n,4),minmax(0,1fr));gap:clamp(8px,1.6vw,16px);width:100%}
+@media (max-width:700px){.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.card{background:var(--panel);border:3px solid var(--line);border-radius:20px;padding:clamp(14px,2.6vh,24px) 6px;font-size:clamp(26px,4vw,42px);font-weight:700;box-shadow:var(--shadow);min-width:0}
+.card.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.card.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+body.cursive .vers,body.cursive .card,body.cursive .paroles{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+.paroles{background:var(--panel);border-radius:24px;padding:clamp(16px,3vw,32px);box-shadow:var(--shadow);font-size:clamp(24px,3.4vw,36px);line-height:1.7;width:100%}
+.paroles h2{font-family:"Andika",system-ui,sans-serif;font-size:18px;color:var(--muted);margin:14px 0 2px;font-weight:700}
+.paroles h2:first-child{margin-top:0}
+.paroles p{margin:0}
+.mv{color:var(--star);font-weight:700;border-radius:8px;padding:0 .1em;cursor:pointer}
+.mv.hl{background:var(--star-soft)}
+.p.hl{background:color-mix(in srgb,var(--star-soft) 70%,transparent);border-radius:10px}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🎵 La chanson des mots</h1>
+  <div class="seg" role="group" aria-label="Activité" id="modes">
+    <button data-m="jeu" class="on">🔊 Trouve le mot</button>
+    <button data-m="paroles">🎤 Paroles</button>
+  </div>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js"></script>
+<script>
+/*
+  Paroles sur l'air de « Frère Jacques ». Les mots vedettes sont entre *étoiles*.
+  Chaque ligne se chante deux fois.
+*/
+const COUPLETS = [
+  ["*Bonjour* Léo !", "*Il* *est* là.", "*C'est* *pour* toi *la* tarte.", "*Et* voilà !"],
+  ["*Bonjour* Lila !", "*Elle* *est* là.", "*Pour* *lui* *la* tulipe.", "*Dans* *le* pot !"],
+  ["*Un* petit rat.", "*Sur* *le* lit.", "*Il y a* *une* pie.", "*Dans* *le* nid !"],
+  ["*Le*, *la*, *un*, *une*.", "*Pour*, *sur*, *dans*.", "*C'est*, *est*, *et*, *il y a*.", "*Bonjour*, *lui* !"]
+];
+const MOTS = ["Bonjour","une","un","la","le","lui","il","il y a","elle","c'est","pour","sur","dans","est","et"];
+const KEY = "cp-chanson-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const norm = w => w.toLowerCase()==="bonjour" ? "Bonjour" : w.toLowerCase();
+const texte = l => l.replace(/\*/g,"");
+function speak(t, fin){ try{ const u=new SpeechSynthesisUtterance(t); u.lang="fr-FR"; u.rate=.75; u.pitch=1.15; if(fin) u.onend=fin; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){ fin&&fin() } }
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => setMode(mode), niveaux: {
+  facile: "3 mots au choix.", moyen: "5 mots au choix.", difficile: "8 mots au choix, dont des mots qui se ressemblent (le / la / lui…)." } });
+const T = () => R().questions;
+const NB = () => ({ facile:3, moyen:5, difficile:8 })[R().niveau];
+
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+/* toutes les questions possibles : une ligne + un mot vedette caché dedans */
+const QUESTIONS = COUPLETS.flat().flatMap(l => [...l.matchAll(/\*(.+?)\*/g)].map((m,k)=>({ ligne:l, k, mot:norm(m[1]) })));
+const PROCHES = { le:["la","lui","il"], la:["le","lui","il"], un:["une","il"], une:["un","lui"], il:["elle","il y a","lui"], elle:["il","est"], "il y a":["il","et"], "c'est":["est","et"], est:["et","c'est"], et:["est","elle"], pour:["sur","dans"], sur:["pour","dans"], dans:["sur","pour"], lui:["le","il"], Bonjour:["pour","sur"] };
+
+let mode="jeu", jeu;
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+
+function partie(){ Reglages.stop(); jeu={ tour:0, res:[], liste:shuffle(QUESTIONS.slice()).slice(0,T()) }; while (jeu.liste.length<T()) jeu.liste.push(...shuffle(QUESTIONS.slice()).slice(0,T()-jeu.liste.length)); tour() }
+function tour(){
+  if (jeu.tour>=T()) return fin();
+  const q=jeu.liste[jeu.tour]; let essai=0, k=-1;
+  const html = q.ligne.replace(/\*(.+?)\*/g,(m,w)=>{ k++; return k===q.k ? '<span class="trou" id="trou">🔊 ?</span>' : w });
+  const proches = R().niveau==="difficile" ? (PROCHES[q.mot]||[]) : [];
+  const autres = [...proches, ...shuffle(MOTS.filter(w=>w!==q.mot && !proches.includes(w)))].slice(0,NB()-1);
+  const cartes = shuffle([q.mot, ...autres]);
+  $("#main").innerHTML = etoiles() +
+    '<p class="consigne">Écoute la chanson. Quel mot est caché ?</p>' +
+    '<div class="vers">'+html+'</div>' +
+    '<button class="listen" id="bSay" aria-label="Écouter la ligne">🔊</button>' +
+    '<div class="cards" style="--n:'+Math.min(cartes.length,4)+'">'+cartes.map(w=>'<button class="card" data-w="'+w+'">'+w+'</button>').join("")+'</div>' +
+    '<p class="hint">Le mot n\'est pas écrit : il faut l\'entendre, puis le retrouver.</p>';
+  const dire = () => speak(texte(q.ligne));
+  $("#bSay").onclick = dire; setTimeout(dire, 300);
+  const btns=[...document.querySelectorAll(".card")];
+  const montrer = () => { const t=$("#trou"); t.textContent=[...q.ligne.matchAll(/\*(.+?)\*/g)][q.k][1]; t.classList.add("ok"); btns.forEach(x=>{ x.disabled=true; if(x.dataset.w===q.mot) x.classList.add("ok") }) };
+  Reglages.chrono(()=>{ montrer(); jeu.res[jeu.tour]=false; jeu.tour++; setTimeout(tour,1600) });
+  btns.forEach(b=>b.onclick=()=>{
+    if (b.dataset.w===q.mot){ Reglages.stop(); buzz(); montrer(); if (R().son) speak(texte(q.ligne)); jeu.res[jeu.tour]=essai===0; jeu.tour++; setTimeout(tour,1500) }
+    else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); speak(b.dataset.w) }
+  });
+}
+function fin(){
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div><p class="hint">Trouvés du premier coup · Record : '+best+' / '+T_+'</p>'+
+    '<div class="tools"><button class="pill" id="bParoles">🎤 Voir les paroles</button><button class="go" id="bAgain">▶ Rejouer</button></div></div>';
+  $("#bAgain").onclick=partie; $("#bParoles").onclick=()=>setMode("paroles");
+}
+
+/* Paroles : on touche un mot vedette pour l'entendre ; « Écouter » lit la chanson ligne par ligne */
+function paroles(){
+  $("#main").innerHTML='<div class="paroles">'+COUPLETS.map((c,i)=>'<h2>Couplet '+(i+1)+(i===3?" · tous les mots !":"")+'</h2>'+
+      c.map((l,j)=>'<p class="p" data-c="'+i+'" data-l="'+j+'">'+l.replace(/\*(.+?)\*/g,'<span class="mv">$1</span>')+'</p>').join("")).join("")+'</div>'+
+    '<div class="tools"><button class="go" id="bAll">🔊 Écouter la chanson</button></div>'+
+    '<p class="hint">Sur l\'air de « Frère Jacques » : chaque ligne se chante deux fois. Touchez un mot orange pour l\'entendre.</p>';
+  document.querySelectorAll(".mv").forEach(m=>m.onclick=()=>{ document.querySelectorAll(".mv.hl").forEach(x=>x.classList.remove("hl")); m.classList.add("hl"); speak(m.textContent) });
+  $("#bAll").onclick=()=>{
+    const ps=[...document.querySelectorAll(".p")]; let i=0;
+    const next=()=>{ ps.forEach(p=>p.classList.remove("hl")); if(i>=ps.length) return; ps[i].classList.add("hl"); ps[i].scrollIntoView({block:"center",behavior:"smooth"});
+      speak(ps[i].textContent, ()=>{ i++; setTimeout(next,200) }) };
+    next();
+  };
+}
+
+function setMode(m){
+  mode=m; Reglages.stop(); try{ speechSynthesis.cancel() }catch(e){}
+  document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+  m==="jeu" ? partie() : paroles();
+}
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+setMode("jeu");
+</script>
+</body>
+</html>
