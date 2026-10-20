@@ -187,7 +187,7 @@ function marquer(btns, b, bon, onOk){
 }
 
 const ACT = {
-  /* LIRE : la tablette dit le mot, Adrien le trouve parmi d'autres */
+  /* LIRE : la tablette dit le mot, l'enfant le trouve parmi d'autres */
   lire(){
     const m=jeu.liste[jeu.tour]; jeu.essai=0;
     const autres=shuffle(mots.filter(x=>x.mot.toLowerCase()!==m.mot.toLowerCase())).slice(0,Math.min(NIV().cartes-1,mots.length-1));
@@ -199,7 +199,7 @@ const ACT = {
     btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===m.mot,()=>{}));
     Reglages.chrono(()=>{ btns.forEach(x=>{ x.disabled=true; if(x.dataset.w===m.mot) x.classList.add("ok") }); suivant(false) });
   },
-  /* ÉCRIRE : on montre le mot, on le cache, Adrien le reconstruit avec les lettres */
+  /* ÉCRIRE : on montre le mot, on le cache, l'enfant le reconstruit avec les lettres */
   ecrire(){
     const m=jeu.liste[jeu.tour]; jeu.essai=0;
     const chars=[...m.mot], fixe=c=>c===" "||c==="'";
@@ -249,7 +249,7 @@ const ACT = {
     btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===forme(m.mot),()=>{ const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); if (R().son) speak(m.phrase.replace("___",m.mot)) }));
     Reglages.chrono(()=>{ jeu.essai=1; const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); btns.forEach(x=>{ x.disabled=true; if(x.dataset.w===forme(m.mot)) x.classList.add("ok") }); suivant(false) });
   },
-  /* MES MOTS : ajouter / retirer des mots, voir où en est Adrien */
+  /* MES MOTS : ajouter / retirer des mots, voir où en est l'enfant */
   parents(){
     const etat=m=>{ const s=stats[m.mot]; if(!s||s.ok+s.ko===0) return '<span class="tag new">pas encore vu</span>';
       if (s.ok+s.ko<3) return '<span class="tag new">commencé ('+s.ok+'/'+(s.ok+s.ko)+')</span>';
@@ -260,7 +260,7 @@ const ACT = {
       '<input id="iPhrase" placeholder="Phrase avec ___ (facultatif), ex. : Léo joue ___ Lila." autocomplete="off">'+
       '<button class="add" id="bAdd">＋ Ajouter</button></div>'+
       '<p class="hint" style="text-align:left">La phrase sert à l\'activité « Comprendre ». Mettez ___ (trois tirets bas) à la place du mot. Sans phrase, le mot sert pour « Lire » et « Écrire ».</p></div>'+
-      '<div class="box"><h2>Les '+mots.length+' mots d\'Adrien</h2><div class="scroll"><table><tr><th>Mot</th><th>Phrase</th><th>Où il en est</th><th></th></tr>'+
+      '<div class="box"><h2>Les '+mots.length+' mots vedettes</h2><div class="scroll"><table><tr><th>Mot</th><th>Phrase</th><th>Où il en est</th><th></th></tr>'+
       mots.map((m,i)=>'<tr><td class="w">'+esc(m.mot)+'</td><td>'+(m.phrase?esc(m.phrase):'<span class="hint">—</span>')+'</td><td>'+etat(m)+'</td><td><button class="del" data-i="'+i+'" aria-label="Retirer '+esc(m.mot)+'">🗑</button></td></tr>').join("")+
       '</table></div></div>'+
       '<div class="tools"><button class="pill" id="bReset">↺ Revenir à la liste de départ</button><button class="pill" id="bZero">↺ Remettre les résultats à zéro</button></div></div>';

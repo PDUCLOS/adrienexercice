@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Exercices d'Adrien</title>
+<title>École maison</title>
 <link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
 <style>
 /* Accueil : grille des classes, puis une page par classe avec une colonne par matière */
@@ -80,8 +80,8 @@ const app = document.getElementById("app");
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
 function accueil(){
-  document.title = "Exercices d'Adrien";
-  app.innerHTML = '<h1>Exercices d\'Adrien</h1><p class="sub">Choisis ta classe</p><div class="classes">' +
+  document.title = "École maison";
+  app.innerHTML = '<h1>🏠 École maison</h1><p class="sub">Choisis ta classe</p><div class="classes">' +
     Object.entries(CATALOGUE).map(([k,c]) => {
       const n = MATIERES.reduce((t,m) => t + c[m.cle].length, 0);
       return '<a class="classe" style="--c:var('+c.couleur+')" href="#'+k+'"><b>'+c.nom+'</b><span>'+
@@ -90,7 +90,7 @@ function accueil(){
 }
 function classe(k){
   const c = CATALOGUE[k];
-  document.title = c.nom + " · Exercices d'Adrien";
+  document.title = c.nom + " · École maison";
   app.innerHTML = '<a class="back" href="#">← Toutes les classes</a>' +
     '<div class="head"><span class="badge" style="--c:var('+c.couleur+')">'+c.nom+'</span><p class="sub">Choisis une matière et un exercice</p></div>' +
     '<div class="matieres">' + MATIERES.map(m =>

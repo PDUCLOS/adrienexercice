@@ -159,7 +159,7 @@ h3{margin:0 0 8px;font-size:20px}
 <body>
 <header>
   <a class="home" href="../../../index.html#cp" aria-label="Retour aux exercices du CP">← CP</a>
-  <h1>📖 Lecture d'Adrien</h1>
+  <h1>📖 Lire les syllabes</h1>
   <div class="look" role="group" aria-label="Écriture">
     <button id="fScript" class="on">script</button>
     <button id="fCursive" class="cur-btn">cursive</button>
@@ -441,7 +441,7 @@ function finish(){
   if(best===null)msg='<p>Premier essai dans ce mode !</p>';
   else if(run.acc<best)msg='<p class="record">🏆 Nouveau record ! ('+fmtS(best-run.acc)+' de mieux)</p>';
   else msg='<p>Record : <b>'+fmt(best)+'</b>'+(last!==null?' · Dernière fois : <b>'+fmt(last)+'</b>':'')+'</p>';
-  $("#endBox").innerHTML='<h2>Bravo Adrien ! ⭐</h2><div class="t">'+fmt(run.acc)+'</div>'+msg+
+  $("#endBox").innerHTML='<h2>Bravo ! ⭐</h2><div class="t">'+fmt(run.acc)+'</div>'+msg+
     '<p>'+(errSyl.length?'Erreurs : <b>'+errSyl.length+'</b>':'Aucune erreur 🎉')+'</p>'+
     (errSyl.length?'<div class="syls">'+errSyl.map(s=>'<span class="syl">'+s+'</span>').join("")+'</div>':'')+
     '<div class="btns"><button class="big b-ok" id="bSave">💾 Enregistrer</button>'+

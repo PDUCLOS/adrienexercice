@@ -6,9 +6,9 @@ Le dossier `site/` contient tout le site. Pas besoin de programmer : on l'envoie
 
 1. Créez un compte gratuit sur https://dash.cloudflare.com/sign-up
 2. Dans le menu de gauche : **Compute (Workers & Pages)** → **Create** → onglet **Pages** → **Upload assets** (« Envoyer des fichiers »).
-3. Nom du projet : par exemple `exercices-adrien` → **Create project**.
+3. Nom du projet : par exemple `ecole-maison` → **Create project**.
 4. Faites glisser le dossier **`site`** entier dans la zone d'envoi → **Deploy site**.
-5. Le site est en ligne à l'adresse `https://exercices-adrien.pages.dev`.
+5. Le site est en ligne à l'adresse `https://ecole-maison.pages.dev`.
 
 
 ### Variante recommandée : relier GitHub (mise à jour automatique)
@@ -27,7 +27,7 @@ Le code est sur votre dépôt GitHub.
 1. Dans le projet Pages : **Settings** → **General** → **Access policy** → **Enable**.
 2. Cloudflare vous emmène dans **Zero Trust** (gratuit jusqu'à 50 personnes ; il peut demander de choisir le plan **Free**, parfois avec une carte bancaire sans débit).
 3. Ouvrez l'application créée → **Edit** :
-   - Dans **Application domain**, vérifiez qu'il y a `exercices-adrien.pages.dev` **et** `*.exercices-adrien.pages.dev` (ajoutez la ligne manquante).
+   - Dans **Application domain**, vérifiez qu'il y a `ecole-maison.pages.dev` **et** `*.ecole-maison.pages.dev` (ajoutez la ligne manquante).
    - Dans **Policies**, règle **Allow** → **Include** → **Emails** : mettez vos adresses e-mail (la vôtre, celle de l'autre parent…).
 4. Enregistrez. Ouvrez le site dans une fenêtre privée : il doit demander un e-mail puis envoyer un code.
 
