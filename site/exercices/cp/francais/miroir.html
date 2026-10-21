@@ -152,15 +152,18 @@ const ACT = {
     const cases = shuffle([...Array(nb).fill(cible), ...Array.from({length:total-nb},()=>pick(pieges))]);
     const cols = total===12 ? 4 : total===20 ? 5 : 6;
     let trouves=0, erreurs=0;
-    $("#main").innerHTML = etoiles() + '<p class="consigne">Touche tous les <b>'+cible+'</b></p>' +
+    /* la lettre n'est pas écrite : on l'entend (son + mot exemple), il faut la retrouver */
+    $("#main").innerHTML = etoiles() + '<p class="consigne">Écoute bien, puis touche toutes les cases qui font ce son</p>' +
+      '<button class="pill" id="bSon" style="font-size:24px;padding:14px 24px">🔊 Réécouter</button>' +
       '<div class="grille" style="grid-template-columns:repeat('+cols+',minmax(0,1fr));max-width:'+(cols*120)+'px">'+cases.map(c=>'<button class="tile" data-c="'+c+'">'+c+'</button>').join("")+'</div>' +
       '<div class="tools"><span class="pill compteur" id="cpt">0 / '+nb+'</span><button class="pill" id="bAst">💡 Astuce</button></div>' + astuceHtml(/\d/.test(cible)?["chiffres"]:["bd","pq"]);
-    boutonAstuce(); speak("Touche tous les "+cible);
+    boutonAstuce();
+    const dire = () => speak(SONS[cible]); $("#bSon").onclick = dire; setTimeout(dire, 300);
     Reglages.chrono(()=>{ document.querySelectorAll(".tile").forEach(t=>{ t.disabled=true; if(t.dataset.c===cible) t.classList.add("ok") }); suivant(false,1800) });
     document.querySelectorAll(".tile").forEach(t=>t.onclick=()=>{
       if (t.dataset.c===cible){ t.classList.add("ok"); t.disabled=true; buzz(); trouves++; $("#cpt").textContent=trouves+" / "+nb;
         if (trouves===nb){ document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(erreurs===0,1200) } }
-      else { erreurs++; rater(t) }
+      else { erreurs++; rater(t); speak(SONS[t.dataset.c].split(",")[0]+" ? Non. Écoute : "+SONS[cible]) }
     });
   },
   /* 3. b OU d ? : compléter le mot illustré */
@@ -183,6 +186,8 @@ const ACT = {
     btns.forEach(b=>b.onclick=()=>{ if(b.dataset.c===m.l){ buzz(); montrer(); suivant(essai===0,1300) } else { essai++; rater(b); speak(m.mot.replace("_",b.dataset.c)+" ?") } });
   }
 };
+/* Ce que dit la tablette pour chaque signe : le son, puis un mot qui commence par ce son */
+const SONS = { b:"beu, comme dans ballon", d:"deu, comme dans dé", p:"peu, comme dans papa", q:"keu, comme dans coq", "6":"six", "9":"neuf" };
 /* Mots illustrés : _ = la lettre à trouver ; debut = la lettre est au début du mot */
 const MOTS = [
   {mot:"_allon",l:"b",e:"⚽",debut:1},{mot:"_anane",l:"b",e:"🍌",debut:1},{mot:"_ateau",l:"b",e:"⛵",debut:1},{mot:"_us",l:"b",e:"🚌",debut:1},
