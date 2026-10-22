@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>b et d pas à pas · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Parcours b / d en 7 étapes, d'après les conseils d'apili.fr :
+   un son à la fois → la bouche → devinettes → tri → memory → tracer en grand */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --b:#1971c2; --b-soft:#e7f1fc; --d:#e8590c; --d-soft:#fff0e6;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#0c8599; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --b:#4dabf7; --b-soft:#1d2d3d; --d:#ff922b; --d-soft:#3a2a1c;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#22b8cf;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:12px 20px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.6vh,24px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.cb{color:var(--b)}.cd{color:var(--d)}
+/* parcours */
+.parcours{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:14px;width:100%}
+.etape{background:var(--panel);border-radius:20px;box-shadow:var(--shadow);padding:16px;text-align:left;display:flex;gap:14px;align-items:center;border-left:8px solid var(--line)}
+.etape.fait{border-left-color:var(--ok-ink)}
+.etape .n{font-size:15px;font-weight:700;color:var(--muted)}
+.etape .i{font-size:44px;line-height:1}
+.etape b{display:block;font-size:20px}
+.etape small{color:var(--muted);font-size:14px}
+.intro{color:var(--muted);font-size:16px;margin:0;text-align:center;max-width:720px}
+/* jeu commun */
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.4vw,28px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(19px,2.8vw,26px);margin:0;text-align:center}
+.carte{background:var(--panel);border-radius:28px;box-shadow:var(--shadow);padding:clamp(12px,2.4vh,22px) clamp(20px,4vw,44px);display:flex;flex-direction:column;align-items:center;gap:4px}
+.pic{font-size:clamp(90px,17vh,160px);line-height:1}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2.4vw,24px);width:min(100%,720px)}
+.duo button,.trio button{border-radius:24px;padding:clamp(14px,2.4vh,22px) 10px;font-size:clamp(24px,3.4vw,34px);font-weight:700;box-shadow:var(--shadow);background:var(--panel);border:4px solid var(--line);display:flex;flex-direction:column;align-items:center;gap:4px}
+.duo button .e,.trio button .e{font-size:clamp(52px,9vh,84px);line-height:1}
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(10px,2vw,20px);width:min(100%,760px)}
+.ok{background:var(--ok)!important;color:var(--ok-ink)!important;border-color:var(--ok-ink)!important}
+.bad{background:var(--err)!important;color:var(--err-ink)!important;border-color:var(--err-ink)!important;animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.pot.b{background:var(--b-soft);color:var(--b)}.pot.d{background:var(--d-soft);color:var(--d)}
+.pot .l{font-size:clamp(60px,10vh,96px);line-height:1}
+.listen{background:var(--accent);color:var(--on-accent);border-radius:50%;width:clamp(80px,13vh,110px);height:clamp(80px,13vh,110px);font-size:clamp(36px,6vh,52px);box-shadow:var(--shadow)}
+.info{background:var(--panel);border-radius:20px;box-shadow:var(--shadow);padding:16px 20px;font-size:clamp(17px,2.2vw,20px);max-width:780px;width:100%}
+.info p{margin:.35em 0}
+.bouches{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%}
+.bouches div{border-radius:16px;padding:12px;text-align:center}
+.bouches .e{font-size:56px}
+video{width:min(100%,420px);border-radius:20px;transform:scaleX(-1);background:#000}
+/* memory */
+.memo{display:grid;gap:clamp(8px,1.4vw,14px);width:min(100%,720px)}
+.mc{aspect-ratio:1/1;border-radius:18px;font-size:clamp(46px,8vh,76px);font-weight:700;box-shadow:var(--shadow);background:var(--accent);color:transparent;border:4px solid transparent}
+.mc.vu,.mc.paire{background:var(--panel);color:var(--ink);border-color:var(--line)}
+.mc.paire{border-color:var(--ok-ink);background:var(--ok)}
+/* tracé */
+.trace{position:relative;width:min(100%,62vh,520px);aspect-ratio:1/1;background:var(--panel);border-radius:24px;box-shadow:var(--shadow);touch-action:none}
+.trace canvas{position:absolute;inset:0;width:100%;height:100%;border-radius:24px}
+.seg{display:flex;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;align-items:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:16px 28px;border-radius:18px;font-size:24px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🔵🟠 b et d pas à pas</h1>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js"></script>
+<script>
+/* Mots illustrés. s = son du début : "b", "d" ou "" (ni l'un ni l'autre). c = catégorie pour les devinettes. */
+const MOTS = [
+  ["ballon","⚽","b","objet"],["banane","🍌","b","à manger"],["bateau","⛵","b","objet"],["bus","🚌","b","objet"],["bébé","👶","b","personne"],
+  ["biberon","🍼","b","objet"],["bougie","🕯️","b","objet"],["bol","🥣","b","objet"],["baleine","🐋","b","animal"],["bonbon","🍬","b","à manger"],
+  ["dé","🎲","d","objet"],["dent","🦷","d","corps"],["douche","🚿","d","objet"],["dinosaure","🦕","d","animal"],["dauphin","🐬","d","animal"],
+  ["dragon","🐉","d","animal"],["dix","🔟","d","nombre"],["donut","🍩","d","à manger"],["dindon","🦃","d","animal"],["drapeau","🚩","d","objet"],
+  ["chat","🐱","","animal"],["pomme","🍎","","à manger"],["lune","🌙","","objet"],["tortue","🐢","","animal"],["maison","🏠","","objet"],
+  ["fleur","🌸","","objet"],["poisson","🐟","","animal"],["soleil","☀️","","objet"],["vache","🐄","","animal"],["fraise","🍓","","à manger"]
+];
+const SON = { b:"beu", d:"deu" };
+const KEY = "cp-b-et-d-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const rnd = n => Math.floor(Math.random()*n);
+const pick = a => a[rnd(a.length)];
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]] } return a };
+function speak(t, fin){ try{ const u=new SpeechSynthesisUtterance(t); u.lang="fr-FR"; u.rate=.75; if(fin) u.onend=fin; speechSynthesis.cancel(); speechSynthesis.speak(u) }catch(e){ fin&&fin() } }
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+function rater(b){ b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+
+const R = Reglages.init({ key: KEY, champs:["questions","chrono","son"], onChange: () => accueil() });
+const T = () => R().questions;
+let faits = (()=>{ try{ return JSON.parse(lsGet(KEY+"-faits"))||{} }catch(e){ return {} } })();
+
+const ETAPES = [
+  { id:"b",      i:"👂", t:"J'entends « b » ?",       d:"Le son b tout seul : oui ou non ?" },
+  { id:"d",      i:"👂", t:"J'entends « d » ?",       d:"Le son d tout seul : oui ou non ?" },
+  { id:"bouche", i:"👄", t:"La bouche",               d:"b avec les lèvres, d avec la langue" },
+  { id:"devine", i:"🧩", t:"Devinettes",              d:"« Je pense à un animal qui commence par… »" },
+  { id:"tri",    i:"🗂️", t:"Trier dans les pots",     d:"Écoute le mot : pot b ou pot d ?" },
+  { id:"memory", i:"🃏", t:"Memory des lettres",      d:"Retrouve les paires b, d, p, q" },
+  { id:"tracer", i:"✍️", t:"Écrire en grand",         d:"Trace b et d avec le doigt" }
+];
+
+function accueil(){
+  Reglages.stop(); try{ speechSynthesis.cancel() }catch(e){}
+  $("#main").innerHTML = '<p class="intro">Le parcours suit l\'ordre conseillé : <b>un son à la fois</b> (d\'abord <span class="cb"><b>b</b></span>, puis <span class="cd"><b>d</b></span>), puis la bouche, puis les deux ensemble. Une étape réussie est cochée ✓.</p>' +
+    '<div class="parcours">' + ETAPES.map((e,i)=>'<button class="etape'+(faits[e.id]?" fait":"")+'" data-id="'+e.id+'"><span class="i">'+e.i+'</span><span><span class="n">Étape '+(i+1)+(faits[e.id]?" · ✓":"")+'</span><b>'+e.t+'</b><small>'+e.d+'</small></span></button>').join("") + '</div>';
+  document.querySelectorAll(".etape").forEach(b=>b.onclick=()=>ouvrir(b.dataset.id));
+}
+function haut(titre){ return '<div class="tools" style="width:100%;justify-content:space-between"><button class="pill" id="bRetour">← Parcours</button><b style="font-size:20px">'+titre+'</b><span></span></div>' }
+function brancherRetour(){ $("#bRetour").onclick=accueil }
+
+/* moteur de questions commun aux étapes 1 à 5 */
+let jeu;
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+function serie(id, titre, poser){
+  jeu={ id, titre, tour:0, res:[], poser };
+  const next=()=>{
+    if (jeu.tour>=T()) return finSerie();
+    $("#main").innerHTML = haut(titre) + etoiles() + '<div id="zone" style="display:contents"></div>'; brancherRetour();
+    poser((ok)=>{ Reglages.stop(); jeu.res[jeu.tour]=ok; jeu.tour++; setTimeout(next, 1400) });
+  };
+  next();
+}
+function finSerie(){
+  const T_=T(), n=jeu.res.filter(Boolean).length, reussi=n>=Math.ceil(T_*.8);
+  if (reussi){ faits[jeu.id]=1; lsSet(KEY+"-faits",JSON.stringify(faits)) }
+  $("#main").innerHTML='<div class="end"><h2>'+(reussi?"Étape réussie ! ✓":"Encore un petit effort !")+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    '<p class="hint">'+(reussi?"Tu peux passer à l'étape suivante.":"Il faut 8 sur 10 pour cocher l'étape.")+'</p>'+
+    '<div class="tools"><button class="pill" id="bP">← Parcours</button><button class="go" id="bA">▶ Recommencer</button></div></div>';
+  $("#bP").onclick=accueil; $("#bA").onclick=()=>ouvrir(jeu.id);
+}
+/* question à 2 ou 3 boutons : bonne = data-v attendu */
+function question(html, boutons, bon, dire, apres){
+  let essai=0;
+  $("#zone").innerHTML = html + boutons + '<div class="tools"><button class="pill" id="bRe">🔊 Réécouter</button></div>';
+  $("#bRe").onclick=dire; setTimeout(dire,300);
+  const btns=[...document.querySelectorAll("#zone [data-v]")];
+  const montrer=()=>btns.forEach(x=>{ x.disabled=true; if(x.dataset.v===bon) x.classList.add("ok") });
+  Reglages.chrono(()=>{ montrer(); apres(false) });
+  btns.forEach(b=>b.onclick=()=>{ if(b.dataset.v===bon){ buzz(); montrer(); apres(essai===0) } else { essai++; rater(b) } });
+}
+
+const ACT = {
+  /* 1 et 2 : un seul son à la fois, sans jamais montrer l'autre lettre */
+  entendre(son){
+    const avec = MOTS.filter(m=>m[2]===son), sans = MOTS.filter(m=>m[2]==="");
+    serie(son, 'J\'entends « <span class="c'+son+'">'+son+'</span> » ?', fini=>{
+      const m = Math.random()<.5 ? pick(avec) : pick(sans);
+      question('<p class="consigne">Écoute le mot. Est-ce qu\'il commence par <b class="c'+son+'">'+SON[son]+'</b> ?</p><div class="carte"><div class="pic">'+m[1]+'</div></div>',
+        '<div class="duo"><button data-v="1">👍 Oui</button><button data-v="0">✋ Non</button></div>',
+        m[2]===son?"1":"0", ()=>speak(m[0]), ok=>{ if(R().son) speak(m[0]+(m[2]===son?" : "+SON[son]+", oui !":", non.")); fini(ok) });
+    });
+  },
+  /* 3 : la bouche — b = les lèvres se ferment puis s'ouvrent ; d = la langue touche derrière les dents du haut */
+  bouche(){
+    $("#main").innerHTML = haut("La bouche") +
+      '<div class="info"><p><b>À faire ensemble devant un miroir</b> (ou avec la caméra ci-dessous) :</p>'+
+      '<div class="bouches"><div class="pot b"><div class="e">👄</div><b class="cb">b</b> : les <b>lèvres</b> se ferment, puis s\'ouvrent d\'un coup (« b ! »).</div>'+
+      '<div class="pot d"><div class="e">👅</div><b class="cd">d</b> : la <b>langue</b> tape derrière les dents du haut (« d ! »).</div></div>'+
+      '<p>Mettre la main sur la gorge : ça vibre pour les deux. Mettre la main devant la bouche : on sent l\'air sortir quand les lèvres s\'ouvrent pour <b class="cb">b</b>.</p></div>'+
+      '<div class="tools"><button class="pill" id="bCam">📷 Miroir (caméra)</button><button class="go" id="bJeu">▶ Jouer : lèvres ou langue ?</button></div><div id="cam"></div>';
+    brancherRetour();
+    $("#bCam").onclick=async()=>{
+      try{ const s=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user"},audio:false});
+        $("#cam").innerHTML='<video autoplay playsinline muted></video>'; $("#cam video").srcObject=s; window._flux=s;
+      }catch(e){ $("#cam").innerHTML='<p class="hint">La caméra n\'est pas disponible : utilisez un vrai miroir.</p>' }
+    };
+    $("#bJeu").onclick=()=>{ if(window._flux){ window._flux.getTracks().forEach(t=>t.stop()); window._flux=null }
+      serie("bouche","Lèvres ou langue ?", fini=>{
+        const m = pick(MOTS.filter(x=>x[2])), son=m[2], seul=Math.random()<.4;
+        question('<p class="consigne">Écoute. Pour faire le premier son, on utilise…</p><div class="carte"><div class="pic">'+(seul?"🔊":m[1])+'</div></div>',
+          '<div class="duo"><button class="pot b" data-v="b"><span class="e">👄</span>les lèvres</button><button class="pot d" data-v="d"><span class="e">👅</span>la langue</button></div>',
+          son, ()=>speak(seul?SON[son]:m[0]), ok=>{ if(R().son) speak((seul?SON[son]:m[0])+" : "+(son==="b"?"les lèvres":"la langue")); fini(ok) });
+      });
+    };
+  },
+  /* 4 : devinettes — « Je pense à un animal qui commence par beu » */
+  devine(){
+    serie("devine","Devinettes", fini=>{
+      const son=pick(["b","d"]), autre=son==="b"?"d":"b";
+      const bon=pick(MOTS.filter(m=>m[2]===son)), c=bon[3];
+      const leurre1=pick(MOTS.filter(m=>m[2]===autre)), leurre2=pick(MOTS.filter(m=>m[2]===""&&m[0]!==bon[0]));
+      const phrase="Je pense à "+({"objet":"un objet","à manger":"quelque chose qui se mange","animal":"un animal","personne":"quelqu'un","corps":"une partie du corps","nombre":"un nombre"}[c])+" qui commence par "+SON[son];
+      question('<p class="consigne">🧩 '+phrase+'. Qu\'est-ce que c\'est ?</p>',
+        '<div class="trio">'+shuffle([bon,leurre1,leurre2]).map(m=>'<button data-v="'+m[0]+'"><span class="e">'+m[1]+'</span></button>').join("")+'</div>',
+        bon[0], ()=>speak(phrase), ok=>{ if(R().son) speak(bon[0]+" ! "+SON[son]); fini(ok) });
+    });
+  },
+  /* 5 : tri — on entend le mot, on le range dans le pot b ou le pot d */
+  tri(){
+    serie("tri","Trier dans les pots", fini=>{
+      const m=pick(MOTS.filter(x=>x[2]));
+      question('<p class="consigne">Écoute le mot et range-le dans le bon pot</p><div class="carte"><div class="pic">'+m[1]+'</div></div>',
+        '<div class="duo"><button class="pot b" data-v="b"><span class="l">b</span>⚽ ballon</button><button class="pot d" data-v="d"><span class="l">d</span>🎲 dé</button></div>',
+        m[2], ()=>speak(m[0]), ok=>{ if(R().son) speak(m[0]+", "+SON[m[2]]); fini(ok) });
+    });
+  },
+  /* 6 : memory des lettres qui se ressemblent */
+  memory(){
+    const lettres=["b","d","p","q","b","d"];   // b et d en double : ce sont elles qu'on travaille
+    const cartes=shuffle([...lettres,...lettres].map((l,i)=>({l,i})));
+    let ouvertes=[], paires=0, coups=0; const total=lettres.length;
+    $("#main").innerHTML = haut("Memory des lettres") + '<p class="consigne">Retourne deux cartes : trouve les paires de lettres pareilles</p>'+
+      '<div class="memo" style="grid-template-columns:repeat(4,1fr)">'+cartes.map((c,k)=>'<button class="mc" data-k="'+k+'" aria-label="Carte">'+c.l+'</button>').join("")+'</div>'+
+      '<p class="hint" id="coups">Coups : 0</p>';
+    brancherRetour();
+    document.querySelectorAll(".mc").forEach(b=>b.onclick=()=>{
+      if (ouvertes.length===2 || b.classList.contains("vu") || b.classList.contains("paire")) return;
+      b.classList.add("vu"); ouvertes.push(b); speak(SON[b.textContent]||b.textContent);
+      if (ouvertes.length===2){
+        coups++; $("#coups").textContent="Coups : "+coups;
+        const [x,y]=ouvertes;
+        if (x.textContent===y.textContent && x!==y){ setTimeout(()=>{ x.classList.add("paire"); y.classList.add("paire"); ouvertes=[]; paires++; buzz();
+            if (paires===total){ faits.memory=1; lsSet(KEY+"-faits",JSON.stringify(faits));
+              setTimeout(()=>{ $("#main").innerHTML='<div class="end"><h2>Toutes les paires ! ✓</h2><div class="big">'+coups+' coups</div><div class="tools"><button class="pill" id="bP">← Parcours</button><button class="go" id="bA">▶ Rejouer</button></div></div>'; $("#bP").onclick=accueil; $("#bA").onclick=ACT.memory },600) } },400) }
+        else setTimeout(()=>{ x.classList.remove("vu"); y.classList.remove("vu"); ouvertes=[] },1100);
+      }
+    });
+  },
+  /* 7 : tracer en grand avec le doigt (script ou cursive), on vérifie que le tracé couvre bien la lettre */
+  tracer(){
+    let lettre="b", cursive=false, reussis=new Set();
+    const dessiner=()=>{
+      $("#main").innerHTML = haut("Écrire en grand") +
+        '<div class="tools"><div class="seg" id="sl"><button data-l="b" class="'+(lettre==="b"?"on":"")+'"><span class="cb">b</span></button><button data-l="d" class="'+(lettre==="d"?"on":"")+'"><span class="cd">d</span></button></div>'+
+        '<div class="seg" id="sf"><button data-f="0" class="'+(cursive?"":"on")+'">script</button><button data-f="1" class="'+(cursive?"on":"")+'" style="font-family:\'Playwrite FR Moderne\',cursive;font-weight:400">cursive</button></div></div>'+
+        '<p class="consigne">'+(lettre==="b"?'<b class="cb">b</b> : d\'abord le grand bâton, puis le ventre.':'<b class="cd">d</b> : d\'abord le rond, puis le bâton.')+' Commence au point vert 🟢.</p>'+
+        '<div class="trace"><canvas id="cv0"></canvas><canvas id="cv1"></canvas></div>'+
+        '<div class="tools"><button class="pill" id="bEff">↩ Effacer</button><button class="go" id="bOk">✓ J\'ai fini</button><span class="hint" id="msg">'+(reussis.size?"Réussies : "+[...reussis].join(", "):"")+'</span></div>';
+      brancherRetour();
+      document.querySelectorAll("#sl button").forEach(b=>b.onclick=()=>{ lettre=b.dataset.l; dessiner() });
+      document.querySelectorAll("#sf button").forEach(b=>b.onclick=()=>{ cursive=b.dataset.f==="1"; dessiner() });
+      const wrap=$(".trace"), c0=$("#cv0"), c1=$("#cv1"), dpr=window.devicePixelRatio||1, W=wrap.clientWidth;
+      [c0,c1].forEach(c=>{ c.width=W*dpr; c.height=W*dpr });
+      const g0=c0.getContext("2d"), g1=c1.getContext("2d"); g0.scale(dpr,dpr); g1.scale(dpr,dpr);
+      const police=(cursive?'400 ':'700 ')+Math.round(W*.78)+'px '+(cursive?'"Playwrite FR Moderne", cursive':'"Andika", sans-serif');
+      const couleur=getComputedStyle(document.documentElement).getPropertyValue(lettre==="b"?"--b":"--d").trim();
+      // modèle pâle + masque de la lettre
+      const mask=document.createElement("canvas"); mask.width=W; mask.height=W; const gm=mask.getContext("2d");
+      [g0,gm].forEach(g=>{ g.font=police; g.textAlign="center"; g.textBaseline="alphabetic" });
+      g0.globalAlpha=.18; g0.fillStyle=couleur; g0.fillText(lettre,W/2,W*.74); g0.globalAlpha=1;
+      gm.fillText(lettre,W/2,W*.74);
+      const data=gm.getImageData(0,0,W,W).data, pts=[];
+      for(let y=0;y<W;y+=6) for(let x=0;x<W;x+=6) if(data[(y*W+x)*4+3]>128) pts.push([x,y]);
+      // point de départ : haut du bâton (b) ou haut-droite du rond (d)
+      let dep = lettre==="b" ? pts.reduce((a,p)=>p[1]<a[1]||(p[1]===a[1]&&p[0]<a[0])?p:a) : pts.filter(p=>p[1]>W*.45&&p[1]<W*.55).reduce((a,p)=>p[0]<a[0]?a:p,[0,0]);
+      if (lettre==="d") { const ys=pts.map(p=>p[1]); const yb=Math.min(...ys)+ (Math.max(...ys)-Math.min(...ys))*.45; const ligne=pts.filter(p=>Math.abs(p[1]-yb)<4); const xmax=Math.max(...pts.map(p=>p[0])); dep=ligne.filter(p=>p[0]<xmax-W*.12).reduce((a,p)=>p[0]>a[0]?p:a,ligne[0]||dep) }
+      g0.fillStyle="#2f9e44"; g0.beginPath(); g0.arc(dep[0],dep[1],W*.03,0,7); g0.fill();
+      // tracé au doigt
+      g1.lineCap="round"; g1.lineJoin="round"; g1.lineWidth=W*.075; g1.strokeStyle=couleur;
+      let actif=false, last=null;
+      const pos=e=>{ const r=c1.getBoundingClientRect(); return [(e.clientX-r.left)*W/r.width,(e.clientY-r.top)*W/r.height] };
+      c1.onpointerdown=e=>{ actif=true; last=pos(e); c1.setPointerCapture(e.pointerId); g1.beginPath(); g1.moveTo(...last); g1.lineTo(...last); g1.stroke() };
+      c1.onpointermove=e=>{ if(!actif) return; const p=pos(e); g1.beginPath(); g1.moveTo(...last); g1.lineTo(...p); g1.stroke(); last=p };
+      c1.onpointerup=c1.onpointercancel=()=>{ actif=false };
+      $("#bEff").onclick=()=>g1.clearRect(0,0,W,W);
+      $("#bOk").onclick=()=>{
+        const CW=c1.width, u=g1.getImageData(0,0,CW,c1.height).data; let couverts=0;
+        for(const [x,y] of pts){ const i=(Math.min(c1.height-1,Math.round(y*dpr))*CW+Math.min(CW-1,Math.round(x*dpr)))*4+3; if(u[i]>0) couverts++ }
+        const taux=couverts/pts.length;
+        if (taux>=.6){ reussis.add(lettre+(cursive?" (cursive)":"")); buzz(); speak("Bravo ! "+SON[lettre]);
+          if ([...reussis].some(x=>x[0]==="b") && [...reussis].some(x=>x[0]==="d")){ faits.tracer=1; lsSet(KEY+"-faits",JSON.stringify(faits)) }
+          $("#msg").textContent="Bravo ! ✓ Réussies : "+[...reussis].join(", ")+(faits.tracer?" · étape cochée":" · fais aussi l'autre lettre"); }
+        else $("#msg").textContent="Suis bien toute la lettre pâle ("+Math.round(taux*100)+" %). Efface et recommence.";
+      };
+    };
+    // attendre les polices avant de dessiner la lettre modèle
+    Promise.all([document.fonts.load('700 100px "Andika"'), document.fonts.load('400 100px "Playwrite FR Moderne"')]).catch(()=>{}).then(dessiner);
+  }
+};
+function ouvrir(id){
+  Reglages.stop();
+  if (id==="b"||id==="d") return ACT.entendre(id);
+  ACT[id]();
+}
+accueil();
+</script>
+</body>
+</html>
