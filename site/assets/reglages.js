@@ -91,11 +91,38 @@
   }
   function stop(){ if (timer) { cancelAnimationFrame(timer.raf); timer.bar.remove(); timer = null } }
 
+  /* Un écran d'exercice doit tenir sur une vue de tablette, sans défiler :
+     si le contenu dépasse, on le réduit (zoom) juste ce qu'il faut. Les pages-listes défilent normalement. */
+  const LISTES = ".parents,.paroles,.books,.parcours";
+  let fitRaf = 0;
+  function ajuster(){
+    cancelAnimationFrame(fitRaf);
+    fitRaf = requestAnimationFrame(() => {
+      const main = document.querySelector("main"); if (!main) return;
+      main.style.zoom = "";
+      if (main.querySelector(LISTES)) return;
+      const header = document.querySelector("header"), cs = getComputedStyle(document.body);
+      const dispo = window.innerHeight - (header ? header.offsetHeight : 0) - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom) - 4;
+      const flex = main.style.flex; main.style.flex = "none";          // hauteur naturelle du contenu
+      const besoin = main.scrollHeight, large = main.scrollWidth, dispoL = document.documentElement.clientWidth;
+      main.style.flex = flex;
+      const z = Math.min(1, dispo / besoin, dispoL / Math.max(large, 1));
+      if (z < 1) main.style.zoom = Math.max(.5, z).toFixed(3);
+    });
+  }
+  function surveiller(){
+    const main = document.querySelector("main"); if (!main) return;
+    new MutationObserver(ajuster).observe(main, { childList:true, subtree:true, characterData:true });
+    window.addEventListener("resize", ajuster);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajuster);
+    ajuster();
+  }
+
   function init(o){
     key = o.key + "-reglages"; niveaux = o.niveaux; onChange = o.onChange; champs = o.champs || null;
     etat = charger();
     if (!document.getElementById("rg-css")) { const s = document.createElement("style"); s.id = "rg-css"; s.textContent = css; document.head.appendChild(s) }
-    bouton();
+    bouton(); surveiller();
     return () => etat;
   }
   document.addEventListener("visibilitychange", () => { if (document.hidden) stop() });
