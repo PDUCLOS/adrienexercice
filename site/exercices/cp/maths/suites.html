@@ -116,7 +116,7 @@ function etoiles(){
 function tour(){
   if (jeu.tour>=T()) return fin();
   const typeMotif = niveau==="motifs" || (niveau==="mix" && Math.random()<.5);
-  const q = jeu.neuf(typeMotif ? motif : nombres, x => x.suite.join(","));   // jamais deux fois la même suite jeu.essai=0;
+  const q = jeu.neuf(typeMotif ? motif : nombres, x => x.suite.join(",")); jeu.essai=0;   // jamais deux fois la même suite
   $("#main").innerHTML = etoiles() +
     '<p class="consigne">'+(typeMotif?"Qu'est-ce qui vient après ?":"Quel nombre vient après ?")+'</p>' +
     '<div class="suite">' + q.suite.map(s=>'<span>'+s+'</span>').join("") + '<span class="q" id="q">?</span></div>' +
