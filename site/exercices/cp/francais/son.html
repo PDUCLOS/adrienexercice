@@ -115,8 +115,9 @@ const PARTENAIRE = {}; PAIRES.forEach(([x,y]) => { PARTENAIRE[x]=y; PARTENAIRE[y
 /* un « non » trop piégeant pour un CP : on ne demande pas [a] dans « ballon » (an), [o] dans « mouton »… */
 const PROCHES = { a:["an","w"], o:["on","ou"], i:["in","y"], u:["ou","eu"], é:["è","e"] };
 /* comment la tablette dit le son, et un mot exemple (choisi différent du mot à écouter) */
-const DIT = { a:"a", i:"i", o:"o", u:"u", é:"é", l:"leu", r:"reu", s:"sse", p:"peu", t:"teu", m:"meu", n:"neu", f:"feu", ch:"cheu",
-  b:"beu", d:"de", v:"veu", j:"jeu", z:"zeu" };
+/* sons des consonnes : de vrais petits mots quand c'est possible (le, se, te…), la voix les prononce mieux */
+const DIT = { a:"a", i:"i", o:"o", u:"u", é:"é", l:"le", r:"reu", s:"se", p:"peu", t:"te", m:"me", n:"ne", f:"feu", ch:"cheu",
+  b:"beu", d:"de", v:"veu", j:"je", z:"zeu" };
 const EXEMPLES = { l:[["lune","🌙"],["lapin","🐰"]], r:[["rat","🐀"],["robot","🤖"]], s:[["sac","👜"],["soleil","☀️"]],
   p:[["pomme","🍎"],["poule","🐔"]], t:[["tasse","☕"],["tigre","🐯"]], m:[["moto","🏍️"],["maison","🏠"]], n:[["nid","🪺"],["neige","❄️"]],
   f:[["feu","🔥"],["fée","🧚"]], ch:[["chat","🐱"],["chapeau","🎩"]], b:[["bébé","👶"],["bateau","⛵"]], d:[["dé","🎲"],["dent","🦷"]],
