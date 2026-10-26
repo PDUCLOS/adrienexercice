@@ -59,7 +59,8 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
   <div class="seg" role="group" aria-label="Niveau" id="niveaux"></div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 const SYMBOLES = ["🔴","🔵","🟡","🟢","⭐","🌙","🍎","🍌","🐱","🐶","🐟","🌷","🚗","⚽"];
 /* Motifs et suites de nombres selon le niveau choisi dans ⚙️ */
@@ -92,7 +93,7 @@ function motif(){
   return { suite, rep, choix: shuffle([rep, ...leurres]) };
 }
 function nombres(){
-  const niv = R().niveau, liste = PAS[niv], pas = liste[rnd(0,liste.length-1)], n = 5, max = MAXI[niv];
+  const niv = R().niveau, liste = PAS[niv], pas = liste[rnd(0,liste.length-1)], n = niv==="facile" ? rnd(3,5) : rnd(4,6), max = MAXI[niv];
   const debut = pas>0 ? rnd(0, Math.max(0, max - pas*n)) : rnd(-pas*n, Math.max(-pas*n, Math.min(max, niv==="moyen"?10:max)));
   const suite = Array.from({length:n},(_,i)=>debut+i*pas);
   const rep = debut + n*pas;
@@ -107,7 +108,7 @@ document.querySelectorAll("#niveaux button").forEach(b=>b.onclick=()=>{ niveau=b
 let jeu;
 function partie(){
   document.querySelectorAll("#niveaux button").forEach(b=>b.classList.toggle("on",b.dataset.n===niveau));
-  Reglages.stop(); jeu = { tour:0, reussis:[], essai:0 }; tour();
+  Reglages.stop(); jeu = { tour:0, reussis:[], essai:0, neuf:Reglages.sansDoublon() }; tour();
 }
 function etoiles(){
   return '<div class="stars">' + Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.reussis[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
@@ -115,7 +116,7 @@ function etoiles(){
 function tour(){
   if (jeu.tour>=T()) return fin();
   const typeMotif = niveau==="motifs" || (niveau==="mix" && Math.random()<.5);
-  const q = typeMotif ? motif() : nombres(); jeu.essai=0;
+  const q = jeu.neuf(typeMotif ? motif : nombres, x => x.suite.join(","));   // jamais deux fois la même suite jeu.essai=0;
   $("#main").innerHTML = etoiles() +
     '<p class="consigne">'+(typeMotif?"Qu'est-ce qui vient après ?":"Quel nombre vient après ?")+'</p>' +
     '<div class="suite">' + q.suite.map(s=>'<span>'+s+'</span>').join("") + '<span class="q" id="q">?</span></div>' +
@@ -129,7 +130,7 @@ function tour(){
       jeu.reussis[jeu.tour]=jeu.essai===0; jeu.tour++;
       document.querySelectorAll(".ch").forEach(x=>x.disabled=true);
       setTimeout(tour,1100);
-    } else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+    } else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); Reglages.parler(typeMotif?"Non. Regarde bien : quels dessins se répètent ? Montre-les avec ton doigt.":"Non. Regarde de combien on avance à chaque fois, et continue.","erreur") }
   });
 }
 function fin(){

@@ -87,7 +87,8 @@ main{flex:1;display:flex;flex-direction:column;align-items:center;justify-conten
   </div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 const KEY = "cp-miroir-v1";
 const $ = s => document.querySelector(s);
@@ -130,7 +131,7 @@ const ACT = {
   /* 1. ENDROIT OU ENVERS : le signe est-il bien écrit ? (pas de b/d/p/q ici : à l'envers, ils deviennent une autre lettre) */
   sens(){
     const signes = niv()==="facile" ? ["6","2","3","6"] : ["2","3","4","5","6","7","9","a","e","r","s","z","f","j","k"];
-    const s = pick(signes), envers = Math.random()<.5;
+    const [s, envers] = jeu.neuf(() => [pick(signes), Math.random()<.5]);   // pas deux fois le même signe dans le même sens
     const forme = !envers ? "" : (niv()==="difficile" && !["6","9"].includes(s) && Math.random()<.4 ? "tete" : "miroir");
     let essai=0;
     $("#main").innerHTML = etoiles() + '<p class="consigne">Ce signe est-il écrit <b>à l\'endroit</b> ?</p>' +
@@ -141,11 +142,11 @@ const ACT = {
     const btns=[...document.querySelectorAll(".duo button")], bon=envers?"1":"0";
     const montrer=()=>{ btns.forEach(x=>{ x.disabled=true; if(x.dataset.v===bon) x.classList.add("ok") }); if(envers){ const g=$(".glyphe span"); setTimeout(()=>{ g.style.transition="transform .6s"; g.className="" },500) } };
     Reglages.chrono(()=>{ montrer(); suivant(false,1800) });
-    btns.forEach(b=>b.onclick=()=>{ if(b.dataset.v===bon){ buzz(); montrer(); suivant(essai===0, envers?1600:1000) } else { essai++; rater(b) } });
+    btns.forEach(b=>b.onclick=()=>{ if(b.dataset.v===bon){ buzz(); montrer(); suivant(essai===0, envers?1600:1000) } else { essai++; rater(b); Reglages.parler(envers?"Non, regarde bien : ce signe est retourné, comme dans un miroir.":"Non, regarde bien : ce signe est bien écrit, il est à l'endroit.","erreur") } });
   },
   /* 2. CHASSE : toucher toutes les cases avec le signe demandé */
   chasse(){
-    const n = niv(), cible = n==="difficile" ? pick(["b","d","p","q","6","9"]) : n==="moyen" ? pick(["b","d","p","q"]) : pick(["b","d"]);
+    const n = niv(), cible = n==="difficile" ? pick(["b","d","p","q","6","9"]) : n==="moyen" ? pick(["b","d","p","q"]) : pick(["b","d"]);   // la grille change à chaque fois
     const famille = /\d/.test(cible) ? ["6","9"] : ["b","d","p","q"];
     const pieges = n==="facile" ? [cible==="b"?"d":"b"] : n==="moyen" ? famille.filter(x=>x!==cible) : ["b","d","p","q","6","9"].filter(x=>x!==cible);
     const total = n==="facile" ? 12 : n==="moyen" ? 20 : 30, nb = Math.round(total*.3);
@@ -163,14 +164,14 @@ const ACT = {
     document.querySelectorAll(".tile").forEach(t=>t.onclick=()=>{
       if (t.dataset.c===cible){ t.classList.add("ok"); t.disabled=true; buzz(); trouves++; $("#cpt").textContent=trouves+" / "+nb;
         if (trouves===nb){ document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(erreurs===0,1200) } }
-      else { erreurs++; rater(t); speak(SONS[t.dataset.c].split(",")[0]+" ? Non. Écoute : "+SONS[cible]) }
+      else { erreurs++; rater(t); Reglages.parler(SONS[t.dataset.c].split(",")[0]+" ? Non. Écoute : "+SONS[cible],"erreur") }
     });
   },
   /* 3. b OU d ? : compléter le mot illustré */
   mots(){
     const n = niv();
     const liste = MOTS.filter(m => n==="difficile" ? true : (/[bd]/.test(m.l)) && (n==="moyen" || m.debut));
-    const m = pick(liste);
+    const m = jeu.neuf(() => pick(liste), x => x.mot);
     const choix = n==="difficile" ? ["b","d","p","q"] : ["b","d"];
     let essai=0;
     $("#main").innerHTML = etoiles() + '<p class="consigne">Quelle lettre manque ?</p>' +
@@ -179,11 +180,11 @@ const ACT = {
       '<div class="tools"><button class="pill" id="bSay">🔊 Écouter le mot</button><button class="pill" id="bAst">💡 Astuce</button></div>' + astuceHtml(n==="difficile"?["bd","pq"]:["bd"]);
     boutonAstuce();
     const complet = m.mot.replace("_",m.l);
-    $("#bSay").onclick=()=>speak(complet); if (R().son) setTimeout(()=>speak(complet),300);
+    $("#bSay").onclick=()=>speak(complet); setTimeout(()=>Reglages.parler(complet,"consigne"),300);
     const btns=[...document.querySelectorAll(".choix button")];
     const montrer=()=>{ const t=$("#trou"); t.textContent=m.l; btns.forEach(x=>{ x.disabled=true; if(x.dataset.c===m.l) x.classList.add("ok") }) };
     Reglages.chrono(()=>{ montrer(); suivant(false,1800) });
-    btns.forEach(b=>b.onclick=()=>{ if(b.dataset.c===m.l){ buzz(); montrer(); suivant(essai===0,1300) } else { essai++; rater(b); speak(m.mot.replace("_",b.dataset.c)+" ?") } });
+    btns.forEach(b=>b.onclick=()=>{ if(b.dataset.c===m.l){ buzz(); montrer(); suivant(essai===0,1300) } else { essai++; rater(b); Reglages.parler("Non : "+m.mot.replace("_",b.dataset.c)+", ça ne se dit pas comme ça. Écoute : "+complet+".","erreur") } });
   }
 };
 /* Ce que dit la tablette pour chaque signe : le son, puis un mot qui commence par ce son */
@@ -197,13 +198,22 @@ const MOTS = [
   {mot:"ro_e",l:"b",e:"👗"},{mot:"ar_re",l:"b",e:"🌳"},{mot:"zè_re",l:"b",e:"🦓"},{mot:"ca_ane",l:"b",e:"🛖"},{mot:"ro_ot",l:"b",e:"🤖"},
   {mot:"sala_e",l:"d",e:"🥗"},{mot:"ca_eau",l:"d",e:"🎁"},{mot:"ron_e",l:"d",e:"⭕"},{mot:"mon_e",l:"d",e:"🌍"},
   {mot:"_omme",l:"p",e:"🍎",debut:1},{mot:"_oisson",l:"p",e:"🐟",debut:1},{mot:"_izza",l:"p",e:"🍕",debut:1},{mot:"lou_e",l:"p",e:"🔍"},
-  {mot:"_uille",l:"q",e:"🎳",debut:1},{mot:"co_",l:"q",e:"🐓"},{mot:"cin_",l:"q",e:"5️⃣"}
+  {mot:"_uille",l:"q",e:"🎳",debut:1},{mot:"co_",l:"q",e:"🐓"},{mot:"cin_",l:"q",e:"5️⃣"},
+  /* en plus */
+  {mot:"_aleine",l:"b",e:"🐋",debut:1},{mot:"_outeille",l:"b",e:"🍾",debut:1},{mot:"_onbon",l:"b",e:"🍬",debut:1},{mot:"_ague",l:"b",e:"💍",debut:1},
+  {mot:"_alai",l:"b",e:"🧹",debut:1},{mot:"_ouche",l:"b",e:"👄",debut:1},{mot:"_ras",l:"b",e:"💪",debut:1},{mot:"_iche",l:"b",e:"🦌",debut:1},
+  {mot:"co_ra",l:"b",e:"🐍"},{mot:"ar_re",l:"b",e:"🌲"},
+  {mot:"_inde",l:"d",e:"🦃",debut:1},{mot:"_rapeau",l:"d",e:"🚩",debut:1},{mot:"_iamant",l:"d",e:"💎",debut:1},{mot:"_romadaire",l:"d",e:"🐪",debut:1},
+  {mot:"_anseuse",l:"d",e:"💃",debut:1},{mot:"_oigt",l:"d",e:"☝️",debut:1},{mot:"pan_a",l:"d",e:"🐼"},{mot:"ra_io",l:"d",e:"📻"},
+  
+  {mot:"_ain",l:"p",e:"🍞",debut:1},{mot:"_oire",l:"p",e:"🍐",debut:1},{mot:"_ingouin",l:"p",e:"🐧",debut:1},{mot:"_orte",l:"p",e:"🚪",debut:1},{mot:"lam_e",l:"p",e:"💡"},
+  {mot:"_uatre",l:"q",e:"4️⃣",debut:1},{mot:"mas_ue",l:"q",e:"🎭"}
 ];
 
 function setMode(m){
   mode=m; Reglages.stop(); try{ speechSynthesis.cancel() }catch(e){}
   document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
-  jeu={ tour:0, res:[] }; ACT[m]();
+  jeu={ tour:0, res:[], neuf:Reglages.sansDoublon() }; ACT[m]();
 }
 document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
 setMode("sens");

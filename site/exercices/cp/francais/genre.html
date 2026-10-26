@@ -80,7 +80,8 @@ body.cursive .phrase,body.cursive .choix b{font-family:"Playwrite FR Moderne","A
   </div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 /*
   Les noms : [mot, emoji, "m" ou "f"].
@@ -95,7 +96,18 @@ const NOMS = [
   ["tortue","🐢","f"], ["tulipe","🌷","f"], ["pelote","🧶","f"], ["pile","🔋","f"], ["tarte","🥧","f"], ["épée","🗡️","f"],
   ["télé","📺","f"], ["lune","🌙","f"], ["rose","🌹","f"], ["tasse","☕","f"], ["note","🎵","f"], ["pie","🐦","f"],
   ["lapine","🐇","f"], ["île","🏝️","f"], ["pomme","🍎","f"], ["maison","🏠","f"], ["fleur","🌸","f"], ["voiture","🚗","f"],
-  ["étoile","⭐","f"], ["banane","🍌","f"], ["fraise","🍓","f"], ["souris","🐭","f"], ["vache","🐄","f"], ["poule","🐔","f"]
+  ["étoile","⭐","f"], ["banane","🍌","f"], ["fraise","🍓","f"], ["souris","🐭","f"], ["vache","🐄","f"], ["poule","🐔","f"],
+  /* en plus */
+  ["lapin","🐰","m"], ["ours","🐻","m"], ["singe","🐒","m"], ["cheval","🐎","m"], ["mouton","🐑","m"], ["cochon","🐷","m"],
+  ["canard","🦆","m"], ["éléphant","🐘","m"], ["crocodile","🐊","m"], ["serpent","🐍","m"], ["hibou","🦉","m"], ["papillon","🦋","m"],
+  ["escargot","🐌","m"], ["citron","🍋","m"], ["melon","🍈","m"], ["sapin","🎄","m"], ["bonbon","🍬","m"], ["biberon","🍼","m"],
+  ["bateau","⛵","m"], ["avion","✈️","m"], ["train","🚂","m"], ["camion","🚚","m"], ["robot","🤖","m"], ["crayon","✏️","m"],
+  ["cadeau","🎁","m"], ["chapeau","🎩","m"], ["nuage","☁️","m"], ["soleil","☀️","m"], ["parapluie","☂️","m"], ["téléphone","📱","m"],
+  ["girafe","🦒","f"], ["grenouille","🐸","f"], ["baleine","🐋","f"], ["abeille","🐝","f"], ["fourmi","🐜","f"], ["araignée","🕷️","f"],
+  ["poire","🍐","f"], ["cerise","🍒","f"], ["carotte","🥕","f"], ["tomate","🍅","f"], ["glace","🍦","f"], ["pizza","🍕","f"],
+  ["fusée","🚀","f"], ["moto","🏍️","f"], ["montre","⌚","f"], ["clé","🔑","f"], ["chaise","🪑","f"], ["lampe","💡","f"],
+  ["guitare","🎸","f"], ["trompette","🎺","f"], ["bougie","🕯️","f"], ["valise","🧳","f"], ["chaussure","👟","f"], ["robe","👗","f"],
+  ["couronne","👑","f"], ["plume","🪶","f"], ["feuille","🍁","f"], ["bouteille","🍾","f"]
 ];
 /* Les trois paires de mots vedettes */
 const PAIRES = { un:["un","une"], le:["le","la"], il:["il","elle"] };
@@ -158,13 +170,13 @@ function tour(){
     $("#ph").innerHTML=phrase(q,true); btns.forEach(b=>{ b.disabled=true; if(b.dataset.g===bon) b.classList.add("ok") });
     const g = bon==="m" ? '<b class="m">masculin</b>' : '<b class="f">féminin</b>';
     $("#astuce").innerHTML = 'On dit « '+dire(q).replace(/^./,c=>c.toUpperCase())+' » : « '+q.nom[0]+' » est '+g+'.';
-    if (R().son) speak(dire(q));
+    Reglages.parler(dire(q),"succes");
     jeu.res[jeu.tour]=ok; jeu.tri[bon].push(q.nom[1]); jeu.tour++; setTimeout(tour, ok?1600:2600);
   };
   Reglages.chrono(()=>fini(false));
   btns.forEach(b=>b.onclick=()=>{
     if (b.dataset.g===bon){ Reglages.stop(); buzz(); fini(essai===0) }
-    else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); speak(b.querySelector("b").textContent+" "+(q.type==="il"?"est sur le tapis":q.nom[0])+" ?") }
+    else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); Reglages.parler("Non, on ne dit pas : "+b.querySelector("b").textContent+" "+(q.type==="il"?"est sur le tapis, pour "+q.nom[0]:q.nom[0])+". Écoute bien et essaie encore.","erreur") }
   });
 }
 function fin(){

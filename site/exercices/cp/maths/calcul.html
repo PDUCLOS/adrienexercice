@@ -65,12 +65,13 @@ body.noaide .dots{visibility:hidden}
   <div class="seg" role="group" aria-label="Opération" id="niveaux"></div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 const TYPES = { plus:"＋ Additions", moins:"− Soustractions", mix:"Mélange" };
 const KEY = "cp-calcul-v1";
 const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
-  facile: "Nombres jusqu'à 5, avec les points pour compter.",
+  facile: "Nombres jusqu'à 6, avec les points pour compter.",
   moyen: "Nombres jusqu'à 10. Les points peuvent être cachés.",
   difficile: "Jusqu'à 10, sans les points, et des calculs à trou : 3 + ? = 7." } });
 const T = () => R().questions;
@@ -81,7 +82,7 @@ const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
 function add(max){ const r=rnd(2,max), a=rnd(1,r-1); return {a, b:r-a, op:"+", r} }
 function sub(max){ const a=rnd(2,max), b=rnd(1,a); return {a, b, op:"−", r:a-b} }
 function question(){
-  const max = R().niveau==="facile" ? 5 : 10;
+  const max = R().niveau==="facile" ? 6 : 10;
   const q = type==="plus" ? add(max) : type==="moins" ? sub(max) : (Math.random()<.5 ? add(max) : sub(max));
   q.trou = R().niveau==="difficile" && Math.random()<.5;   // 3 + ? = 7 : on cherche le 2e nombre
   q.rep = q.trou ? q.b : q.r;
@@ -99,7 +100,7 @@ let jeu;
 function partie(){
   Reglages.stop();
   document.querySelectorAll("#niveaux button").forEach(b=>b.classList.toggle("on",b.dataset.n===type));
-  jeu = { tour:0, reussis:[], essai:0, q:null, prec:"" };
+  jeu = { tour:0, reussis:[], essai:0, q:null, prec:"", neuf:Reglages.sansDoublon() };
   tour();
 }
 function points(q){
@@ -111,7 +112,7 @@ function etoiles(){
 }
 function tour(){
   if (jeu.tour>=T()) return fin();
-  let q; do { q=question() } while (q.a+q.op+q.b===jeu.prec);
+  const q = jeu.neuf(question, x => x.a+x.op+x.b+(x.trou?"t":""));   // jamais deux fois le même calcul
   jeu.q=q; jeu.prec=q.a+q.op+q.b; jeu.essai=0;
   const difficile = R().niveau==="difficile", montrer = aide && !difficile && !q.trou;
   document.body.classList.toggle("noaide",!montrer);
@@ -132,10 +133,11 @@ function tour(){
   document.querySelectorAll(".num").forEach(b=>b.onclick=()=>{
     if (+b.dataset.n===q.rep) {
       Reglages.stop(); b.classList.add("ok"); bons(); buzz();
-      if (R().son) speak(complet);
+      Reglages.parler(complet,"succes");
       jeu.reussis[jeu.tour]=jeu.essai===0; jeu.tour++;
       setTimeout(tour,1300);
-    } else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+    } else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad");
+      Reglages.parler("Non. "+phrase+", ça ne fait pas "+b.dataset.n+". "+(q.trou?"Compte à partir de "+q.a+".":"Compte bien les points."),"erreur") }
   });
 }
 function fin(){

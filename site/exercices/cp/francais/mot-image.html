@@ -63,7 +63,8 @@ body.cursive .word{font-family:"Playwrite FR Moderne","Andika",cursive;font-weig
   </div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 /*
   Mots tirés des fiches de CP (lettres vues : a e é i o u · p l t r s n).
@@ -74,8 +75,19 @@ const MOTS = [
   ["le ri[z]","🍚"],["la tortue","🐢"],["une épée","🗡️"],["une télé","📺"],["un piano","🎹"],
   ["la lune","🌙"],["un ananas","🍍"],["un renar[d]","🦊"],["une note","🎵"],["un ni[d]","🪺"],
   ["une lapine","🐇"],["un stylo","🖊️"],["un parasol","⛱️"],["une tasse","☕"],["un os","🦴"],
-  ["une rose","🌹"],["une sole","🐟"],["une tarte","🥧"],["une tortue","🐢"]
+  ["une rose","🌹"],["une sole","🐟"],["une tarte","🥧"],["un li[t]","🛏️"],["un tipi","⛺"],["une étoile","⭐"],
+  /* mots avec des lettres pas encore toutes vues (niveaux Moyen et Difficile) : 3e valeur = 0 */
+  ["une salade","🥗",0],["une tomate","🍅",0],["une pomme","🍎",0],["une poire","🍐",0],["un melon","🍈",0],["une banane","🍌",0],
+  ["un ballon","⚽",0],["un bateau","⛵",0],["une moto","🏍️",0],["un vélo","🚲",0],["une auto","🚗",0],["un avion","✈️",0],
+  ["un sapin","🎄",0],["une fusée","🚀",0],["un robot","🤖",0],["une poule","🐔",0],["un chat","🐱",0],["un chien","🐶",0],
+  ["un lion","🦁",0],["une souri[s]","🐭",0],["un lou[p]","🐺",0],["un mouton","🐑",0],["une vache","🐄",0],["un âne","🐴",0],
+  ["un dauphin","🐬",0],["une baleine","🐋",0],["un escargo[t]","🐌",0],["une abeille","🐝",0],["une fourmi","🐜",0],["un papillon","🦋",0],
+  ["une maison","🏠",0],["un parapluie","☂️",0],["un livre","📕",0],["un crayon","✏️",0],["un gâteau","🎂",0],["une glace","🍦",0],
+  ["un citron","🍋",0],["une fraise","🍓",0],["une carotte","🥕",0],["un nuage","☁️",0],["un arbre","🌳",0],["une fleur","🌸",0],
+  ["un sac","🎒",0],["le soleil","☀️",0],["une girafe","🦒",0],["un cochon","🐷",0],["une grenouille","🐸",0],["un canard","🦆",0]
 ].filter((m,i,a)=>a.findIndex(x=>x[1]===m[1])===i);
+/* Facile : seulement les mots écrits avec les lettres déjà vues */
+const POOL = () => R().niveau==="facile" ? MOTS.filter(m=>m[2]!==0) : MOTS;
 const KEY = "cp-mot-image-v1";
 const R = Reglages.init({ key: KEY, onChange: () => nouvellePartie(), niveaux: {
   facile: "2 mots au choix.", moyen: "3 mots au choix, dont un qui commence pareil.", difficile: "4 mots qui se ressemblent (même début)." } });
@@ -98,13 +110,15 @@ $("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(tru
 
 let jeu;
 function nouvellePartie(){
-  jeu = { liste: shuffle(MOTS.slice()).slice(0,T()), tour: 0, reussis: [], essai: 0 };
+  const pool = POOL(); let liste = shuffle(pool.slice());          // chaque mot une seule fois par série
+  while (liste.length < T()) liste = liste.concat(shuffle(pool.slice()));
+  jeu = { liste: liste.slice(0,T()), tour: 0, reussis: [], essai: 0 };
   tour();
 }
 function choixPour(bon){
   // distracteurs : de préférence un mot qui commence pareil (pile / pipe / pelote…)
   const n = { facile:2, moyen:3, difficile:4 }[R().niveau];
-  const autres = shuffle(MOTS.filter(m => m[1]!==bon[1]));
+  const autres = shuffle(POOL().filter(m => m[1]!==bon[1]));
   const proches = autres.filter(m => nom(m[0])[0]===nom(bon[0])[0]);
   const pris = proches.slice(0, R().niveau==="difficile" ? n-1 : R().niveau==="moyen" ? 1 : 0);
   for (const m of autres) if (pris.length < n-1 && !pris.includes(m)) pris.push(m);
@@ -130,12 +144,13 @@ function tour(){
   $("#bSay").onclick = () => speak([...document.querySelectorAll(".word")].map(b=>plain(b.textContent)).join(". "));
   document.querySelectorAll(".word").forEach(b => b.onclick = () => {
     if (b.dataset.e === bon[1]) {
-      Reglages.stop(); b.classList.add("ok"); buzz(); if (R().son) speak(plain(bon[0]));
+      Reglages.stop(); b.classList.add("ok"); buzz(); Reglages.parler(plain(bon[0]), "succes");
       jeu.reussis[jeu.tour] = jeu.essai === 0; jeu.tour++;
       document.querySelectorAll(".word").forEach(x => x.disabled = true);
       setTimeout(tour, 1100);
     } else {
       jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad");
+      Reglages.parler("Non. Là, c'est écrit : " + plain(b.textContent) + ". Regarde bien l'image, et cherche encore.", "erreur");
     }
   });
 }

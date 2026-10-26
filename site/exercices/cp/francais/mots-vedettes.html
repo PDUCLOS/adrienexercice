@@ -104,7 +104,8 @@ td.w{font-weight:700;font-size:20px;white-space:nowrap}
   </div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 /*
   LISTE DE DÉPART DES MOTS VEDETTES.
@@ -130,6 +131,24 @@ const MOTS_DEPART = [
   { mot:"et",      phrase:"Papa ___ maman.",                     leurres:["est","sur"] }
 ];
 const KEY = "cp-mots-vedettes-v1";
+/* Phrases en plus pour « Comprendre » : plus de variété (les mots ajoutés dans « Mes mots » gardent leur propre phrase) */
+const PHRASES_EN_PLUS = {
+  "bonjour":["___ maman !","Le matin, je dis ___ à papi."],
+  "une":["Il y a ___ pomme sur la table.","Lila a ___ tulipe."],
+  "un":["Léo a ___ ballon.","Il y a ___ chat sur le lit."],
+  "la":["___ lune est ronde.","Léo lit dans ___ chambre."],
+  "le":["___ chat dort.","Papa lave ___ vélo."],
+  "lui":["Léo a faim. Maman donne une pomme à ___.","Ce ballon est à Tom. Il est à ___."],
+  "il":["Le rat est petit. ___ court vite.","Papa est là. ___ lit le journal."],
+  "il y a":["___ un nid dans l'arbre.","Dans la boîte, ___ un os."],
+  "elle":["Maman est là. ___ rit.","La tortue est lente. ___ dort."],
+  "c'est":["Ce pull ? ___ le pull de Léo.","Le gâteau ? ___ pour papi."],
+  "pour":["Ce cadeau est ___ toi.","La tarte est ___ Lila."],
+  "sur":["La tasse est ___ la table.","Le chat dort ___ le lit."],
+  "dans":["Le poisson nage ___ l'eau.","Le stylo est ___ la trousse."],
+  "est":["Le ciel ___ bleu.","Papi ___ dans le jardin."],
+  "et":["Léo ___ Lila jouent.","J'ai un chat ___ un chien."]
+};
 const R = Reglages.init({ key: KEY, onChange: () => setMode(mode), niveaux: {
   facile: "Lire : 3 mots · Écrire : le mot reste affiché, pas de lettre piège · Comprendre : 2 mots au choix.",
   moyen: "Lire : 6 mots · Écrire : le mot se cache après 2,5 s, 2 lettres pièges · Comprendre : 3 mots.",
@@ -153,12 +172,14 @@ function note(mot, ok){ const s=stats[mot]||(stats[mot]={ok:0,ko:0}); ok?s.ok++:
 /* tirage : les mots les moins réussis sortent plus souvent */
 function tirage(liste, n){
   const poids = m => { const s=stats[m.mot]||{ok:0,ko:0}; return 1 + s.ko*2 / (1+s.ok) + (s.ok+s.ko===0?1:0) };
-  const out=[]; let prec=null;
+  // sans remise : chaque mot une seule fois, puis on recommence la liste si la série est plus longue
+  const out=[]; let reste=[];
   for (let i=0;i<n;i++){
-    const cands=liste.filter(m=>m!==prec); const tot=cands.reduce((t,m)=>t+poids(m),0);
-    let r=Math.random()*tot, pick=cands[0];
-    for (const m of cands){ r-=poids(m); if (r<=0){ pick=m; break } }
-    out.push(pick); prec=pick;
+    if (!reste.length) reste=liste.filter(m=>m!==out[out.length-1]);
+    const tot=reste.reduce((t,m)=>t+poids(m),0);
+    let r=Math.random()*tot, pick=reste[0];
+    for (const m of reste){ r-=poids(m); if (r<=0){ pick=m; break } }
+    out.push(pick); reste=reste.filter(m=>m!==pick);
   }
   return out;
 }
@@ -181,9 +202,9 @@ function fin(){
     '<p class="hint">Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
   $("#bAgain").onclick=()=>setMode(mode);
 }
-function marquer(btns, b, bon, onOk){
+function marquer(btns, b, bon, onOk, aide){
   if (bon){ b.classList.add("ok"); buzz(); btns.forEach(x=>x.disabled=true); onOk(); suivant(jeu.essai===0) }
-  else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+  else { jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); if (aide) Reglages.parler(aide(b), "erreur") }
 }
 
 const ACT = {
@@ -196,7 +217,7 @@ const ACT = {
       '<div class="cards">'+shuffle([m,...autres]).map(x=>'<button class="card" data-w="'+esc(x.mot)+'">'+esc(x.mot)+'</button>').join("")+'</div>';
     $("#bSay").onclick=()=>speak(m.mot); setTimeout(()=>speak(m.mot),300);
     const btns=[...document.querySelectorAll(".card")];
-    btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===m.mot,()=>{}));
+    btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===m.mot,()=>{}, x=>"Non, ce mot-là, c'est : "+x.dataset.w+". Écoute encore : "+m.mot+"."));
     Reglages.chrono(()=>{ btns.forEach(x=>{ x.disabled=true; if(x.dataset.w===m.mot) x.classList.add("ok") }); suivant(false) });
   },
   /* ÉCRIRE : on montre le mot, on le cache, l'enfant le reconstruit avec les lettres */
@@ -225,15 +246,18 @@ const ACT = {
     Reglages.chrono(()=>{ $("#model").classList.remove("hide"); document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(false) });
     document.querySelectorAll(".tile").forEach(t=>t.onclick=()=>{
       cacher(); const i=+t.dataset.i; if (tape.length>=lettres.length) return;
-      if (tuiles[i]!==lettres[tape.length]) { jeu.essai++; const s=$("#slot"); s.classList.remove("bad"); void s.offsetWidth; s.classList.add("bad"); return }
+      if (tuiles[i]!==lettres[tape.length]) { jeu.essai++; const s=$("#slot"); s.classList.remove("bad"); void s.offsetWidth; s.classList.add("bad");
+        Reglages.parler("Non, pas "+tuiles[i]+". Dans "+m.mot+", la lettre d'après est "+lettres[tape.length]+".", "erreur"); return }
       buzz(); tape.push(i); t.classList.add("used"); draw();
-      if (tape.length===lettres.length){ $("#slot").classList.add("ok"); if (R().son) speak(m.mot); document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(jeu.essai===0) }
+      if (tape.length===lettres.length){ $("#slot").classList.add("ok"); Reglages.parler(m.mot, "succes"); document.querySelectorAll(".tile").forEach(x=>x.disabled=true); suivant(jeu.essai===0) }
     });
   },
   /* COMPRENDRE : une phrase à trou, on choisit le bon mot vedette */
   comprendre(){
     const avec=mots.filter(x=>x.phrase&&x.phrase.includes("___"));
-    const m=jeu.liste[jeu.tour]; jeu.essai=0;
+    const m0=jeu.liste[jeu.tour]; jeu.essai=0;
+    const phrases=[m0.phrase, ...(PHRASES_EN_PLUS[m0.mot.toLowerCase()]||[])].filter(p=>p&&p.includes("___"));
+    const m={...m0, phrase: phrases[Math.floor(Math.random()*phrases.length)]};
     const debut=/(^|[.!?])\s*$/.test(m.phrase.split("___")[0]);   // le trou commence une phrase → majuscule
     const forme=w=>debut?cap(w):w;
     const nl=NIV().choix-1;
@@ -246,7 +270,8 @@ const ACT = {
       '<div class="tools"><button class="pill" id="bSay">🔊 Lire la phrase</button></div>';
     $("#bSay").onclick=()=>speak(m.phrase.replace("___","hmm"));
     const btns=[...document.querySelectorAll(".card")];
-    btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===forme(m.mot),()=>{ const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); if (R().son) speak(m.phrase.replace("___",m.mot)) }));
+    btns.forEach(b=>b.onclick=()=>marquer(btns,b,b.dataset.w===forme(m.mot),()=>{ const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); Reglages.parler(m.phrase.replace("___",m.mot), "succes") },
+      x=>"Non. "+m.phrase.replace("___",x.dataset.w)+" Ça ne va pas. Relis la phrase et cherche encore."));
     Reglages.chrono(()=>{ jeu.essai=1; const t=$("#trou"); t.textContent=forme(m.mot); t.classList.add("ok"); btns.forEach(x=>{ x.disabled=true; if(x.dataset.w===forme(m.mot)) x.classList.add("ok") }); suivant(false) });
   },
   /* MES MOTS : ajouter / retirer des mots, voir où en est l'enfant */

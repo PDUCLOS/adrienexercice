@@ -4,7 +4,7 @@
     const R = Reglages.init({ key:"cp-mon-jeu-v1", niveaux:{ facile:"…", moyen:"…", difficile:"…" }, onChange: nouvellePartie });
     R().niveau     → "facile" | "moyen" | "difficile"
     R().questions  → 5 | 10 | 15 | 20
-    R().son        → true | false (lecture automatique)
+    R().son        → "erreur" | "toujours" | "jamais"  (voir Reglages.parler)
     Reglages.chrono(quandFini)  → lance le chrono de la question (rien si « Pas de chrono »)
     Reglages.stop()             → arrête le chrono (bonne réponse)
   Option champs:["niveau","son"] pour n'afficher que certains réglages.
@@ -15,9 +15,9 @@
     niveau:    { titre:"Niveau", choix:[["facile","🙂 Facile"],["moyen","😃 Moyen"],["difficile","🔥 Difficile"]] },
     questions: { titre:"Nombre de questions", choix:[[5,"5"],[10,"10"],[15,"15"],[20,"20"]] },
     chrono:    { titre:"Temps pour répondre", choix:[[0,"Pas de chrono"],[20,"20 s"],[10,"10 s"],[6,"6 s"]] },
-    son:       { titre:"Lecture à voix haute", choix:[[true,"🔊 Oui"],[false,"🔇 Non"]] }
+    son:       { titre:"Voix de la tablette", choix:[["erreur","🔊 Seulement si erreur"],["toujours","🔊 Toujours"],["jamais","🔇 Jamais"]] }
   };
-  const DEFAUT = { niveau:"moyen", questions:10, chrono:0, son:true };
+  const DEFAUT = { niveau:"moyen", questions:10, chrono:0, son:"erreur" };
   let key, etat, niveaux, onChange, champs = null, timer = null;
 
   const css = `
@@ -39,7 +39,11 @@
   .rg-bar i{display:block;height:100%;width:100%;background:#2f9e44;transform-origin:left;transition:background .3s}
   .rg-bar i.warn{background:#f59f00}.rg-bar i.late{background:#e03131}`;
 
-  function charger(){ try { return Object.assign({}, DEFAUT, JSON.parse(localStorage.getItem(key)) || {}) } catch(e) { return { ...DEFAUT } } }
+  function charger(){
+    let e; try { e = Object.assign({}, DEFAUT, JSON.parse(localStorage.getItem(key)) || {}) } catch(x) { e = { ...DEFAUT } }
+    if (e.son === true) e.son = "erreur"; if (e.son === false) e.son = "jamais";   // anciens réglages oui / non
+    return e;
+  }
   function sauver(){ try { localStorage.setItem(key, JSON.stringify(etat)) } catch(e) {} }
   const nomNiveau = () => OPTIONS.niveau.choix.find(c => c[0]===etat.niveau)[1];
 
@@ -126,5 +130,22 @@
     return () => etat;
   }
   document.addEventListener("visibilitychange", () => { if (document.hidden) stop() });
-  window.Reglages = { init, chrono, stop };
+  /* Voix : la consigne est toujours dite ; une bonne réponse seulement si « Toujours » ;
+     une erreur sauf si « Jamais » (c'est là que la voix aide l'enfant seul). */
+  function parler(texte, quand){
+    const s = etat ? etat.son : "erreur";
+    if (s === "jamais" && quand !== "consigne") return;
+    if (quand === "succes" && s !== "toujours") return;
+    try { const u = new SpeechSynthesisUtterance(texte); u.lang = "fr-FR"; u.rate = .8; speechSynthesis.cancel(); speechSynthesis.speak(u) } catch(x) {}
+  }
+  /* Pas deux fois la même question dans une série : const neuf = Reglages.sansDoublon(); neuf(() => question(), q => q.cle) */
+  function sansDoublon(){
+    const vus = new Set();
+    return (gen, cle = x => JSON.stringify(x)) => {
+      let x, k, n = 0;
+      do { x = gen(); k = cle(x); n++ } while (vus.has(k) && n < 400);
+      vus.add(k); return x;
+    };
+  }
+  window.Reglages = { init, chrono, stop, parler, sansDoublon };
 })();

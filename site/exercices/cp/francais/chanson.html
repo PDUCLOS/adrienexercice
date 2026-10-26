@@ -79,7 +79,8 @@ body.cursive .vers,body.cursive .card,body.cursive .paroles{font-family:"Playwri
   </div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 /*
   Paroles sur l'air de « Frère Jacques ». Les mots vedettes sont entre *étoiles*.
@@ -139,8 +140,8 @@ function tour(){
   const montrer = () => { const t=$("#trou"); t.textContent=[...q.ligne.matchAll(/\*(.+?)\*/g)][q.k][1]; t.classList.add("ok"); btns.forEach(x=>{ x.disabled=true; if(x.dataset.w===q.mot) x.classList.add("ok") }) };
   Reglages.chrono(()=>{ montrer(); jeu.res[jeu.tour]=false; jeu.tour++; setTimeout(tour,1600) });
   btns.forEach(b=>b.onclick=()=>{
-    if (b.dataset.w===q.mot){ Reglages.stop(); buzz(); montrer(); if (R().son) speak(texte(q.ligne)); jeu.res[jeu.tour]=essai===0; jeu.tour++; setTimeout(tour,1500) }
-    else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); speak(b.dataset.w) }
+    if (b.dataset.w===q.mot){ Reglages.stop(); buzz(); montrer(); Reglages.parler(texte(q.ligne),"succes"); jeu.res[jeu.tour]=essai===0; jeu.tour++; setTimeout(tour,1500) }
+    else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); Reglages.parler("Non, ça, c'est : "+b.dataset.w+". Écoute encore : "+texte(q.ligne),"erreur") }
   });
 }
 function fin(){

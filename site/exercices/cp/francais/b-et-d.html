@@ -90,7 +90,8 @@ video{width:min(100%,420px);border-radius:20px;transform:scaleX(-1);background:#
   <h1>🔵🟠 b et d pas à pas</h1>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 /* Mots illustrés. s = son du début : "b", "d" ou "" (ni l'un ni l'autre). c = catégorie pour les devinettes. */
 const MOTS = [
@@ -99,7 +100,15 @@ const MOTS = [
   ["dé","🎲","d","objet"],["dent","🦷","d","corps"],["douche","🚿","d","objet"],["dinosaure","🦕","d","animal"],["dauphin","🐬","d","animal"],
   ["dragon","🐉","d","animal"],["dix","🔟","d","nombre"],["donut","🍩","d","à manger"],["dindon","🦃","d","animal"],["drapeau","🚩","d","objet"],
   ["chat","🐱","","animal"],["pomme","🍎","","à manger"],["lune","🌙","","objet"],["tortue","🐢","","animal"],["maison","🏠","","objet"],
-  ["fleur","🌸","","objet"],["poisson","🐟","","animal"],["soleil","☀️","","objet"],["vache","🐄","","animal"],["fraise","🍓","","à manger"]
+  ["fleur","🌸","","objet"],["poisson","🐟","","animal"],["soleil","☀️","","objet"],["vache","🐄","","animal"],["fraise","🍓","","à manger"],
+  /* en plus */
+  ["bague","💍","b","objet"],["balai","🧹","b","objet"],["bouteille","🍾","b","objet"],["bras","💪","b","corps"],["bouche","👄","b","corps"],
+  ["bœuf","🐂","b","animal"],["biche","🦌","b","animal"],["brosse","🪥","b","objet"],["bonnet","🧢","b","objet"],["beurre","🧈","b","à manger"],
+  ["diamant","💎","d","objet"],["doigt","☝️","d","corps"],["danseuse","💃","d","personne"],["dromadaire","🐪","d","animal"],
+  ["dessert","🍮","d","à manger"],
+  ["lapin","🐰","","animal"],["singe","🐒","","animal"],["lion","🦁","","animal"],["girafe","🦒","","animal"],["nuage","☁️","","objet"],
+  ["robot","🤖","","objet"],["sapin","🎄","","objet"],["tomate","🍅","","à manger"],["cerise","🍒","","à manger"],["fusée","🚀","","objet"],
+  ["montre","⌚","","objet"],["chaussure","👟","","objet"],["pizza","🍕","","à manger"],["renard","🦊","","animal"],["mouton","🐑","","animal"]
 ];
 const SON = { b:"beu", d:"deu" };
 const KEY = "cp-b-et-d-v1";
@@ -140,7 +149,7 @@ function brancherRetour(){ $("#bRetour").onclick=accueil }
 let jeu;
 function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
 function serie(id, titre, poser){
-  jeu={ id, titre, tour:0, res:[], poser };
+  jeu={ id, titre, tour:0, res:[], poser, neuf:Reglages.sansDoublon() };
   const next=()=>{
     if (jeu.tour>=T()) return finSerie();
     $("#main").innerHTML = haut(titre) + etoiles() + '<div id="zone" style="display:contents"></div>'; brancherRetour();
@@ -157,14 +166,14 @@ function finSerie(){
   $("#bP").onclick=accueil; $("#bA").onclick=()=>ouvrir(jeu.id);
 }
 /* question à 2 ou 3 boutons : bonne = data-v attendu */
-function question(html, boutons, bon, dire, apres){
+function question(html, boutons, bon, dire, apres, aide){
   let essai=0;
   $("#zone").innerHTML = html + boutons + '<div class="tools"><button class="pill" id="bRe">🔊 Réécouter</button></div>';
   $("#bRe").onclick=dire; setTimeout(dire,300);
   const btns=[...document.querySelectorAll("#zone [data-v]")];
   const montrer=()=>btns.forEach(x=>{ x.disabled=true; if(x.dataset.v===bon) x.classList.add("ok") });
   Reglages.chrono(()=>{ montrer(); apres(false) });
-  btns.forEach(b=>b.onclick=()=>{ if(b.dataset.v===bon){ buzz(); montrer(); apres(essai===0) } else { essai++; rater(b) } });
+  btns.forEach(b=>b.onclick=()=>{ if(b.dataset.v===bon){ buzz(); montrer(); apres(essai===0) } else { essai++; rater(b); if (aide) Reglages.parler(aide(b.dataset.v),"erreur") } });
 }
 
 const ACT = {
@@ -172,10 +181,11 @@ const ACT = {
   entendre(son){
     const avec = MOTS.filter(m=>m[2]===son), sans = MOTS.filter(m=>m[2]==="");
     serie(son, 'J\'entends « <span class="c'+son+'">'+son+'</span> » ?', fini=>{
-      const m = Math.random()<.5 ? pick(avec) : pick(sans);
+      const m = jeu.neuf(() => Math.random()<.5 ? pick(avec) : pick(sans), x => x[0]);
       question('<p class="consigne">Écoute le mot. Est-ce qu\'il commence par <b class="c'+son+'">'+SON[son]+'</b> ?</p><div class="carte"><div class="pic">'+m[1]+'</div></div>',
         '<div class="duo"><button data-v="1">👍 Oui</button><button data-v="0">✋ Non</button></div>',
-        m[2]===son?"1":"0", ()=>speak(m[0]), ok=>{ if(R().son) speak(m[0]+(m[2]===son?" : "+SON[son]+", oui !":", non.")); fini(ok) });
+        m[2]===son?"1":"0", ()=>speak(m[0]), ok=>{ Reglages.parler(m[0]+(m[2]===son?" : "+SON[son]+", oui !":", non."),"succes"); fini(ok) },
+        ()=>"Écoute bien : "+m[0]+". "+(m[2]===son?"On entend "+SON[son]+" au début.":"Au début, on n'entend pas "+SON[son]+"."));
     });
   },
   /* 3 : la bouche — b = les lèvres se ferment puis s'ouvrent ; d = la langue touche derrière les dents du haut */
@@ -194,10 +204,11 @@ const ACT = {
     };
     $("#bJeu").onclick=()=>{ if(window._flux){ window._flux.getTracks().forEach(t=>t.stop()); window._flux=null }
       serie("bouche","Lèvres ou langue ?", fini=>{
-        const m = pick(MOTS.filter(x=>x[2])), son=m[2], seul=Math.random()<.4;
+        const m = jeu.neuf(() => pick(MOTS.filter(x=>x[2])), x => x[0]), son=m[2], seul=Math.random()<.4;
         question('<p class="consigne">Écoute. Pour faire le premier son, on utilise…</p><div class="carte"><div class="pic">'+(seul?"🔊":m[1])+'</div></div>',
           '<div class="duo"><button class="pot b" data-v="b"><span class="e">👄</span>les lèvres</button><button class="pot d" data-v="d"><span class="e">👅</span>la langue</button></div>',
-          son, ()=>speak(seul?SON[son]:m[0]), ok=>{ if(R().son) speak((seul?SON[son]:m[0])+" : "+(son==="b"?"les lèvres":"la langue")); fini(ok) });
+          son, ()=>speak(seul?SON[son]:m[0]), ok=>{ Reglages.parler((seul?SON[son]:m[0])+" : "+(son==="b"?"les lèvres":"la langue"),"succes"); fini(ok) },
+          ()=>"Non. Pour "+SON[son]+", "+(son==="b"?"les lèvres se ferment, puis s'ouvrent.":"la langue tape derrière les dents du haut.")+" Essaie dans ta bouche.");
       });
     };
   },
@@ -205,21 +216,23 @@ const ACT = {
   devine(){
     serie("devine","Devinettes", fini=>{
       const son=pick(["b","d"]), autre=son==="b"?"d":"b";
-      const bon=pick(MOTS.filter(m=>m[2]===son)), c=bon[3];
+      const bon=jeu.neuf(() => pick(MOTS.filter(m=>m[2]===son)), x => x[0]), c=bon[3];
       const leurre1=pick(MOTS.filter(m=>m[2]===autre)), leurre2=pick(MOTS.filter(m=>m[2]===""&&m[0]!==bon[0]));
       const phrase="Je pense à "+({"objet":"un objet","à manger":"quelque chose qui se mange","animal":"un animal","personne":"quelqu'un","corps":"une partie du corps","nombre":"un nombre"}[c])+" qui commence par "+SON[son];
       question('<p class="consigne">🧩 '+phrase+'. Qu\'est-ce que c\'est ?</p>',
         '<div class="trio">'+shuffle([bon,leurre1,leurre2]).map(m=>'<button data-v="'+m[0]+'"><span class="e">'+m[1]+'</span></button>').join("")+'</div>',
-        bon[0], ()=>speak(phrase), ok=>{ if(R().son) speak(bon[0]+" ! "+SON[son]); fini(ok) });
+        bon[0], ()=>speak(phrase), ok=>{ Reglages.parler(bon[0]+" ! "+SON[son],"succes"); fini(ok) },
+        v=>"Non, "+v+" commence par "+(MOTS.find(x=>x[0]===v)[2]?SON[MOTS.find(x=>x[0]===v)[2]]:"un autre son")+". On cherche "+SON[son]+".");
     });
   },
   /* 5 : tri — on entend le mot, on le range dans le pot b ou le pot d */
   tri(){
     serie("tri","Trier dans les pots", fini=>{
-      const m=pick(MOTS.filter(x=>x[2]));
+      const m=jeu.neuf(() => pick(MOTS.filter(x=>x[2])), x => x[0]);
       question('<p class="consigne">Écoute le mot et range-le dans le bon pot</p><div class="carte"><div class="pic">'+m[1]+'</div></div>',
         '<div class="duo"><button class="pot b" data-v="b"><span class="l">b</span>⚽ ballon</button><button class="pot d" data-v="d"><span class="l">d</span>🎲 dé</button></div>',
-        m[2], ()=>speak(m[0]), ok=>{ if(R().son) speak(m[0]+", "+SON[m[2]]); fini(ok) });
+        m[2], ()=>speak(m[0]), ok=>{ Reglages.parler(m[0]+", "+SON[m[2]],"succes"); fini(ok) },
+        ()=>"Non. Écoute le début : "+m[0]+". On entend "+SON[m[2]]+". C'est le pot "+m[2]+".");
     });
   },
   /* 6 : memory des lettres qui se ressemblent */
@@ -285,7 +298,7 @@ const ACT = {
         const CW=c1.width, u=g1.getImageData(0,0,CW,c1.height).data; let couverts=0;
         for(const [x,y] of pts){ const i=(Math.min(c1.height-1,Math.round(y*dpr))*CW+Math.min(CW-1,Math.round(x*dpr)))*4+3; if(u[i]>0) couverts++ }
         const taux=couverts/pts.length;
-        if (taux>=.6){ reussis.add(lettre+(cursive?" (cursive)":"")); buzz(); speak("Bravo ! "+SON[lettre]);
+        if (taux>=.6){ reussis.add(lettre+(cursive?" (cursive)":"")); buzz(); Reglages.parler("Bravo ! "+SON[lettre],"succes");
           if ([...reussis].some(x=>x[0]==="b") && [...reussis].some(x=>x[0]==="d")){ faits.tracer=1; lsSet(KEY+"-faits",JSON.stringify(faits)) }
           $("#msg").textContent="Bravo ! ✓ Réussies : "+[...reussis].join(", ")+(faits.tracer?" · étape cochée":" · fais aussi l'autre lettre"); }
         else $("#msg").textContent="Suis bien toute la lettre pâle ("+Math.round(taux*100)+" %). Efface et recommence.";

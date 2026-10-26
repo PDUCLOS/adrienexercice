@@ -99,8 +99,9 @@ body.syl .w .s1{color:var(--s1)} body.syl .w .s2{color:var(--s2)}
   </div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
-<script src="histoires-data.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script src="histoires-data.js?v=4"></script>
 <script>
 const HISTOIRES = window.HISTOIRES;   /* les histoires sont dans histoires-data.js */
 const NIVEAUX = { facile:["🙂 Facile","--f"], moyen:["😃 Moyen","--m"], difficile:["🔥 Difficile","--d"] };
@@ -206,10 +207,10 @@ function questions(h){
       '<div class="reps">'+shuffle(q.r.slice()).map(r=>'<button class="rep" data-r="'+r+'">'+r+'</button>').join("")+'</div></div>';
     $("#bBack").onclick=()=>lire(h);
     $("#bSay").onclick=()=>speak(q.q+" "+q.r.join(", "));
-    if (R().son) speak(q.q);
+    Reglages.parler(q.q,"consigne");
     document.querySelectorAll(".rep").forEach(b=>b.onclick=()=>{
       if (b.dataset.r===bon){ b.classList.add("ok"); buzz(); if(essai===0) bons++; document.querySelectorAll(".rep").forEach(x=>x.disabled=true); n++; setTimeout(show,1100) }
-      else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+      else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); Reglages.parler("Non, ce n'est pas : "+b.dataset.r+". Relis bien l'histoire, la réponse est dedans.","erreur") }
     });
   };
   show();

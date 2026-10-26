@@ -77,7 +77,8 @@ body.cursive .cible{font-size:clamp(56px,11vh,104px)}
   </div>
 </header>
 <main id="main"></main>
-<script src="../../../assets/reglages.js?v=3"></script>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
 <script>
 /* Lettres déjà vues sur les fiches de CP (septembre–octobre). Ajouter une lettre ici quand une nouvelle fiche arrive. */
 const CONSONNES = ["p","l","t","r","s","n"];
@@ -112,16 +113,17 @@ function slotHtml(lettres, n){
 
 /* ----- Défi : lire la syllabe écrite, puis la fabriquer avec les lettres ----- */
 let defi;
-function nouvelleSyllabe(prec){
+function nouvelleSyllabe(){ return defi.neuf(syllabeAuHasard) }   // jamais deux fois la même dans une série
+function syllabeAuHasard(){
   let s; const niv=R().niveau;
-  do { const c=pick(CONSONNES), v=pick(VOYELLES);
+  { const c=pick(CONSONNES), v=pick(VOYELLES);
        if (niv==="facile") s = c+v;
        else if (niv==="moyen") s = Math.random()<.6 ? c+v : v+c;   // « pa » et « ap », comme sur les fiches
        else s = c + pick(["a","i","o","u"]) + pick(["l","r","p"]); // nar, pil, sol… (finale qui s'entend, pas de t/s muet)
-  } while (s===prec);
+  }
   return s;
 }
-function startDefi(){ defi={tour:0,reussis:0,erreur:false,cible:nouvelleSyllabe(),tape:[]}; renderDefi() }
+function startDefi(){ defi={tour:0,reussis:0,erreur:false,tape:[],neuf:Reglages.sansDoublon()}; defi.cible=nouvelleSyllabe(); renderDefi() }
 function renderDefi(){
   if (defi.tour>=T()) return finDefi();
   const L=[...defi.cible].length;
@@ -135,7 +137,7 @@ function renderDefi(){
   $("#bClear").onclick=()=>{ defi.tape=[]; $("#slot").innerHTML=slotHtml(defi.tape,L) };
   if (R().niveau==="difficile") setTimeout(()=>{ const c=document.querySelector(".cible"); if(c) c.style.visibility="hidden" },3000);
   Reglages.chrono(()=>{ defi.erreur=true; document.querySelector(".cible").style.visibility="visible";
-    setTimeout(()=>{ defi.tour++; defi.erreur=false; defi.tape=[]; defi.cible=nouvelleSyllabe(defi.cible); renderDefi() },1500) });
+    setTimeout(()=>{ defi.tour++; defi.erreur=false; defi.tape=[]; defi.cible=nouvelleSyllabe(); renderDefi() },1500) });
   document.querySelectorAll(".key").forEach(k=>k.onclick=()=>tapeDefi(k.dataset.l));
 }
 function tapeDefi(l){
@@ -146,11 +148,13 @@ function tapeDefi(l){
   const fait=defi.tape.join("");
   if (!defi.cible.startsWith(fait)) {
     defi.erreur=true; slot.classList.remove("bad"); void slot.offsetWidth; slot.classList.add("bad");
+    const attendu=[...defi.cible][defi.tape.length-1];
+    Reglages.parler("Non, ce n'est pas "+l+". Dans "+defi.cible+", la lettre suivante est "+attendu+". Recommence.", "erreur");
     setTimeout(()=>{ defi.tape=[]; slot.innerHTML=slotHtml(defi.tape,L) },500);
   } else if (fait===defi.cible) {
-    Reglages.stop(); slot.classList.add("ok"); if (R().son) speak(defi.cible);
+    Reglages.stop(); slot.classList.add("ok"); Reglages.parler(defi.cible, "succes");
     if (!defi.erreur) defi.reussis++;
-    setTimeout(()=>{ defi.tour++; defi.erreur=false; defi.tape=[]; defi.cible=nouvelleSyllabe(defi.cible); renderDefi() },1000);
+    setTimeout(()=>{ defi.tour++; defi.erreur=false; defi.tape=[]; defi.cible=nouvelleSyllabe(); renderDefi() },1000);
   }
 }
 function finDefi(){
