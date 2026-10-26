@@ -129,6 +129,13 @@
     bouton(); surveiller();
     return () => etat;
   }
+  /* Prononciation : la voix lit « é » tout seul « e accent aigu ». On le remplace par « et » (même son [é]).
+     Branché sur toute la page : vaut pour tous les jeux, quelle que soit la façon dont ils font parler la tablette. */
+  const prononcer = t => String(t).replace(/(^|[\s,.;:!?«»"'’()\-])[éÉ](?=$|[\s,.;:!?«»"'’()\-])/g, "$1et");
+  try {
+    const parlerOrig = speechSynthesis.speak.bind(speechSynthesis);
+    speechSynthesis.speak = u => { try { u.text = prononcer(u.text) } catch(x) {} parlerOrig(u) };
+  } catch(x) {}
   document.addEventListener("visibilitychange", () => { if (document.hidden) stop() });
   /* Voix : la consigne est toujours dite ; une bonne réponse seulement si « Toujours » ;
      une erreur sauf si « Jamais » (c'est là que la voix aide l'enfant seul). */
