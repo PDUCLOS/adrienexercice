@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Les maisons des nombres · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Maisons des nombres : le toit = le nombre, les deux pièces = ses deux morceaux (7 = 3 + 4) */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --a:#1c7ed6; --b:#e8590c; --toit:#e03131; --toit-ink:#ffffff; --mur:#fff4e6;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#2f9e44; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --a:#4dabf7; --b:#ff922b; --toit:#c92a2a; --toit-ink:#ffffff; --mur:#2f2a24;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#37b24d;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  display:flex;flex-direction:column;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--a);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit;min-height:48px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2vh,20px);padding-top:8px;width:min(100%,1180px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(18px,3.2vw,28px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.zone{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2.4vh,24px);width:100%}
+@media (orientation:landscape){ .zone{flex-direction:row;justify-content:center;gap:clamp(20px,4vw,56px)} }
+@media (orientation:portrait){ .maison{width:clamp(280px,52vw,440px)} }
+.gauche{display:flex;flex-direction:column;align-items:center;gap:clamp(6px,1.6vh,14px)}
+/* la maison */
+.maison{width:clamp(250px,34vw,400px);display:flex;flex-direction:column;align-items:stretch;filter:drop-shadow(0 2px 6px rgba(0,0,0,.12))}
+.toit{height:clamp(80px,15vh,130px);background:var(--toit);clip-path:polygon(50% 0,100% 100%,0 100%);display:flex;align-items:flex-end;justify-content:center;
+  color:var(--toit-ink);font-size:clamp(40px,8vh,68px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1;padding-bottom:4px}
+.etage{display:grid;grid-template-columns:1fr 1fr;background:var(--mur);border:5px solid var(--toit);border-top:0;border-radius:0 0 14px 14px}
+.piece{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:clamp(6px,1.4vh,14px) 4px;min-height:clamp(80px,15vh,130px);
+  font-size:clamp(44px,9vh,80px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1}
+.piece+.piece{border-left:5px solid var(--toit)}
+.piece.pa{color:var(--a)}.piece.pb{color:var(--b)}
+.piece .q{color:var(--muted);border-bottom:6px solid var(--line);min-width:1.2em;text-align:center}
+.piece.trouve .q{color:var(--ok-ink);border-color:var(--ok-ink)}
+.pts{display:flex;flex-wrap:wrap;justify-content:center;gap:5px;max-width:150px}
+.pts i{width:clamp(16px,3vh,24px);height:clamp(16px,3vh,24px);border-radius:50%;display:block}
+.pts i.a{background:var(--a)}.pts i.b{background:var(--b)}.pts i.v{border:3px dashed var(--muted)}
+.egal{font-size:clamp(36px,7vh,62px);font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1;white-space:nowrap}
+.egal .q{display:inline-block;min-width:1.2em;text-align:center;color:var(--muted);border-bottom:6px solid var(--line)}
+.egal.ok .q{color:var(--ok-ink);border-color:var(--ok-ink)}
+/* le pavé de nombres */
+.pad{display:grid;gap:clamp(6px,1.2vw,12px);width:min(100%,640px)}
+.pad.c6{grid-template-columns:repeat(6,minmax(0,1fr))}.pad.c7{grid-template-columns:repeat(7,minmax(0,1fr))}
+.num{background:var(--panel);border:3px solid var(--line);border-radius:18px;min-height:clamp(70px,10.5vh,90px);font-size:clamp(30px,5vh,46px);font-weight:700;box-shadow:var(--shadow);font-variant-numeric:tabular-nums}
+.num.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.num.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+.num:disabled{cursor:default}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.msg{font-size:clamp(18px,2.6vh,24px);text-align:center;min-height:1.4em;margin:0;font-weight:700}
+.msg.err{color:var(--err-ink)}.msg b{color:var(--ok-ink);font-variant-numeric:tabular-nums}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.end .big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🏠 Les maisons des nombres</h1>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script>
+/* GEN-DEBUT : fonctions pures (testées hors page) */
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+/* Pavé : 0 à 10, ou 0 à 20 en difficile */
+const padMax = niv => niv==="difficile" ? 20 : 10;
+const padNombres = niv => Array.from({length:padMax(niv)+1},(_,i)=>i);
+/* formes : "a?" = a + ? = T · "?b" = ? + b = T · "Ta?" = T = a + ? · "T?b" = T = ? + b */
+function genere(niv){
+  let T, a, forme;
+  if (niv==="facile"){
+    T = rnd(2,5); a = Math.random()<.85 ? rnd(1,T-1) : (Math.random()<.5 ? 0 : T);
+    forme = Math.random()<.5 ? "a?" : "?b";
+  } else if (niv==="moyen"){
+    T = Math.random()<.35 ? 10 : rnd(3,9);                   // souvent : compléments à 10
+    a = Math.random()<.9 ? rnd(1,T-1) : (Math.random()<.5 ? 0 : T);
+    forme = Math.random()<.5 ? "a?" : "?b";
+  } else {
+    T = Math.random()<.8 ? rnd(11,20) : rnd(6,10);
+    a = (T>10 && Math.random()<.3) ? 10 : rnd(1,T-1);        // « 10 + ? = 14 »
+    forme = ["a?","?b","Ta?","T?b"][rnd(0,3)];
+  }
+  const b = T - a, trouA = forme.includes("?b");
+  const rep = trouA ? a : b;
+  const A = trouA ? "?" : String(a), B = trouA ? String(b) : "?";
+  const eq = forme[0]==="T" ? [String(T),"=",A,"+",B] : [A,"+",B,"=",String(T)];
+  const complet = forme[0]==="T" ? T+" = "+a+" + "+b : a+" + "+b+" = "+T;
+  let dire = forme[0]==="T" ? "Non. "+T+", c'est "+a+" plus "+b+"." : "Non. "+a+" plus "+b+", ça fait "+T+".";
+  if (niv==="facile") dire += " Compte les points vides.";
+  else if (T===10) dire += " Pour aller à 10, il faut "+(trouA?a:b)+".";
+  const succes = forme[0]==="T" ? T+" égale "+a+" plus "+b : a+" plus "+b+" égale "+T;
+  const consigne = forme[0]==="T" ? T+" égale "+(trouA?"combien plus "+b:a+" plus combien") : (trouA?"combien plus "+b:a+" plus combien")+" égale "+T;
+  return { T, a, b, forme, trouA, rep, eq, complet, dire, succes, consigne, choix: padNombres(niv) };
+}
+const cle = q => q.T+"|"+q.a+"|"+q.forme;
+/* une série sans doublon, et pas deux fois de suite la même réponse */
+function serie(niv, n, neuf){
+  const liste = []; let prec = null;
+  for (let i=0;i<n;i++){
+    const q = neuf(() => { let x, k=0; do { x = genere(niv) } while (x.rep===prec && ++k<30); return x }, cle);
+    prec = q.rep; liste.push(q);
+  }
+  return liste;
+}
+/* GEN-FIN */
+
+const KEY = "cp-maisons-v1";
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Toit jusqu'à 5, avec des points pour aider : 3 + ? = 5.",
+  moyen: "Toit jusqu'à 10, sans aide, avec les compléments à 10 : 7 + ? = 10.",
+  difficile: "Toit jusqu'à 20 et égalités à trou dans les deux sens : 8 + ? = 15, 10 = 7 + ?." } });
+const T = () => R().questions;
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+let jeu = null, numSerie = 0;
+/* minuterie liée à la série en cours (ignorée si on a changé de partie) */
+function plusTard(fn, ms){ const id = jeu.id; setTimeout(() => { if (jeu && jeu.id===id) fn() }, ms) }
+function etoiles(){
+  return '<div class="stars">' + Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
+}
+function partie(){
+  Reglages.stop();
+  const niv = R().niveau;
+  jeu = { id: ++numSerie, niv, tour:0, res:[], liste: serie(niv, T(), Reglages.sansDoublon()) };
+  tour();
+}
+const pts = (n, c) => '<div class="pts" aria-hidden="true">' + ('<i class="'+c+'"></i>').repeat(n) + '</div>';
+function piece(q, cote, rempli){
+  const val = cote==="a" ? q.a : q.b, trou = (cote==="a") === q.trouA;
+  const txt = trou ? '<span class="q">'+(rempli?val:"?")+'</span>' : val;
+  const aide = jeu.niv==="facile" ? pts(val, trou ? "v" : cote) : "";
+  return '<div class="piece p'+cote+(trou&&rempli?" trouve":"")+'">'+txt+aide+'</div>';
+}
+function dessiner(q, rempli){
+  $("#etage").innerHTML = piece(q,"a",rempli) + piece(q,"b",rempli);
+  $("#egal").innerHTML = q.eq.map(t => t==="?" ? '<span class="q">'+(rempli?q.rep:"?")+'</span>' : t).join(" ");
+  $("#egal").classList.toggle("ok", rempli);
+}
+function tour(){
+  if (jeu.tour>=T()) return fin();
+  const q = jeu.liste[jeu.tour], niv = jeu.niv; let fini = false;
+  $("#main").innerHTML = etoiles() +
+    '<div class="zone"><div class="gauche">' +
+      '<div class="maison" role="img" aria-label="Maison du '+q.T+'"><div class="toit">'+q.T+'</div><div class="etage" id="etage"></div></div>' +
+      '<div class="egal" id="egal"></div></div>' +
+    '<div class="pad '+(padMax(niv)>10?"c7":"c6")+'">' + q.choix.map(n=>'<button class="num" data-n="'+n+'">'+n+'</button>').join("") + '</div></div>' +
+    '<p class="msg" id="msg" aria-live="polite"></p>' +
+    '<div class="tools"><button class="pill" id="bSay">🔊 Écouter</button></div>';
+  dessiner(q, false);
+  $("#bSay").onclick = () => Reglages.parler(q.consigne, "consigne");
+  const btns = [...document.querySelectorAll(".num")];
+  const bonBtn = () => btns.find(b => +b.dataset.n===q.rep);
+  const finir = ok => {
+    if (fini) return; fini = true; Reglages.stop();
+    btns.forEach(b => b.disabled = true); dessiner(q, true);
+    jeu.res[jeu.tour] = ok; jeu.tour++;
+    plusTard(tour, ok ? 1300 : 3800);
+  };
+  const erreur = () => {
+    bonBtn().classList.add("ok");
+    $("#msg").className = "msg err"; $("#msg").innerHTML = "C'était <b>"+q.rep+"</b> : "+q.complet;
+    Reglages.parler(q.dire, "erreur");
+    finir(false);
+  };
+  Reglages.chrono(erreur);
+  btns.forEach(b => b.onclick = () => {
+    if (fini) return;
+    if (+b.dataset.n===q.rep){ b.classList.add("ok"); buzz(); Reglages.parler(q.succes, "succes"); finir(true) }
+    else { b.classList.add("bad"); erreur() }
+  });
+}
+function fin(){
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+jeu.niv, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>' +
+    '<p class="hint">Trouvés du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>

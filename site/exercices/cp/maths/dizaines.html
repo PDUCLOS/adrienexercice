@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Dizaines et unités · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Dizaines et unités : une barre = 10 cubes. Lire un nombre, le construire, échanger 10 unités contre 1 dizaine. */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --dz:#2f9e44; --dz-bord:#1b6e2d; --un:#f08c00; --un-bord:#a35f00;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#1c7ed6; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --dz:#40c057; --dz-bord:#2b8a3e; --un:#fab005; --un-bord:#c48a00;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#339af0;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  display:flex;flex-direction:column;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{cursor:default}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit;min-height:48px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2vh,20px);padding-top:8px;width:min(100%,1180px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(18px,3.2vw,28px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(20px,3vh,28px);margin:0;text-align:center;font-weight:700}
+.consigne .cible{font-size:clamp(48px,9vh,80px);color:var(--accent);font-variant-numeric:tabular-nums;vertical-align:middle;margin-left:.2em}
+.consigne .q{display:inline-block;min-width:1.4em;border-bottom:6px solid var(--line);color:var(--muted);text-align:center}
+.consigne .q.ok{color:var(--ok-ink);border-color:var(--ok-ink)}
+.zone{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2.4vh,24px);width:100%}
+@media (orientation:landscape){ .zone{flex-direction:row;justify-content:center;gap:clamp(20px,4vw,56px)} }
+/* barres de 10 et cubes */
+.plateau{--s:clamp(11px,2.3vh,19px);background:var(--panel);border-radius:24px;box-shadow:var(--shadow);padding:clamp(12px,2.2vh,20px) clamp(14px,2.4vw,26px);
+  display:flex;align-items:flex-end;gap:clamp(18px,3vw,36px);min-height:calc(var(--s)*10 + 60px);min-width:clamp(280px,36vw,460px);justify-content:center}
+.dz,.un{display:flex;align-items:flex-end;gap:calc(var(--s)*.5);min-height:calc(var(--s)*10 + 20px)}
+.un{display:grid;grid-template-columns:repeat(5,var(--s));gap:3px;align-content:end}
+.barre{display:flex;flex-direction:column;gap:2px;padding:2px;border-radius:5px;background:var(--dz-bord)}
+.barre i,.un i{display:block;width:var(--s);height:var(--s);border-radius:3px}
+.barre i{background:var(--dz)}
+.un i{background:var(--un);box-shadow:inset 0 0 0 2px var(--un-bord)}
+.legende{display:flex;justify-content:space-around;gap:20px;font-size:clamp(16px,2.4vh,20px);color:var(--muted);font-weight:700;width:100%}
+.vide{color:var(--muted);font-size:18px;align-self:center}
+.col{display:flex;flex-direction:column;align-items:center;gap:8px}
+/* choix de réponses */
+.choix{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,460px)}
+@media (orientation:portrait){ .choix{grid-template-columns:repeat(4,minmax(0,1fr));width:min(100%,720px)} }
+.choix button{background:var(--panel);border:4px solid var(--line);border-radius:22px;box-shadow:var(--shadow);min-height:clamp(80px,14vh,120px);font-size:clamp(40px,7.5vh,64px);font-weight:700;font-variant-numeric:tabular-nums}
+/* construire */
+.outils{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(8px,1.6vw,14px);width:min(100%,460px)}
+.outils button{background:var(--panel);border:4px solid var(--line);border-radius:20px;box-shadow:var(--shadow);min-height:clamp(72px,11vh,96px);font-size:clamp(18px,2.8vh,24px);font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px}
+.outils .pdz{border-color:var(--dz)}.outils .pun{border-color:var(--un)}
+.outils .sym{font-size:1.5em;line-height:1}
+.valider{grid-column:1/-1;background:var(--accent)!important;color:var(--on-accent);border-color:var(--accent)!important;font-size:clamp(22px,3.4vh,30px)!important}
+.ok-b{background:var(--ok)!important;color:var(--ok-ink)!important;border-color:var(--ok-ink)!important}
+.bad-b{background:var(--err)!important;color:var(--err-ink)!important;border-color:var(--err-ink)!important;animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.msg{font-size:clamp(18px,2.6vh,24px);text-align:center;min-height:1.4em;margin:0;font-weight:700}
+.msg.err{color:var(--err-ink)}.msg.info{color:var(--dz-bord)}.msg b{color:var(--ok-ink);font-variant-numeric:tabular-nums}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.end .big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🟩 Dizaines et unités</h1>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script>
+/* GEN-DEBUT : fonctions pures (testées hors page) */
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const melange = a => { for (let i=a.length-1;i>0;i--){ const j=rnd(0,i); [a[i],a[j]]=[a[j],a[i]] } return a };
+const maxNiv = niv => niv==="facile" ? 20 : niv==="moyen" ? 39 : 59;
+const dz = n => n+" dizaine"+(n>1?"s":""), un = n => n+" unité"+(n>1?"s":"");
+const decomp = n => Math.floor(n/10) ? (n%10 ? dz(Math.floor(n/10))+" et "+un(n%10) : dz(Math.floor(n/10))) : un(n);
+/* un nombre « intéressant » pour le niveau (souvent avec au moins 1 dizaine) */
+function nombre(niv){
+  if (niv==="facile") return Math.random()<.8 ? rnd(10,20) : rnd(1,9);
+  if (niv==="moyen") return Math.random()<.85 ? rnd(10,39) : rnd(1,9);
+  return Math.random()<.85 ? rnd(20,59) : rnd(10,19);
+}
+/* 4 réponses : la bonne + pièges (chiffres inversés, ±10, ±1, oubli de l'échange) */
+function proposer(rep, pieges){
+  const inv = (rep%10)*10 + Math.floor(rep/10);
+  const tous = [...pieges, ...melange([inv, rep+10, rep-10, rep+1, rep-1, rep+2])];
+  const res = [rep];
+  for (const x of tous) if (x>=1 && x<=99 && !res.includes(x) && res.length<4) res.push(x);
+  return res.sort((a,b)=>a-b);
+}
+function genere(niv){
+  const r = Math.random();
+  if (niv==="difficile" && r<.3){                     // échange : 3 dizaines et 14 unités
+    const d = rnd(1,4), u = rnd(10, Math.min(19, 59-d*10)), rep = d*10+u;
+    return { mode:"echange", d, u, rep, choix: proposer(rep, [d*10+u-10]),
+      dire: "Non. "+u+" unités, c'est 1 dizaine et "+un(u-10)+". "+dz(d)+" et encore 1 dizaine, ça fait "+dz(d+1)+" : "+rep+".",
+      texte: un(u)+" = 1 dizaine et "+un(u-10)+", donc "+dz(d+1)+(u-10?" et "+un(u-10):"")+" = "+rep,
+      succes: dz(d)+" et "+un(u)+", ça fait "+rep, consigne: dz(d)+" et "+un(u)+". Combien ça fait ?" };
+  }
+  const n = nombre(niv), d = Math.floor(n/10), u = n%10;
+  if (r < (niv==="difficile" ? .65 : .55))
+    return { mode:"lire", d, u, rep:n, choix: proposer(n, []),
+      dire: "Non. "+decomp(n)+", c'est "+n+".", texte: decomp(n)+" = "+n,
+      succes: decomp(n)+", c'est "+n, consigne: "Combien de cubes en tout ? Une barre, c'est 10." };
+  return { mode:"construire", d, u, rep:n, choix:null,
+    dire: "Non. "+n+", c'est "+decomp(n)+".", texte: n+" = "+decomp(n),
+    succes: n+", c'est "+decomp(n), consigne: "Construis le nombre "+n+"." };
+}
+const cle = q => q.mode[0]+"|"+q.d+"|"+q.u;
+function serie(niv, n, neuf){
+  const liste = []; let prec = null;
+  for (let i=0;i<n;i++){
+    const q = neuf(() => { let x, k=0; do { x = genere(niv) } while (x.rep===prec && ++k<30); return x }, cle);
+    prec = q.rep; liste.push(q);
+  }
+  return liste;
+}
+/* GEN-FIN */
+
+const KEY = "cp-dizaines-v1";
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Nombres jusqu'à 20 : lire les barres et les cubes, ou construire le nombre.",
+  moyen: "Nombres jusqu'à 39.",
+  difficile: "Jusqu'à 59, et des échanges : 3 dizaines et 14 unités, combien ?" } });
+const T = () => R().questions;
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+/* dessin : d barres de 10, u cubes (rangés par 5) */
+function plateau(d, u){
+  const barres = d ? Array.from({length:d},()=>'<div class="barre">'+'<i></i>'.repeat(10)+'</div>').join("") : '<span class="vide">0 dizaine</span>';
+  const cubes = u ? '<i></i>'.repeat(u) : '<span class="vide" style="grid-column:1/-1">0 unité</span>';
+  return '<div class="plateau" aria-label="'+decomp(d*10+u)+'"><div class="dz">'+barres+'</div><div class="un">'+cubes+'</div></div>';
+}
+
+let jeu = null, numSerie = 0;
+function plusTard(fn, ms){ const id = jeu.id; setTimeout(() => { if (jeu && jeu.id===id) fn() }, ms) }
+function etoiles(){
+  return '<div class="stars">' + Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
+}
+function partie(){
+  Reglages.stop();
+  const niv = R().niveau;
+  jeu = { id: ++numSerie, niv, tour:0, res:[], liste: serie(niv, T(), Reglages.sansDoublon()) };
+  tour();
+}
+function tour(){
+  if (jeu.tour>=T()) return fin();
+  const q = jeu.liste[jeu.tour];
+  (q.mode==="construire" ? construire : lire)(q);
+}
+/* fin de question commune */
+function terminer(q, ok, boutons){
+  Reglages.stop();
+  boutons.forEach(b => b.disabled = true);
+  jeu.res[jeu.tour] = ok; jeu.tour++;
+  plusTard(tour, ok ? 1400 : q.mode==="echange" ? 6500 : 4200);
+}
+function montrerErreur(q){
+  $("#msg").className = "msg err"; $("#msg").innerHTML = "C'était <b>"+q.rep+"</b> · "+q.texte;
+  Reglages.parler(q.dire, "erreur");
+}
+
+/* Lire (ou échanger) : on voit les barres et les cubes, on touche le nombre */
+function lire(q){
+  let fini = false;
+  const titre = q.mode==="echange"
+    ? dz(q.d)+" et "+un(q.u)+' = <span class="q" id="q">?</span>'
+    : 'Combien ? <span class="q" id="q">?</span>';
+  $("#main").innerHTML = etoiles() +
+    '<p class="consigne">'+titre+'</p>' +
+    '<div class="zone"><div class="col">'+plateau(q.d,q.u)+'<div class="legende"><span>🟩 1 barre = 10</span><span>🟧 1 cube = 1</span></div></div>' +
+    '<div class="choix">' + q.choix.map(n=>'<button data-v="'+n+'">'+n+'</button>').join("") + '</div></div>' +
+    '<p class="msg" id="msg" aria-live="polite"></p>' +
+    '<div class="tools"><button class="pill" id="bSay">🔊 Écouter</button></div>';
+  $("#bSay").onclick = () => Reglages.parler(q.consigne, "consigne");
+  const btns = [...document.querySelectorAll(".choix button")];
+  const finir = ok => {
+    if (fini) return; fini = true;
+    $("#q").textContent = q.rep; $("#q").classList.add("ok");
+    terminer(q, ok, btns);
+  };
+  const erreur = () => { btns.find(b => +b.dataset.v===q.rep).classList.add("ok-b"); montrerErreur(q); finir(false) };
+  Reglages.chrono(erreur);
+  btns.forEach(b => b.onclick = () => {
+    if (fini) return;
+    if (+b.dataset.v===q.rep){ b.classList.add("ok-b"); buzz(); Reglages.parler(q.succes, "succes"); finir(true) }
+    else { b.classList.add("bad-b"); erreur() }
+  });
+}
+
+/* Construire : on ajoute des barres et des cubes pour faire le nombre demandé */
+function construire(q){
+  let fini = false, d = 0, u = 0;
+  $("#main").innerHTML = etoiles() +
+    '<p class="consigne">Construis le nombre <span class="cible">'+q.rep+'</span></p>' +
+    '<div class="zone"><div class="col"><div id="plateau"></div><div class="legende" id="compte"></div></div>' +
+    '<div class="outils">' +
+      '<button class="pdz" id="dPlus"><span class="sym">＋</span>1 dizaine</button>' +
+      '<button class="pun" id="uPlus"><span class="sym">＋</span>1 unité</button>' +
+      '<button class="pdz" id="dMoins"><span class="sym">−</span>1 dizaine</button>' +
+      '<button class="pun" id="uMoins"><span class="sym">−</span>1 unité</button>' +
+      '<button class="valider" id="bOk">✓ C\'est fait</button></div></div>' +
+    '<p class="msg" id="msg" aria-live="polite"></p>' +
+    '<div class="tools"><button class="pill" id="bSay">🔊 Écouter</button></div>';
+  const maj = () => {
+    $("#plateau").innerHTML = plateau(d,u);
+    $("#compte").innerHTML = '<span>'+dz(d)+'</span><span>'+un(u)+'</span>';
+  };
+  maj();
+  $("#bSay").onclick = () => Reglages.parler(q.consigne, "consigne");
+  const btns = [...document.querySelectorAll(".outils button")];
+  const info = t => { $("#msg").className = "msg info"; $("#msg").textContent = t };
+  $("#dPlus").onclick = () => { if (fini) return; if (d<9){ d++; maj() } };
+  $("#dMoins").onclick = () => { if (fini) return; if (d>0){ d--; maj() } };
+  $("#uMoins").onclick = () => { if (fini) return; if (u>0){ u--; maj() } };
+  $("#uPlus").onclick = () => {
+    if (fini) return;
+    u++; maj();
+    if (u===10){                                         // 10 unités → 1 dizaine
+      info("10 unités, ça fait 1 dizaine ! On les échange.");
+      plusTard(() => { if (fini || u<10) return; u -= 10; d++; maj() }, 900);
+    }
+  };
+  const finir = ok => {
+    if (fini) return; fini = true;
+    d = q.d; u = q.u; maj();                              // on montre la bonne construction
+    terminer(q, ok, btns);
+  };
+  const erreur = fait => {
+    montrerErreur(q);
+    if (fait!==undefined) $("#msg").innerHTML += " (tu as fait "+fait+")";
+    finir(false);
+  };
+  Reglages.chrono(() => erreur());
+  $("#bOk").onclick = () => {
+    if (fini) return;
+    const fait = d*10+u;
+    if (fait===q.rep){ $("#bOk").classList.add("ok-b"); buzz(); Reglages.parler(q.succes, "succes"); finir(true) }
+    else { $("#bOk").classList.add("bad-b"); erreur(fait) }
+  };
+}
+function fin(){
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+jeu.niv, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>' +
+    '<p class="hint">Trouvés du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>

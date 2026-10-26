@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Où est le son · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Où est le son ? Conscience phonologique : entendre un son, puis le placer (début, milieu, fin) */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --son:#ae3ec9; --son-soft:#f8f0fc; --wagon:#ffe8cc; --wagon-ink:#d9480f;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#ae3ec9; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --son:#da77f2; --son-soft:#36213b; --wagon:#3d2a1a; --wagon-ink:#ffa94d;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#da77f2; --on-accent:#1b1d21;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit;min-height:48px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,22px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.haut{display:flex;align-items:center;justify-content:center;gap:clamp(14px,3vw,34px);flex-wrap:wrap}
+.carte{background:var(--panel);border-radius:28px;box-shadow:var(--shadow);padding:clamp(10px,2vh,20px) clamp(18px,3vw,34px);display:flex;align-items:center;gap:clamp(10px,2vw,20px)}
+.pic{font-size:clamp(90px,17vh,150px);line-height:1}
+.listen{background:var(--accent);color:var(--on-accent);border-radius:50%;width:clamp(76px,12vh,104px);height:clamp(76px,12vh,104px);font-size:clamp(34px,6vh,48px);box-shadow:var(--shadow);flex:none}
+.cible{display:flex;flex-direction:column;align-items:center;gap:2px;background:var(--son-soft);color:var(--son);border:4px solid var(--son);border-radius:24px;padding:8px 22px;min-width:clamp(110px,18vh,150px)}
+.cible b{font-size:clamp(56px,10vh,88px);line-height:1}
+.cible small{font-size:16px;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:6px}
+.cible .e{font-size:30px;line-height:1}
+.question{font-size:clamp(24px,3.6vw,34px);font-weight:700;margin:0;text-align:center}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:clamp(12px,2.4vw,24px);width:min(100%,640px)}
+.duo button{border-radius:24px;padding:clamp(12px,2.4vh,22px) 10px;min-height:84px;font-size:clamp(28px,4vw,40px);font-weight:700;box-shadow:var(--shadow);background:var(--panel);border:4px solid var(--line)}
+.train{display:flex;align-items:flex-end;gap:clamp(6px,1vw,12px)}
+.wagon{position:relative;width:clamp(120px,20vw,190px);height:clamp(90px,14vh,120px);border-radius:16px 16px 8px 8px;background:var(--wagon);color:var(--wagon-ink);border:4px solid var(--wagon-ink);font-size:clamp(20px,2.6vw,26px);font-weight:700;box-shadow:var(--shadow);margin-bottom:18px}
+.wagon::before,.wagon::after{content:"";position:absolute;bottom:-20px;width:26px;height:26px;border-radius:50%;background:var(--ink);border:4px solid var(--panel)}
+.wagon::before{left:16%}.wagon::after{right:16%}
+.loco{font-size:clamp(46px,8vh,70px);line-height:1;margin-bottom:6px}
+.duo button.ok,.wagon.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.duo button.bad,.wagon.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+.duo button:disabled,.wagon:disabled{cursor:default}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.astuce{font-size:clamp(18px,2.4vw,22px);text-align:center;min-height:1.5em;margin:0}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow);min-height:70px}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>👂 Où est le son ?</h1>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script>
+/* DONNEES */
+/*
+  Chaque mot : [mot, emoji, sons à l'oral]. Les sons sont séparés par des espaces, les syllabes orales par « | ».
+  Codes : a i o u é è e(eu muet) eu ou an on in y(i de soleil, pied) w(oi = w a)
+          p b t d k g f v s z ch j l r m n.
+  Les lettres muettes ne s'écrivent pas : « rat » = r a (pas de t !).
+*/
+const MOTS = [
+  ["lune","🌙","l u n"],["rat","🐀","r a"],["lit","🛏️","l i"],["nid","🪺","n i"],["riz","🍚","r i"],
+  ["tomate","🍅","t o | m a t"],["moto","🏍️","m o | t o"],["vélo","🚲","v é | l o"],["lama","🦙","l a | m a"],
+  ["pomme","🍎","p o m"],["sapin","🌲","s a | p in"],["soleil","☀️","s o | l è y"],["salade","🥗","s a | l a d"],
+  ["tortue","🐢","t o r | t u"],["tulipe","🌷","t u | l i p"],["pirate","🏴‍☠️","p i | r a t"],["ananas","🍍","a | n a | n a s"],
+  ["ours","🐻","ou r s"],["robot","🤖","r o | b o"],["tasse","☕","t a s"],["pile","🔋","p i l"],["rose","🌹","r o z"],
+  ["note","🎵","n o t"],["télé","📺","t é | l é"],["épée","🗡️","é | p é"],["fusée","🚀","f u | z é"],
+  ["fourmi","🐜","f ou r | m i"],["fraise","🍓","f r è z"],["fleur","🌸","f l eu r"],["feu","🔥","f eu"],["fée","🧚","f é"],
+  ["chat","🐱","ch a"],["chapeau","🎩","ch a | p o"],["cheval","🐴","ch e | v a l"],["vache","🐄","v a ch"],
+  ["mouche","🪰","m ou ch"],["citron","🍋","s i | t r on"],["souris","🐭","s ou | r i"],["serpent","🐍","s è r | p an"],
+  ["patate","🥔","p a | t a t"],["tambour","🥁","t an | b ou r"],["téléphone","☎️","t é | l é | f o n"],["train","🚂","t r in"],
+  ["abeille","🐝","a | b è y"],["ballon","🎈","b a | l on"],["banane","🍌","b a | n a n"],["bateau","⛵","b a | t o"],
+  ["bébé","👶","b é | b é"],["dé","🎲","d é"],["dauphin","🐬","d o | f in"],["dinosaure","🦕","d i | n o | z o r"],
+  ["lapin","🐰","l a | p in"],["loup","🐺","l ou"],["livre","📕","l i v r"],["lunettes","👓","l u | n è t"],
+  ["limace","🐌","l i | m a s"],["renard","🦊","r e | n a r"],["raisin","🍇","r è | z in"],["requin","🦈","r e | k in"],
+  ["mouton","🐑","m ou | t on"],["maison","🏠","m è | z on"],["main","✋","m in"],["melon","🍈","m e | l on"],
+  ["marteau","🔨","m a r | t o"],["neige","❄️","n è j"],["orange","🍊","o | r an j"],["olive","🫒","o | l i v"],
+  ["os","🦴","o s"],["île","🏝️","i l"],["usine","🏭","u | z i n"],["éléphant","🐘","é | l é | f an"],
+  ["école","🏫","é | k o l"],["échelle","🪜","é | ch è l"],["fromage","🧀","f r o | m a j"],["fourchette","🍴","f ou r | ch è t"],
+  ["frite","🍟","f r i t"],["sel","🧂","s è l"],["tente","⛺","t an t"],["tigre","🐯","t i g r"],["pain","🍞","p in"],
+  ["poule","🐔","p ou l"],["chaussure","👟","ch o | s u r"],["chocolat","🍫","ch o | k o | l a"],["château","🏰","ch a | t o"],
+  ["jus","🧃","j u"],["girafe","🦒","j i | r a f"],["zèbre","🦓","z è b r"],["valise","🧳","v a | l i z"],
+  ["volcan","🌋","v o l | k an"],["dent","🦷","d an"],["douche","🚿","d ou ch"],["patin","⛸️","p a | t in"],
+  ["bus","🚌","b u s"],["bol","🥣","b o l"],["robe","👗","r o b"],["nounours","🧸","n ou | n ou r s"],
+  ["sucette","🍭","s u | s è t"],["pantalon","👖","p an | t a | l on"],["phoque","🦭","f o k"],["lait","🥛","l è"],
+  ["papillon","🦋","p a | p i | y on"],["parasol","⛱️","p a | r a | s o l"],["nez","👃","n é"],["dragon","🐉","d r a | g on"],
+  ["chameau","🐫","ch a | m o"],["chemise","👔","ch e | m i z"],["sac","👜","s a k"],["avion","✈️","a | v y on"]
+];
+/* sons travaillés (facile et moyen) */
+const CIBLES = ["a","i","o","u","é","l","r","s","p","t","m","n","f","ch"];
+/* difficile : sons proches */
+const PAIRES = [["p","b"],["t","d"],["f","v"],["ch","j"],["s","z"]];
+const PARTENAIRE = {}; PAIRES.forEach(([x,y]) => { PARTENAIRE[x]=y; PARTENAIRE[y]=x });
+/* un « non » trop piégeant pour un CP : on ne demande pas [a] dans « ballon » (an), [o] dans « mouton »… */
+const PROCHES = { a:["an","w"], o:["on","ou"], i:["in","y"], u:["ou","eu"], é:["è","e"] };
+/* comment la tablette dit le son, et un mot exemple (choisi différent du mot à écouter) */
+const DIT = { a:"a", i:"i", o:"o", u:"u", é:"é", l:"leu", r:"reu", s:"sse", p:"peu", t:"teu", m:"meu", n:"neu", f:"feu", ch:"cheu",
+  b:"beu", d:"deu", v:"veu", j:"jeu", z:"zeu" };
+const EXEMPLES = { l:[["lune","🌙"],["lapin","🐰"]], r:[["rat","🐀"],["robot","🤖"]], s:[["sac","👜"],["soleil","☀️"]],
+  p:[["pomme","🍎"],["poule","🐔"]], t:[["tasse","☕"],["tigre","🐯"]], m:[["moto","🏍️"],["maison","🏠"]], n:[["nid","🪺"],["neige","❄️"]],
+  f:[["feu","🔥"],["fée","🧚"]], ch:[["chat","🐱"],["chapeau","🎩"]], b:[["bébé","👶"],["bateau","⛵"]], d:[["dé","🎲"],["dent","🦷"]],
+  v:[["vache","🐄"],["vélo","🚲"]], j:[["jus","🧃"],["girafe","🦒"]], z:[["zèbre","🦓"],["fusée","🚀"]] };
+const ECRIT = { ch:"ch", j:"j", é:"é", ou:"ou", e:"e" };
+const VOYELLES = ["a","i","o","u","é","ou"];   // pas le e de « cheval » : on dit souvent « ch'val »
+const CONS_SYL = ["p","b","t","d","f","v","l","r","m","n","ch","s"];
+const POS = ["au début","au milieu","à la fin"];
+
+const sons = w => w[2].split(" ").filter(x => x !== "|");
+const syllabes = w => w[2].split("|").map(s => s.trim().split(" "));
+const compte = (l, s) => l.filter(x => x === s).length;
+const posDe = (l, i) => i === 0 ? 0 : i === l.length-1 ? 2 : 1;
+/* un « non » possible pour ce son ? */
+const nonOk = (l, s, niv) => compte(l, s) === 0 && !(PROCHES[s]||[]).some(p => l.includes(p)) && (niv === "difficile" || !l.includes(PARTENAIRE[s]));
+/* toutes les questions possibles pour un mot, à ce niveau */
+function candidats(w, niv){
+  const l = sons(w), out = [];
+  const son = (s, oui) => {
+    const q = { mot:w[0], e:w[1], type:"son", cible:s, oui };
+    if (oui && niv !== "facile") q.pos = posDe(l, l.indexOf(s));
+    return q;
+  };
+  if (niv === "facile") {
+    CIBLES.forEach(s => { if (compte(l,s) > 0) out.push(son(s,true)); else if (nonOk(l,s,niv)) out.push(son(s,false)) });
+  } else if (niv === "moyen") {
+    CIBLES.forEach(s => { if (compte(l,s) === 1) out.push(son(s,true)); else if (nonOk(l,s,niv)) out.push(son(s,false)) });
+  } else {
+    PAIRES.forEach(([x,y]) => [[x,y],[y,x]].forEach(([a,b]) => {
+      if (compte(l,a) === 1 && compte(l,b) === 0) { out.push(son(a,true)); out.push(son(b,false)) }
+    }));
+    /* syllabes : on demande une vraie syllabe orale (consonne + voyelle) */
+    const sy = syllabes(w);
+    if (sy.length >= 2) {
+      const cv = s => s.length === 2 && CONS_SYL.includes(s[0]) && VOYELLES.includes(s[1]);
+      const joint = l.join(" ");
+      sy.forEach((s,i) => { if (cv(s) && sy.filter(t => t.join(" ") === s.join(" ")).length === 1)
+        out.push({ mot:w[0], e:w[1], type:"syl", cible:s.join(" "), oui:true, pos:posDe(sy,i) }) });
+      SYL_TOUTES.forEach(s => { if (!(" "+joint+" ").includes(" "+s+" ")) out.push({ mot:w[0], e:w[1], type:"syl", cible:s, oui:false }) });
+    }
+  }
+  return out;
+}
+/* liste des syllabes consonne + voyelle présentes dans les mots */
+const SYL_TOUTES = [...new Set(MOTS.flatMap(w => syllabes(w)).filter(s => s.length === 2 && CONS_SYL.includes(s[0]) && VOYELLES.includes(s[1])).map(s => s.join(" ")))];
+const ecrireSyl = s => s.split(" ").map(x => ECRIT[x] || x).join("");
+/* une question : la moitié environ « oui », l'autre « non » */
+function question(niv, hasard = Math.random){
+  for (let n = 0; n < 500; n++) {
+    const w = MOTS[Math.floor(hasard()*MOTS.length)];
+    let c = candidats(w, niv);
+    if (niv === "difficile") { const syl = c.filter(q => q.type === "syl"); if (syl.length && hasard() < .4) c = syl; else c = c.filter(q => q.type === "son") }
+    if (!c.length) continue;
+    const oui = c.filter(q => q.oui), non = c.filter(q => !q.oui);
+    const veut = hasard() < (niv === "facile" ? .5 : .6);
+    const l = (veut && oui.length) || !non.length ? oui : non;
+    return l[Math.floor(hasard()*l.length)];
+  }
+}
+/* FIN DONNEES */
+
+const KEY = "cp-son-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Entends-tu le son ? Oui ou non seulement. Sons : a i o u é l r s p t m n f ch.",
+  moyen: "Entends-tu le son ? Si oui : au début, au milieu ou à la fin du mot (le petit train).",
+  difficile: "Sons qui se ressemblent (p/b, t/d, f/v, ch/j, s/z) et syllabes (« ma » dans « tomate » ?), avec la place." } });
+const T = () => R().questions;
+
+let jeu, serie = 0;
+const plusTard = (fn, ms) => { const id = serie; setTimeout(() => { if (id === serie) fn() }, ms) };
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+
+function partie(){
+  Reglages.stop(); serie++;
+  jeu = { tour:0, res:[], neuf:Reglages.sansDoublon() };
+  $("#main").innerHTML = '<div class="end"><h2>👂 Où est le son ?</h2><p class="consigne">Écoute le mot. Est-ce que tu entends le son ?</p>'+
+    '<button class="go" id="bGo">▶ Commencer</button></div>';
+  $("#bGo").onclick = tour;
+}
+/* « le son leu, comme dans lune » / « la syllabe ma » */
+function nomSon(q){
+  if (q.type === "syl") return { txt:"la syllabe "+ecrireSyl(q.cible), ex:null };
+  const exs = (EXEMPLES[q.cible]||[]).filter(e => e[0] !== q.mot);
+  return { txt:"le son "+DIT[q.cible], ex: exs.length ? exs[0] : null };
+}
+function tour(){
+  if (jeu.tour >= T()) return fin();
+  const niv = R().niveau;
+  const q = jeu.neuf(() => question(niv), x => x.mot);
+  const ns = nomSon(q);
+  const parle = ns.txt + (ns.ex ? ", comme dans " + ns.ex[0] : "");
+  let erreur = false, fini = false;
+  const dire = () => Reglages.parler(q.mot + ". Entends-tu " + parle + ", dans " + q.mot + " ?", "consigne");
+  $("#main").innerHTML = etoiles() +
+    '<div class="haut"><div class="carte"><button class="listen" id="bSay" aria-label="Réécouter le mot">🔊</button><div class="pic">'+q.e+'</div></div>' +
+    '<div class="cible"><b>'+ecrireSyl(q.cible)+'</b>'+(ns.ex?'<small>comme <span class="e">'+ns.ex[1]+'</span></small>':'<small>'+(q.type==="syl"?"syllabe":"son")+'</small>')+'</div></div>' +
+    '<p class="question" id="question">Entends-tu « '+ecrireSyl(q.cible)+' » ?</p>' +
+    '<div class="duo" id="zone"><button data-r="1">👍 Oui</button><button data-r="0">👎 Non</button></div>' +
+    '<p class="astuce" id="astuce"></p>';
+  $("#bSay").onclick = dire;
+  plusTard(dire, 300);
+  const suivant = () => { fini = true; Reglages.stop(); jeu.res[jeu.tour] = !erreur; jeu.tour++; plusTard(tour, erreur ? 3200 : 1500) };
+  /* étape 2 : le petit train début / milieu / fin */
+  const train = () => {
+    if (fini) return;
+    $("#question").textContent = "Où ? Touche le bon wagon.";
+    Reglages.parler("Où entends-tu " + ns.txt + " ? Au début, au milieu, ou à la fin ?", "consigne");
+    $("#zone").outerHTML = '<div class="train" id="zone"><span class="loco e" aria-hidden="true">🚂</span><button class="wagon" data-p="0">début</button><button class="wagon" data-p="1">milieu</button><button class="wagon" data-p="2">fin</button></div>';
+    const w = [...document.querySelectorAll(".wagon")];
+    w.forEach(b => b.onclick = () => {
+      if (fini) return;
+      w.forEach(x => x.disabled = true);
+      w[q.pos].classList.add("ok");
+      if (+b.dataset.p === q.pos) { buzz(); Reglages.parler(POS[q.pos], "succes"); $("#astuce").textContent = "Oui, "+POS[q.pos]+" !" }
+      else {
+        erreur = true; b.classList.add("bad");
+        const t = "Non. Écoute : " + q.mot + ". On entend " + ecrireSyl(q.cible) + " " + POS[q.pos] + ".";
+        $("#astuce").textContent = t; Reglages.parler("Non. Écoute : " + q.mot + ". On entend " + ns.txt + ", " + POS[q.pos] + ".", "erreur");
+      }
+      suivant();
+    });
+  };
+  Reglages.chrono(() => {
+    if (fini) return; erreur = true;
+    document.querySelectorAll("#zone button").forEach(b => b.disabled = true);
+    const t = q.oui ? "On entend « "+ecrireSyl(q.cible)+" »"+(q.pos!==undefined?" "+POS[q.pos]:"")+"." : "On n'entend pas « "+ecrireSyl(q.cible)+" » dans "+q.mot+".";
+    $("#astuce").textContent = t; Reglages.parler(q.mot + ". " + t.replace(/« |»/g,""), "erreur"); suivant();
+  });
+  const btns = [...document.querySelectorAll(".duo button")];
+  btns.forEach(b => b.onclick = () => {
+    if (fini) return;
+    const rep = b.dataset.r === "1";
+    btns.forEach(x => x.disabled = true);
+    btns.find(x => (x.dataset.r === "1") === q.oui).classList.add("ok");
+    if (rep !== q.oui) {
+      erreur = true; b.classList.add("bad");
+      const t = q.oui ? "Si ! On entend « "+ecrireSyl(q.cible)+" » dans "+q.mot+"." : "Non, on n'entend pas « "+ecrireSyl(q.cible)+" » dans "+q.mot+".";
+      $("#astuce").textContent = t;
+      Reglages.parler((q.oui ? "Si ! Écoute : " + q.mot + ". On entend " : "Non. Écoute : " + q.mot + ". On n'entend pas ") + ns.txt + ".", "erreur");
+    } else { buzz(); if (q.pos === undefined) Reglages.parler("Bravo !", "succes") }
+    /* « oui » avec place à trouver : on passe au train (même après une erreur, pour s'entraîner) */
+    if (q.oui && q.pos !== undefined) plusTard(train, rep === q.oui ? 500 : 2200);
+    else suivant();
+  });
+}
+function fin(){
+  Reglages.stop();
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    '<p class="hint">Trouvés sans erreur · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>

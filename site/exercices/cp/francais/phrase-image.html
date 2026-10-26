@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Phrase et image · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Lis la phrase, choisis l'image : compréhension de phrases courtes avec les mots vedettes */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#2f9e44; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#51cf66; --on-accent:#10161d;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit;min-height:48px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,2.8vh,26px);padding-top:10px;width:min(100%,1100px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.phrase{font-size:clamp(32px,5vw,54px);font-weight:700;text-align:center;background:var(--panel);border-radius:24px;padding:clamp(12px,2.6vh,26px) clamp(18px,3vw,36px);box-shadow:var(--shadow);max-width:100%;line-height:1.3}
+body.cursive .phrase{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:clamp(26px,4vw,44px);line-height:1.6}
+.choix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,22px);width:min(100%,1000px)}
+.scene{background:var(--panel);border:4px solid var(--line);border-radius:24px;box-shadow:var(--shadow);height:clamp(150px,30vh,260px);min-width:0;
+  display:flex;align-items:flex-end;justify-content:center;gap:.08em;padding:.15em .1em;font-size:clamp(40px,min(9vh,7vw),80px);overflow:hidden}
+.scene.ok{background:var(--ok);border-color:var(--ok-ink)}
+.scene.bad{background:var(--err);border-color:var(--err-ink);animation:shake .35s}
+.scene .illus{display:inline-block;line-height:1}
+.scene .gros{font-size:1.45em}
+.scene .petit{font-size:.5em}
+/* deux images l'une par rapport à l'autre : sur, sous, dans */
+.rel{position:relative;display:inline-block;width:1.25em;height:1.85em}
+.rel .illus{position:absolute;left:50%;transform:translateX(-50%)}
+.rel .b{bottom:0;font-size:1em;z-index:1}
+.sur .a{bottom:.82em;font-size:.72em;z-index:2}
+.dans .a{bottom:.5em;font-size:.72em;z-index:0}
+.sous .b{bottom:.78em}
+.sous .a{bottom:0;font-size:.66em;z-index:2}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.astuce{font-size:clamp(18px,2.4vw,22px);text-align:center;min-height:1.5em;margin:0}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow);min-height:70px}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🖼️ Lis la phrase, choisis l'image</h1>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script>
+/* DONNEES */
+/*
+  Chaque ligne : [niveau, phrase, BONNE image, image fausse, image fausse].
+  Une image = des morceaux séparés par des espaces :
+    🐱        une image          2*🐱 / 3*🐱   deux, trois fois
+    🐱^🪑     le chat SUR la chaise          🐱_🪑  SOUS la chaise        🐱@📦  DANS la boîte
+    🐱!       gros                🐱.       petit
+*/
+const PHRASES = [
+  /* facile : l'objet change */
+  ["f","C'est un rat.","🐀","🐱","🐟"],
+  ["f","C'est une tortue.","🐢","🐸","🐌"],
+  ["f","Il y a une tulipe.","🌷","🌻","🍄"],
+  ["f","C'est la lune.","🌙","☀️","⭐"],
+  ["f","Il y a un lit.","🛏️","🪑","🛋️"],
+  ["f","C'est une tarte.","🥧","🎂","🍕"],
+  ["f","Il y a un nid.","🪺","🌳","🥚"],
+  ["f","C'est une pile.","🔋","💡","🔦"],
+  ["f","C'est un renard.","🦊","🐺","🐻"],
+  ["f","Il y a une rose.","🌹","🌷","🌼"],
+  ["f","C'est une tasse.","☕","🥛","🍼"],
+  ["f","C'est un ananas.","🍍","🍌","🍉"],
+  ["f","C'est un os.","🦴","🥕","🍞"],
+  ["f","C'est un rat et un chat.","🐀 🐱","🐀 🐶","🐟 🐱"],
+  ["f","Il y a une moto.","🏍️","🚲","🚗"],
+  ["f","C'est un vélo.","🚲","🛴","🏍️"],
+  ["f","C'est une salade.","🥗","🍕","🍝"],
+  ["f","C'est un lapin.","🐰","🐭","🐱"],
+  ["f","Il y a une poule.","🐔","🦆","🐧"],
+  ["f","C'est un piano.","🎹","🥁","🎸"],
+  ["f","C'est une tomate.","🍅","🍎","🍓"],
+  ["f","Bonjour, le lion !","🦁","🐯","🐻"],
+  ["f","Bonjour, la vache !","🐄","🐖","🐑"],
+  ["f","Il y a un pot et une pile.","🪴 🔋","🪴 💡","🧺 🔋"],
+  /* moyen : sur / dans / sous, un / deux / trois */
+  ["m","Le chat est sur la chaise.","🐱^🪑","🐱_🪑","🐱 🪑"],
+  ["m","Le chat est sous la chaise.","🐱_🪑","🐱^🪑","🐱 🪑"],
+  ["m","Le chat est dans la boîte.","🐱@📦","🐱^📦","🐱 📦"],
+  ["m","Le chat est sur la boîte.","🐱^📦","🐱@📦","🐱 📦"],
+  ["m","Le rat est dans le panier.","🐀@🧺","🐀^🧺","🐀 🧺"],
+  ["m","La poule est sur le lit.","🐔^🛏️","🐔_🛏️","🐔 🛏️"],
+  ["m","Le chien est sous le lit.","🐶_🛏️","🐶^🛏️","🐶 🛏️"],
+  ["m","Le canard est dans la baignoire.","🦆@🛁","🦆 🛁","🐸@🛁"],
+  ["m","Il y a un lapin.","🐰","2*🐰","3*🐰"],
+  ["m","Il y a deux tulipes.","2*🌷","🌷","3*🌷"],
+  ["m","Il y a une pomme.","🍎","2*🍎","3*🍎"],
+  ["m","Il y a deux tortues.","2*🐢","🐢","2*🐌"],
+  ["m","Il y a trois étoiles.","3*⭐","2*⭐","⭐"],
+  ["m","La pomme est dans le panier.","🍎@🧺","🍎 🧺","🍐@🧺"],
+  ["m","L'oiseau est sur l'arbre.","🐦^🌳","🐦_🌳","🐦 🌳"],
+  ["m","Le ballon est sous la chaise.","⚽_🪑","⚽^🪑","⚽ 🪑"],
+  ["m","Le poisson est dans le seau.","🐟@🪣","🐟 🪣","🐸@🪣"],
+  ["m","Il y a un chat et deux chiens.","🐱 2*🐶","2*🐱 🐶","🐱 🐶"],
+  ["m","Le livre est sur la chaise.","📕^🪑","📕_🪑","📕 🪑"],
+  ["m","Il y a deux ballons.","2*🎈","🎈","2*⚽"],
+  ["m","La souris est dans la boîte.","🐭@📦","🐭^📦","🐭 📦"],
+  ["m","Le chat est dans le panier.","🐱@🧺","🐱 🧺","🐶@🧺"],
+  ["m","Il y a une fusée et la lune.","🚀 🌙","🚀 ☀️","✈️ 🌙"],
+  ["m","La tortue est sous l'arbre.","🐢_🌳","🐢^🌳","🐌_🌳"],
+  /* difficile : il / elle, couleur, taille, deux phrases */
+  ["d","Elle a un ballon.","👧 ⚽","👦 ⚽","👧 📕"],
+  ["d","Il a un livre.","👦 📕","👧 📕","👦 ⚽"],
+  ["d","Il a un chien.","👦 🐶","👧 🐶","👦 🐱"],
+  ["d","Elle a un chat.","👧 🐱","👦 🐱","👧 🐶"],
+  ["d","Il a un chapeau.","👦 🎩","👧 🎩","👦 👑"],
+  ["d","Le gâteau, c'est pour lui.","🎂 👦","🎂 👧","🍕 👦"],
+  ["d","La tarte est pour elle.","🥧 👧","🥧 👦","🍕 👧"],
+  ["d","La voiture est jaune.","🚕","🚗","🚙"],
+  ["d","La voiture est rouge.","🚗","🚕","🚙"],
+  ["d","Le livre est vert.","📗","📕","📘"],
+  ["d","Le livre est bleu.","📘","📗","📙"],
+  ["d","La pomme est verte.","🍏","🍎","🍊"],
+  ["d","Le cœur est bleu.","💙","❤️","💚"],
+  ["d","Le cœur est jaune.","💛","💜","💚"],
+  ["d","Le rat est petit.","🐀.","🐀!","🐱."],
+  ["d","Le chat est gros.","🐱!","🐱.","🐶!"],
+  ["d","La tortue est petite.","🐢.","🐢!","🐌."],
+  ["d","Il y a un gros ballon et un petit ballon.","⚽! ⚽.","⚽! ⚽!","⚽. ⚽."],
+  ["d","Il y a un chat. Il est sur la chaise.","🐱^🪑","🐶^🪑","🐱_🪑"],
+  ["d","Il y a une souris. Elle est dans la boîte.","🐭@📦","🐭^📦","🐱@📦"],
+  ["d","C'est Léo. Il a un ballon rouge.","👦 🎈","👧 🎈","👦 ⚽"],
+  ["d","C'est Lila. Elle a un livre bleu.","👧 📘","👧 📕","👦 📘"],
+  ["d","Le cœur est rouge. Il est gros.","❤️!","❤️.","💙!"],
+  ["d","Il y a la lune et deux étoiles.","🌙 2*⭐","🌙 ⭐","☀️ 2*⭐"],
+  ["d","Elle a une fleur rose.","👧 🌸","👧 🌻","👦 🌸"],
+  ["d","Le chien est sous le lit. Il dort.","🐶_🛏️","🐶^🛏️","🐱_🛏️"]
+];
+const NIVEAU = { facile:"f", moyen:"m", difficile:"d" };
+const pool = niv => PHRASES.filter(p => p[0] === NIVEAU[niv]);
+/* une image → du HTML (chaque emoji dans son propre .illus pour l'image 3D) */
+const sp = (e, c) => '<span class="illus'+(c?" "+c:"")+'">'+e+'</span>';
+function morceau(t){
+  let m;
+  if ((m = t.match(/^(.+?)([\^_@])(.+)$/u))) {
+    const rel = { "^":"sur", "_":"sous", "@":"dans" }[m[2]];
+    return '<span class="rel '+rel+'">'+sp(m[1],"a")+sp(m[3],"b")+'</span>';
+  }
+  if ((m = t.match(/^(\d)\*(.+)$/u))) return Array.from({length:+m[1]}, () => sp(m[2])).join("");
+  if (t.endsWith("!")) return sp(t.slice(0,-1), "gros");
+  if (t.endsWith(".")) return sp(t.slice(0,-1), "petit");
+  return sp(t);
+}
+const scene = s => s.split(" ").map(morceau).join("");
+/* FIN DONNEES */
+
+const KEY = "cp-phrase-image-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Les images montrent des choses différentes : « C'est un rat. »",
+  moyen: "Bien lire sur / dans / sous et un / deux / trois : « Le chat est sous la chaise. »",
+  difficile: "Il ou elle, la couleur, gros ou petit, et deux phrases à lire." } });
+const T = () => R().questions;
+
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+let jeu, serie = 0;
+const plusTard = (fn, ms) => { const id = serie; setTimeout(() => { if (id === serie) fn() }, ms) };
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+
+function partie(){
+  Reglages.stop(); serie++;
+  jeu = { tour:0, res:[], neuf:Reglages.sansDoublon() };
+  tour();
+}
+function tour(){
+  if (jeu.tour >= T()) return fin();
+  const p = jeu.neuf(() => pick(pool(R().niveau)), x => x[1]);
+  const imgs = shuffle([0,1,2]);
+  let essai = 0, fini = false;
+  $("#main").innerHTML = etoiles() +
+    '<p class="consigne">Lis la phrase, puis touche la bonne image</p>' +
+    '<div class="phrase">'+esc(p[1])+'</div>' +
+    '<div class="choix">'+imgs.map(i => '<button class="scene" data-i="'+i+'" aria-label="Image '+(imgs.indexOf(i)+1)+'">'+scene(p[2+i])+'</button>').join("")+'</div>' +
+    '<p class="astuce" id="astuce"></p>';
+  const btns = [...document.querySelectorAll(".scene")];
+  const terminer = ok => {
+    fini = true; Reglages.stop();
+    btns.forEach(b => { b.disabled = true; if (b.dataset.i === "0") b.classList.add("ok") });
+    jeu.res[jeu.tour] = ok; jeu.tour++; plusTard(tour, ok ? 1500 : 3000);
+  };
+  Reglages.chrono(() => {
+    if (fini) return;
+    $("#astuce").textContent = "Voilà la bonne image.";
+    Reglages.parler("Voilà la bonne image : " + p[1], "erreur"); terminer(false);
+  });
+  btns.forEach(b => b.onclick = () => {
+    if (fini) return;
+    if (b.dataset.i === "0") { buzz(); $("#astuce").textContent = essai ? "Oui, c'est celle-là." : "Bravo !"; Reglages.parler(p[1], "succes"); terminer(essai === 0); return }
+    essai++; b.disabled = true;
+    b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad");
+    if (essai >= 2) { $("#astuce").textContent = "Voilà la bonne image."; Reglages.parler("Non. Écoute la phrase : " + p[1], "erreur"); terminer(false) }
+    else { $("#astuce").textContent = "Non. Relis bien chaque mot de la phrase."; Reglages.parler("Non. Relis bien la phrase : " + p[1], "erreur") }
+  });
+}
+function fin(){
+  Reglages.stop();
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    '<p class="hint">Trouvées du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>

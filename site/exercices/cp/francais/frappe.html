@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Frappe les syllabes · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Frappe les syllabes : un coup de tambour par syllabe entendue, puis le découpage écrit */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --drum:#ffe3e3; --drum-ink:#c92a2a; --tile:#e7f1fc; --tile-ink:#1c7ed6;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#d6336c; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --drum:#4a1f22; --drum-ink:#ffa8a8; --tile:#1d2d3d; --tile-ink:#4dabf7;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#f06595; --on-accent:#1b1d21;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+button:disabled{opacity:.55;cursor:default}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit;min-height:48px}
+.pill.gros{font-size:22px;padding:14px 22px;min-height:70px}
+.pill.fini{background:var(--accent);color:var(--on-accent)}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,22px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.haut{display:flex;align-items:center;justify-content:center;gap:clamp(14px,3vw,34px)}
+.carte{background:var(--panel);border-radius:28px;box-shadow:var(--shadow);padding:clamp(8px,1.6vh,16px) clamp(16px,3vw,30px);display:flex;flex-direction:column;align-items:center;gap:4px;min-width:clamp(150px,22vh,220px)}
+.pic{font-size:clamp(80px,15vh,130px);line-height:1}
+.mot{font-size:clamp(28px,4.4vh,40px);font-weight:700;min-height:1.3em;color:var(--ok-ink)}
+.listen{background:var(--chip);border-radius:50%;width:clamp(76px,12vh,100px);height:clamp(76px,12vh,100px);font-size:clamp(34px,6vh,46px);box-shadow:var(--shadow);flex:none}
+.tambour{width:clamp(150px,26vh,230px);height:clamp(150px,26vh,230px);border-radius:50%;background:var(--drum);border:6px solid var(--drum-ink);box-shadow:var(--shadow);font-size:clamp(90px,16vh,140px);line-height:1;flex:none;transition:transform .08s}
+.tambour.boum{transform:scale(.92)}
+.coups{display:flex;gap:12px;min-height:44px;align-items:center;justify-content:center;flex-wrap:wrap}
+.coups i{width:38px;height:38px;border-radius:50%;background:var(--drum-ink);display:block}
+.coups.ok i{background:var(--ok-ink)}
+.coups.bad i{background:var(--muted)}
+.choix{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,900px)}
+.choix button{background:var(--panel);border:4px solid var(--line);border-radius:22px;min-height:clamp(80px,13vh,110px);font-size:clamp(28px,4.4vw,44px);font-weight:700;box-shadow:var(--shadow);min-width:0;padding:6px}
+.choix button.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.choix button.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+.slot{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;min-height:clamp(72px,11vh,96px)}
+.slot span{min-width:clamp(90px,12vh,120px);height:clamp(72px,11vh,96px);border-radius:16px;border:3px dashed var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:clamp(32px,5.6vh,50px);font-weight:700;padding:0 10px}
+.slot span.f{border-style:solid;border-color:var(--tile-ink);color:var(--tile-ink)}
+.slot.ok span.f{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.slot.bad{animation:shake .35s}
+.tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(10px,1.6vw,16px)}
+.tile{background:var(--tile);color:var(--tile-ink);border-radius:16px;min-width:clamp(100px,13vh,130px);min-height:clamp(76px,11vh,96px);padding:6px 14px;font-size:clamp(32px,5.6vh,50px);font-weight:700;box-shadow:var(--shadow)}
+.tile.used{visibility:hidden}
+body.cursive .mot,body.cursive .choix button,body.cursive .slot span,body.cursive .tile{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.astuce{font-size:clamp(18px,2.4vw,22px);text-align:center;min-height:1.5em;margin:0}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center;max-width:760px}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow);min-height:70px}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🥁 Frappe les syllabes</h1>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script>
+/* DONNEES */
+/*
+  [mot, emoji, syllabes ORALES, syllabes écrites (si différentes)].
+  Le tambour compte les syllabes qu'on ENTEND : « tomate » → to-mate = 2 (le e de la fin ne s'entend pas).
+  Moyen et difficile : seulement des mots où l'oral et l'écrit se coupent pareil (pas de e muet à la fin).
+*/
+const FACILE = [
+  ["rat","🐀","rat"],["lit","🛏️","lit"],["nid","🪺","nid"],["riz","🍚","riz"],["chat","🐱","chat"],
+  ["lune","🌙","lune","lu-ne"],["tomate","🍅","to-mate","to-ma-te"],["pirate","🏴‍☠️","pi-rate","pi-ra-te"],
+  ["tulipe","🌷","tu-lipe","tu-li-pe"],["moto","🏍️","mo-to"],["vélo","🚲","vé-lo"],["lama","🦙","la-ma"],
+  ["sapin","🌲","sa-pin"],["lapin","🐰","la-pin"],["robot","🤖","ro-bot"],["pomme","🍎","pomme","pom-me"],
+  ["poule","🐔","poule","pou-le"],["tasse","☕","tasse","tas-se"],["fleur","🌸","fleur"],["train","🚂","train"],
+  ["soleil","☀️","so-leil"],["renard","🦊","re-nard"],["tortue","🐢","tor-tue"],["salade","🥗","sa-lade","sa-la-de"],
+  ["banane","🍌","ba-nane","ba-na-ne"],["fusée","🚀","fu-sée"],["bateau","⛵","ba-teau"],["pain","🍞","pain"],
+  ["vache","🐄","vache","va-che"],["maison","🏠","mai-son"],["gâteau","🎂","gâ-teau"],["chapeau","🎩","cha-peau"],
+  ["citron","🍋","ci-tron"]
+];
+const MOYEN = [
+  ["ananas","🍍","a-na-nas"],["numéro","🔢","nu-mé-ro"],["éléphant","🐘","é-lé-phant"],["chocolat","🍫","cho-co-lat"],
+  ["kangourou","🦘","kan-gou-rou"],["parapluie","☂️","pa-ra-pluie"],["canapé","🛋️","ca-na-pé"],["escargot","🐌","es-car-got"],
+  ["pantalon","👖","pan-ta-lon"],["champignon","🍄","cham-pi-gnon"],["robinet","🚰","ro-bi-net"],["hôpital","🏥","hô-pi-tal"],
+  ["cinéma","🎬","ci-né-ma"],["avocat","🥑","a-vo-cat"],["caméra","📹","ca-mé-ra"],["cornichon","🥒","cor-ni-chon"],
+  ["parasol","⛱️","pa-ra-sol"],["policier","👮","po-li-cier"],["magicien","🧙","ma-gi-cien"],["kimono","👘","ki-mo-no"],
+  ["potiron","🎃","po-ti-ron"],["araignée","🕷️","a-rai-gnée"],["écureuil","🐿️","é-cu-reuil"],
+  ["koala","🐨","ko-a-la"],["calamar","🦑","ca-la-mar"]
+];
+/* lettres doubles : pas de « bon découpage » à choisir (hé-ri-sson s'entend pareil), seulement en difficile */
+const DOUBLES = [["hérisson","🦔","hé-ris-son"],["perroquet","🦜","per-ro-quet"]];
+const QUATRE = [
+  ["ordinateur","💻","or-di-na-teur"],["télévision","📺","té-lé-vi-sion"],["caméléon","🦎","ca-mé-lé-on"],
+  ["alligator","🐊","al-li-ga-tor"],["accordéon","🪗","ac-cor-dé-on"],["rhinocéros","🦏","rhi-no-cé-ros"],
+  ["photographie","📷","pho-to-gra-phie"]
+];
+const POOL = { facile:FACILE, moyen:MOYEN, difficile:MOYEN.concat(DOUBLES,QUATRE) };
+const oral = w => w[2].split("-");
+const ecrit = w => (w[3] || w[2]).split("-");
+/* mauvais découpages : on déplace une coupure d'une lettre (ra-dis → rad-is, r-adis) */
+function faussesCoupes(syl){
+  const lettres = [...syl.join("")], bon = syl.join("-");
+  let b = [], n = 0; syl.slice(0,-1).forEach(s => { n += [...s].length; b.push(n) });
+  const out = new Set();
+  b.forEach((x,i) => [-1,1].forEach(d => {
+    const nb = b.slice(); nb[i] = x + d;
+    if (nb[i] <= (i ? nb[i-1] : 0) || nb[i] >= (i < nb.length-1 ? nb[i+1] : lettres.length)) return;
+    const morceaux = []; let prev = 0; nb.concat(lettres.length).forEach(c => { morceaux.push(lettres.slice(prev,c).join("")); prev = c });
+    const s = morceaux.join("-"); if (s !== bon) out.add(s);
+  }));
+  return [...out];
+}
+/* FIN DONNEES */
+
+const KEY = "cp-frappe-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Mots de 1 ou 2 syllabes. On compte ce qu'on ENTEND : « tomate » = to-mate = 2 coups.",
+  moyen: "Mots de 3 syllabes, puis choisir le bon découpage écrit (nu-mé-ro).",
+  difficile: "Mots de 3 ou 4 syllabes, puis remettre les syllabes dans l'ordre." } });
+const T = () => R().questions;
+
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+let jeu, serie = 0;
+const plusTard = (fn, ms) => { const id = serie; setTimeout(() => { if (id === serie) fn() }, ms) };
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+
+function partie(){
+  Reglages.stop(); serie++;
+  jeu = { tour:0, res:[], neuf:Reglages.sansDoublon() };
+  $("#main").innerHTML = '<div class="end"><h2>🥁 Frappe les syllabes</h2>'+
+    '<p class="consigne">Écoute le mot. Tape sur le tambour une fois pour chaque syllabe que tu entends.</p>'+
+    '<p class="hint">On compte les syllabes à l\'oral : « tomate » → to-mate → 2 coups.</p>'+
+    '<button class="go" id="bGo">▶ Commencer</button></div>';
+  $("#bGo").onclick = tour;
+}
+const ditSyl = s => s.join(", ");          // la virgule fait une petite pause entre les syllabes
+const nb = n => n + (n > 1 ? " syllabes" : " syllabe");
+function tour(){
+  if (jeu.tour >= T()) return fin();
+  const niv = R().niveau;
+  const w = jeu.neuf(() => pick(POOL[niv]), x => x[0]);
+  const so = oral(w), se = ecrit(w);
+  let coups = 0, erreur = false, fini = false;
+  const dire = () => Reglages.parler(w[0], "consigne");
+  $("#main").innerHTML = etoiles() +
+    '<p class="consigne" id="cons">Tape sur le tambour : un coup par syllabe que tu entends</p>' +
+    '<div class="haut"><div class="carte"><div class="pic">'+w[1]+'</div><div class="mot" id="mot"></div></div>' +
+    '<button class="tambour" id="drum" aria-label="Tambour"><span class="e">🥁</span></button></div>' +
+    '<div class="coups" id="coups"></div>' +
+    '<div id="zone" class="tools"><button class="listen" id="bSay" aria-label="Réécouter le mot">🔊</button>' +
+    '<button class="pill gros" id="bRaz">↺ Recommencer</button><button class="pill gros fini" id="bFin" disabled>✓ J\'ai fini</button></div>' +
+    '<p class="astuce" id="astuce"></p>';
+  const drawCoups = () => { $("#coups").innerHTML = Array.from({length:coups}, () => "<i></i>").join("") };
+  $("#bSay").onclick = dire;
+  plusTard(dire, 300);
+  const suivant = () => { fini = true; Reglages.stop(); jeu.res[jeu.tour] = !erreur; jeu.tour++; plusTard(tour, erreur ? 3000 : 1600) };
+  const drum = $("#drum");
+  /* un seul type d'événement : un toucher = un coup */
+  drum.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    if (fini || drum.disabled || coups >= 8) return;
+    coups++; drawCoups(); $("#bFin").disabled = false; buzz();
+    drum.classList.remove("boum"); void drum.offsetWidth; drum.classList.add("boum");
+  });
+  $("#bRaz").onclick = () => { if (fini) return; coups = 0; drawCoups(); $("#bFin").disabled = true };
+  Reglages.chrono(() => {
+    if (fini) return; erreur = true;
+    document.querySelectorAll("#main button").forEach(b => b.disabled = true);
+    $("#mot").textContent = so.join("-");
+    $("#astuce").textContent = w[0]+" : "+so.join("-")+" → "+nb(so.length)+".";
+    Reglages.parler("Écoute : "+ditSyl(so)+". Ça fait "+nb(so.length)+".", "erreur");
+    suivant();
+  });
+  $("#bFin").onclick = () => {
+    if (fini) return;
+    drum.disabled = true; document.querySelectorAll("#zone button").forEach(b => b.disabled = true);
+    $("#mot").textContent = so.join("-");
+    const ok = coups === so.length;
+    coups = so.length; drawCoups(); $("#coups").classList.add(ok ? "ok" : "bad");
+    if (ok) { $("#astuce").textContent = "Oui : "+so.join("-")+" → "+nb(so.length)+" !"; Reglages.parler(ditSyl(so), "succes") }
+    else {
+      erreur = true;
+      $("#astuce").textContent = "Non. "+so.join("-")+" → "+nb(so.length)+".";
+      Reglages.parler("Non. Écoute : "+ditSyl(so)+". Ça fait "+nb(so.length)+".", "erreur");
+    }
+    if (niv === "facile") return suivant();
+    plusTard(niv === "moyen" ? coupe : ordre, ok ? 1300 : 3200);
+  };
+  /* moyen : choisir le bon découpage écrit */
+  const coupe = () => {
+    if (fini) return;
+    const bon = se.join("-"), choix = shuffle([bon, ...shuffle(faussesCoupes(se)).slice(0,2)]);
+    $("#cons").textContent = "Comment on coupe le mot écrit ?"; Reglages.parler("Comment on coupe le mot écrit ?", "consigne");
+    $("#mot").textContent = ""; $("#coups").innerHTML = ""; $("#astuce").textContent = "";
+    $("#zone").outerHTML = '<div class="choix" id="zone">'+choix.map(c => '<button data-c="'+esc(c)+'">'+esc(c)+'</button>').join("")+'</div>';
+    const btns = [...document.querySelectorAll("#zone button")];
+    btns.forEach(b => b.onclick = () => {
+      if (fini) return;
+      btns.forEach(x => { x.disabled = true; if (x.dataset.c === bon) x.classList.add("ok") });
+      $("#mot").textContent = w[0];
+      if (b.dataset.c === bon) { buzz(); $("#astuce").textContent = "Bravo !"; Reglages.parler(ditSyl(se), "succes") }
+      else { erreur = true; b.classList.add("bad"); $("#astuce").textContent = "Non. On coupe : "+bon+".";
+        Reglages.parler("Non. On coupe : "+ditSyl(se)+".", "erreur") }
+      suivant();
+    });
+  };
+  /* difficile : remettre les syllabes dans l'ordre */
+  const ordre = () => {
+    if (fini) return;
+    let ord = shuffle(se.map((_,i) => i));
+    for (let n = 0; n < 20 && ord.every((v,i) => se[v] === se[i]); n++) ord = shuffle(ord);
+    let pos = 0, err = 0;
+    $("#cons").textContent = "Remets les syllabes dans l'ordre"; Reglages.parler("Remets les syllabes dans l'ordre : "+w[0], "consigne");
+    $("#mot").textContent = ""; $("#coups").innerHTML = ""; $("#astuce").textContent = "";
+    $("#zone").outerHTML = '<div id="zone" style="display:flex;flex-direction:column;gap:14px;align-items:center"><div class="slot" id="slot"></div>' +
+      '<div class="tiles">'+ord.map(i => '<button class="tile" data-i="'+i+'">'+esc(se[i])+'</button>').join("")+'</div></div>';
+    const draw = () => { $("#slot").innerHTML = se.map((s,i) => i < pos ? '<span class="f">'+esc(s)+'</span>' : '<span></span>').join("") };
+    draw();
+    document.querySelectorAll(".tile").forEach(t => t.onclick = () => {
+      if (fini) return;
+      if (se[+t.dataset.i] === se[pos]) {
+        buzz(); t.classList.add("used"); pos++; draw();
+        if (pos === se.length) { $("#slot").classList.add("ok"); $("#mot").textContent = w[0]; Reglages.parler(w[0], "succes"); suivant() }
+        return;
+      }
+      err++; erreur = true;
+      const s = $("#slot"); s.classList.remove("bad"); void s.offsetWidth; s.classList.add("bad");
+      $("#astuce").textContent = "Non. Écoute : "+so.join("-")+".";
+      Reglages.parler("Non. Écoute : "+ditSyl(so)+".", "erreur");
+      if (err >= 2) { pos = se.length; draw(); $("#slot").classList.add("ok"); $("#mot").textContent = w[0];
+        document.querySelectorAll(".tile").forEach(x => x.disabled = true); suivant() }
+    });
+  };
+}
+function fin(){
+  Reglages.stop();
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    '<p class="hint">Mots réussis sans erreur · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>

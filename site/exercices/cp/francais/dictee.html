@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Dictée · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Dictée : la tablette dit une syllabe ou un mot, l'enfant l'écrit avec des lettres */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --tile:#e7f1fc; --tile-ink:#1c7ed6; --muet:#adb5bd;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#1c7ed6; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --tile:#1d2d3d; --tile-ink:#4dabf7; --muet:#6c737c;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#4dabf7; --on-accent:#10161d;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit;min-height:48px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,22px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.haut{display:flex;align-items:center;justify-content:center;gap:clamp(14px,3vw,30px)}
+.listen{background:var(--accent);color:var(--on-accent);border-radius:50%;width:clamp(90px,15vh,130px);height:clamp(90px,15vh,130px);font-size:clamp(40px,7vh,60px);box-shadow:var(--shadow)}
+.pic{font-size:clamp(70px,13vh,120px);line-height:1}
+.ph{font-size:clamp(26px,4vw,40px);font-weight:700;background:var(--panel);border-radius:20px;padding:10px 22px;box-shadow:var(--shadow);text-align:center}
+.ph .trou{display:inline-block;min-width:2.4ch;border-bottom:5px solid var(--accent);color:var(--accent);padding:0 .15em}
+.model{font-size:clamp(56px,10vh,96px);font-weight:700;line-height:1.1;min-height:1.1em;color:var(--ok-ink)}
+.model .muet{color:var(--muet)}
+.slot{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;min-height:clamp(72px,12vh,104px)}
+.slot span{min-width:clamp(56px,8vh,76px);height:clamp(72px,12vh,104px);border-radius:16px;border:3px dashed var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:clamp(40px,7vh,64px);font-weight:700;padding:0 6px}
+.slot span.f{border-style:solid;border-color:var(--tile-ink);color:var(--tile-ink)}
+.slot.ok span.f{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink)}
+.slot.bad{animation:shake .35s}
+.tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,1.4vw,14px);max-width:900px}
+.tile{background:var(--tile);color:var(--tile-ink);border-radius:16px;min-width:clamp(72px,10vh,90px);min-height:clamp(72px,10vh,90px);padding:6px 12px;font-size:clamp(36px,6vh,54px);font-weight:700;box-shadow:var(--shadow)}
+.tile.used{visibility:hidden}
+.tile.bad{background:var(--err);color:var(--err-ink);animation:shake .35s}
+body.cursive .slot span,body.cursive .tile,body.cursive .model,body.cursive .ph{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.astuce{font-size:clamp(18px,2.4vw,22px);text-align:center;min-height:1.5em;margin:0}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow);min-height:70px}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>✏️ Dictée</h1>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script>
+/* DONNEES */
+/* Facile : syllabes consonne + voyelle (pa, li…) et voyelle + consonne (il, or…) */
+const SYLLABES = (() => {
+  const l = [];
+  for (const c of ["p","l","t","r","s","n","m"]) for (const v of ["a","i","o","u","é"]) l.push({ m:c+v });
+  for (const s of ["il","or"]) l.push({ m:s });   // de vrais mots : la voix ne les épelle pas
+  return l;
+})();
+/* Moyen : mots simples (lettres connues, e final muet seulement) */
+const MOTS = [
+  {m:"moto",e:"🏍️"},{m:"vélo",e:"🚲"},{m:"lama",e:"🦙"},{m:"lune",e:"🌙"},{m:"pile",e:"🔋"},{m:"rame",e:"🚣"},
+  {m:"rose",e:"🌹"},{m:"note",e:"🎵"},{m:"salade",e:"🥗"},{m:"tomate",e:"🍅"},{m:"pirate",e:"🏴‍☠️"},{m:"tulipe",e:"🌷"},
+  {m:"malade",e:"🤒"},{m:"tipi",e:"⛺"},{m:"épée",e:"🗡️"},{m:"télé",e:"📺"},{m:"fusée",e:"🚀"},{m:"tortue",e:"🐢"},
+  {m:"midi",e:"🕛"},{m:"radio",e:"📻"},{m:"olive",e:"🫒"},{m:"sardine",e:"🐟"},{m:"papa",e:"👨"},{m:"ami",e:"🤝"}
+];
+/* Difficile : lettre muette à la fin (dit = ce que la tablette prononce) */
+const MUETS = [
+  {m:"rat",e:"🐀"},{m:"nid",e:"🪺"},{m:"lit",e:"🛏️"},{m:"riz",e:"🍚"},{m:"tard",e:"",dit:"tard. Il est tard."},
+  {m:"tapis",e:"",dit:"un tapis"},{m:"radis",e:"",dit:"un radis"},{m:"souris",e:"🐭"},{m:"sirop",e:"",dit:"le sirop"},
+  {m:"robot",e:"🤖"},{m:"pot",e:"🪴"},{m:"mot",e:"",dit:"un mot"},{m:"dos",e:"",dit:"le dos"},{m:"petit",e:"",dit:"petit. Un petit rat."},
+  {m:"chat",e:"🐱"},{m:"chocolat",e:"🍫"},{m:"pas",e:"👣"},{m:"salut",e:"👋",dit:"salut !"},{m:"repas",e:"🍽️"},{m:"tricot",e:"🧶"}
+].map(x => Object.assign(x, { muette:true }));
+/* Difficile : petits mots outils, dits dans une phrase (et / est, la / là s'entendent pareil) */
+const OUTILS = [
+  {m:"et",ph:"Papa ___ maman."},{m:"est",ph:"Le chat ___ sur le lit."},{m:"la",ph:"Il a vu ___ lune."},
+  {m:"le",ph:"Il a vu ___ rat."},{m:"il",ph:"Le soir, ___ lit."},{m:"un",ph:"Il y a ___ nid."},
+  {m:"une",ph:"Il y a ___ pomme."},{m:"sur",ph:"Le pot est ___ la table."},{m:"dans",ph:"Le rat est ___ le nid."},
+  {m:"pour",ph:"C'est ___ papa."},{m:"elle",ph:"Lila rit, ___ est contente."},{m:"lui",ph:"Ce vélo est à ___."}
+];
+const POOL = { facile:SYLLABES, moyen:MOTS, difficile:MUETS.concat(OUTILS) };
+const PIEGES = { facile:2, moyen:3, difficile:3 };
+/* ce que dit la tablette */
+const aDire = q => q.ph ? q.ph.replace("___", q.m) : (q.dit || q.m);
+/* lettres pièges : jamais une lettre du mot */
+function pieges(mot, n, hasard = Math.random){
+  const dispo = "aeéioulrstpnm".split("").filter(c => !mot.includes(c));
+  const out = [];
+  while (out.length < n && dispo.length) out.push(dispo.splice(Math.floor(hasard()*dispo.length),1)[0]);
+  return out;
+}
+/* FIN DONNEES */
+
+const KEY = "cp-dictee-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Des syllabes : pa, li, mo, té… et il, or. 2 lettres pièges.",
+  moyen: "Des mots simples : lune, moto, tomate, pirate… 3 lettres pièges.",
+  difficile: "Des mots avec une lettre muette à la fin (rat, nid, riz, tapis…) et des petits mots outils (et, est, la, sur…)." } });
+const T = () => R().questions;
+
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+let jeu, serie = 0;
+/* un délai qui ne sert plus si une nouvelle partie a commencé */
+const plusTard = (fn, ms) => { const id = serie; setTimeout(() => { if (id === serie) fn() }, ms) };
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+
+function partie(){
+  Reglages.stop(); serie++;
+  jeu = { tour:0, res:[], neuf:Reglages.sansDoublon() };
+  /* un premier toucher permet à la tablette de parler (iPad) */
+  $("#main").innerHTML = '<div class="end"><h2>✏️ Dictée</h2><p class="consigne">Écoute bien, puis écris avec les lettres.</p>'+
+    '<button class="go" id="bGo">▶ Commencer</button></div>';
+  $("#bGo").onclick = tour;
+}
+/* le mot écrit en gros, la lettre muette en gris */
+function modele(q){
+  if (!q.muette) return esc(q.m);
+  return esc(q.m.slice(0,-1)) + '<span class="muet">' + esc(q.m.slice(-1)) + '</span>';
+}
+function tour(){
+  if (jeu.tour >= T()) return fin();
+  const niv = R().niveau;
+  const q = jeu.neuf(() => pick(POOL[niv]), x => x.m);
+  const lettres = [...q.m];
+  const tuiles = shuffle([...lettres, ...pieges(q.m, PIEGES[niv])]);
+  let pos = 0, erreurs = 0, fini = false;
+  const dire = () => Reglages.parler(q.ph ? "Écris le mot qui manque : " + aDire(q) : aDire(q), "consigne");
+  $("#main").innerHTML = etoiles() +
+    '<p class="consigne">'+(q.ph ? "Écoute la phrase et écris le petit mot qui manque" : "Écoute et écris "+(niv==="facile"?"la syllabe":"le mot"))+'</p>' +
+    '<div class="haut"><button class="listen" id="bSay" aria-label="Réécouter">🔊</button>'+(q.e?'<div class="pic">'+q.e+'</div>':'')+'</div>' +
+    (q.ph ? '<div class="ph">'+esc(q.ph).replace("___",'<span class="trou" id="trou">?</span>')+'</div>' : '') +
+    '<div class="model" id="model"></div>' +
+    '<div class="slot" id="slot"></div>' +
+    '<div class="tiles">'+tuiles.map((c,i)=>'<button class="tile" data-i="'+i+'">'+esc(c)+'</button>').join("")+'</div>' +
+    '<p class="astuce" id="astuce"></p>';
+  const draw = () => { $("#slot").innerHTML = lettres.map((c,i) => i < pos ? '<span class="f">'+esc(c)+'</span>' : '<span></span>').join("") };
+  const montrer = () => { $("#model").innerHTML = modele(q); if (q.ph) $("#trou").textContent = q.m };
+  const terminer = ok => {
+    fini = true; Reglages.stop(); montrer();
+    document.querySelectorAll(".tile").forEach(t => t.disabled = true);
+    jeu.res[jeu.tour] = ok; jeu.tour++;
+    plusTard(tour, ok ? 1800 : 3000);
+  };
+  draw();
+  $("#bSay").onclick = dire;
+  plusTard(dire, 300);
+  Reglages.chrono(() => {
+    if (fini) return;
+    pos = lettres.length; draw(); $("#astuce").textContent = "On écrit : « "+q.m+" ».";
+    Reglages.parler("On écrit "+q.m, "erreur"); terminer(false);
+  });
+  document.querySelectorAll(".tile").forEach(t => t.onclick = () => {
+    if (fini) return;
+    const c = tuiles[+t.dataset.i];
+    if (c === lettres[pos]) {
+      buzz(); t.classList.add("used"); pos++; draw();
+      if (pos === lettres.length) {
+        $("#slot").classList.add("ok");
+        $("#astuce").textContent = erreurs ? "" : "Bravo !";
+        Reglages.parler(q.m, "succes");
+        terminer(erreurs === 0);
+      }
+      return;
+    }
+    /* erreur : on aide, à voix haute et par écrit */
+    erreurs++;
+    t.classList.remove("bad"); void t.offsetWidth; t.classList.add("bad");
+    const s = $("#slot"); s.classList.remove("bad"); void s.offsetWidth; s.classList.add("bad");
+    const muette = q.muette && pos === lettres.length - 1;
+    const aide = muette ? "Il y a une lettre qu'on n'entend pas à la fin." : (pos === 0 ? "Écoute le début." : "Écoute la suite.");
+    $("#astuce").textContent = "Pas « "+c+" ». "+aide;
+    Reglages.parler("Non. "+aide+" Écoute bien : "+aDire(q), "erreur");
+    if (erreurs >= 2) montrer();   // après 2 erreurs, le mot s'affiche pour aider
+  });
+}
+function fin(){
+  Reglages.stop();
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    '<p class="hint">Écrits sans erreur · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>

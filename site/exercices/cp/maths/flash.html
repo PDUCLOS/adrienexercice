@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Flash ! Combien ? · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Flash : une quantité apparaît un instant (dé, doigts, boîte de 10), puis se cache. On la reconnaît sans compter. */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --c0:#1c7ed6; --c1:#e8590c; --c2:#7048e8; --case:#f1f3f5; --cache:#ffd43b; --cache-ink:#5c3c00;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#f08c00; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --c0:#4dabf7; --c1:#ff922b; --c2:#9775fa; --case:#1f2226; --cache:#e8a90c; --cache-ink:#2b1d00;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#f59f00;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;user-select:none;-webkit-user-select:none;
+  display:flex;flex-direction:column;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--c0);outline-offset:2px}
+button:disabled{cursor:default;opacity:.55}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit;min-height:48px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2vh,20px);padding-top:8px;width:min(100%,1180px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(18px,3.2vw,28px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.zone{display:flex;flex-direction:column;align-items:center;gap:clamp(10px,2.4vh,24px);width:100%}
+@media (orientation:landscape){ .zone{flex-direction:row;justify-content:center;gap:clamp(20px,4vw,56px)} }
+/* la scène où la quantité apparaît */
+.scene{width:clamp(300px,44vw,560px);height:clamp(220px,38vh,340px);background:var(--panel);border-radius:28px;box-shadow:var(--shadow);position:relative;
+  display:flex;align-items:center;justify-content:center;gap:clamp(12px,2.4vw,28px);padding:16px;overflow:hidden}
+.cache{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;background:var(--cache);color:var(--cache-ink);font-size:clamp(60px,12vh,110px);font-weight:700}
+.cache small{font-size:clamp(18px,2.6vh,24px)}
+.cache[hidden]{display:none}
+/* dé */
+.de{display:grid;grid-template:repeat(3,1fr)/repeat(3,1fr);width:clamp(110px,20vh,170px);aspect-ratio:1;padding:12%;border-radius:20%;border:4px solid var(--line);background:var(--case)}
+.de i{border-radius:50%;margin:12%;display:block}
+/* points en vrac */
+.vrac{display:grid;grid-template:repeat(3,1fr)/repeat(4,1fr);width:clamp(200px,32vh,300px);aspect-ratio:4/3;gap:6px}
+.vrac i{border-radius:50%;display:block;margin:10%}
+.k0{background:var(--c0)}.k1{background:var(--c1)}.k2{background:var(--c2)}
+/* boîte de 10 : 2 rangées de 5 */
+.cadre{display:grid;grid-template:repeat(2,1fr)/repeat(5,1fr);border:4px solid var(--ink);border-radius:8px;width:clamp(170px,23vw,250px);aspect-ratio:5/2;background:var(--case)}
+.cadre span{border:2px solid var(--line);display:flex;align-items:center;justify-content:center}
+.cadre i{width:72%;aspect-ratio:1;border-radius:50%;display:block}
+.cadres{display:flex;flex-direction:column;gap:14px}
+@media (orientation:portrait){ .cadre{width:clamp(200px,40vw,300px)} }
+@media (orientation:portrait){ .scene{width:min(100%,620px)} }
+/* doigts */
+.mains{display:flex;align-items:flex-end;justify-content:center;flex-wrap:wrap;gap:4px;font-size:clamp(56px,11vh,96px);line-height:1}
+.mains .illus+.illus{margin-left:-.12em}
+.mains .gap{width:.3em}
+/* pavé */
+.pad{display:grid;gap:clamp(6px,1.2vw,12px);width:min(100%,560px)}
+.pad.c3{grid-template-columns:repeat(3,minmax(0,1fr));width:min(100%,380px)}.pad.c5{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (orientation:portrait){ .pad.c3{grid-template-columns:repeat(6,minmax(0,1fr));width:min(100%,640px)} }
+.num{background:var(--panel);border:3px solid var(--line);border-radius:18px;min-height:clamp(70px,10.5vh,90px);font-size:clamp(30px,5vh,46px);font-weight:700;box-shadow:var(--shadow);font-variant-numeric:tabular-nums}
+.num.ok{background:var(--ok);color:var(--ok-ink);border-color:var(--ok-ink);opacity:1}
+.num.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s;opacity:1}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.msg{font-size:clamp(18px,2.6vh,24px);text-align:center;min-height:1.4em;margin:0;font-weight:700}
+.msg.err{color:var(--err-ink)}.msg b{color:var(--ok-ink);font-variant-numeric:tabular-nums}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.end .big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+.precharge{position:absolute;width:1px;height:1px;overflow:hidden;opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>⚡ Flash ! Combien ?</h1>
+</header>
+<main id="main"></main>
+<div class="precharge illus" aria-hidden="true">✋☝️</div>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script>
+/* GEN-DEBUT : fonctions pures (testées hors page) */
+const rnd = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const DUREE = { facile:2000, moyen:1200, difficile:800 };   // temps d'affichage en ms
+const padMax = niv => niv==="facile" ? 6 : niv==="moyen" ? 10 : 20;
+const padNombres = niv => Array.from({length:padMax(niv)},(_,i)=>i+1);
+/* cases tirées au hasard pour les points en vrac (grille 4 × 3) */
+function cases(n){ const c=[...Array(12).keys()]; for (let i=c.length-1;i>0;i--){ const j=rnd(0,i); [c[i],c[j]]=[c[j],c[i]] } return c.slice(0,n).sort((x,y)=>x-y) }
+/* une question : type de dessin + morceaux (parts) dont la somme est la réponse */
+function genere(niv){
+  let q; const r = Math.random();
+  if (niv==="facile"){
+    if (r<.45) q = { type:"de", parts:[rnd(1,6)], c:rnd(0,2) };
+    else if (r<.7) q = { type:"doigts", parts:[rnd(1,5)], c:0 };
+    else { const n=rnd(1,6); q = { type:"vrac", parts:[n], c:rnd(0,2), cases:cases(n) } }
+  } else if (niv==="moyen"){
+    if (r<.45) q = { type:"cadre", parts:[rnd(1,10)], c:rnd(0,1) };
+    else if (r<.8){ const a=rnd(1,6), b=rnd(1,Math.min(6,10-a)); q = { type:"2de", parts:[a,b], c:0 } }
+    else q = { type:"doigts", parts:[5, rnd(1,5)], c:0 };
+  } else {
+    if (r<.5) q = { type:"2cadres", parts:[10, rnd(1,10)], c:0 };            // une boîte pleine et une autre
+    else if (r<.85){ const a=rnd(5,9), b=rnd(3,9); q = { type:"2cadres", parts:[a,b], c:0 } }   // deux boîtes entamées
+    else q = { type:"cadre", parts:[rnd(6,10)], c:1 };
+  }
+  q.rep = q.parts.reduce((s,x)=>s+x,0);
+  q.choix = padNombres(niv);
+  const [a,b] = q.parts, n = q.rep;
+  if (q.type==="doigts" && b) q.explication = "une main, 5, et encore "+b+" doigt"+(b>1?"s":"");
+  else if (q.type==="cadre" && n===10) q.explication = "la boîte est pleine, 10";
+  else if (q.type==="cadre" && n>5) q.explication = "une rangée pleine, 5, et encore "+(n-5);
+  else if (q.type==="2cadres" && a===10) q.explication = b===10 ? "deux boîtes pleines, 10 et 10" : "une boîte pleine, 10, et encore "+b;
+  else if (b) q.explication = a+" et "+b;
+  else q.explication = "il y a "+n+(q.type==="doigts" ? " doigt"+(n>1?"s":"") : " point"+(n>1?"s":""));
+  q.dire = "Non, c'était "+n+" : "+q.explication+".";
+  q.succes = String(n);
+  return q;
+}
+const cle = q => q.type+"|"+q.parts.join("+")+"|"+q.c;
+function serie(niv, n, neuf){
+  const liste = []; let prec = null;
+  for (let i=0;i<n;i++){
+    const q = neuf(() => { let x, k=0; do { x = genere(niv) } while (x.rep===prec && ++k<30); return x }, cle);
+    prec = q.rep; liste.push(q);
+  }
+  return liste;
+}
+/* GEN-FIN */
+
+const KEY = "cp-flash-v1";
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Dé, doigts ou points jusqu'à 6, montrés 2 secondes.",
+  moyen: "Boîte de 10, deux dés, doigts jusqu'à 10, montrés 1,2 seconde.",
+  difficile: "Deux boîtes de 10, jusqu'à 20, montrées 0,8 seconde." } });
+const T = () => R().questions;
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+/* dessins */
+const PIPS = { 1:[4], 2:[0,8], 3:[0,4,8], 4:[0,2,6,8], 5:[0,2,4,6,8], 6:[0,2,3,5,6,8] };
+const de = (n,c) => '<div class="de">' + Array.from({length:9},(_,i)=>PIPS[n].includes(i)?'<i class="k'+c+'"></i>':'<i></i>').join("") + '</div>';
+const vrac = (q) => '<div class="vrac">' + Array.from({length:12},(_,i)=>q.cases.includes(i)?'<i class="k'+q.c+'"></i>':'<i></i>').join("") + '</div>';
+const cadre = (n,c) => '<div class="cadre">' + Array.from({length:10},(_,i)=>'<span>'+(i<n?'<i class="k'+c+'"></i>':'')+'</span>').join("") + '</div>';
+const doigts = parts => '<div class="mains">' + (parts.length>1 || parts[0]===5 ? '<span class="illus">✋</span><span class="gap"></span>' : '') +
+  '<span class="illus">☝️</span>'.repeat(parts.length>1 ? parts[1] : parts[0]===5 ? 0 : parts[0]) + '</div>';
+function dessin(q){
+  if (q.type==="de") return de(q.parts[0], q.c);
+  if (q.type==="vrac") return vrac(q);
+  if (q.type==="cadre") return cadre(q.parts[0], q.c);
+  if (q.type==="2de") return de(q.parts[0],0) + de(q.parts[1],1);
+  if (q.type==="2cadres") return '<div class="cadres">'+cadre(q.parts[0],0)+cadre(q.parts[1],1)+'</div>';
+  return doigts(q.parts);
+}
+
+let jeu = null, numSerie = 0;
+function plusTard(fn, ms){ const id = jeu.id; setTimeout(() => { if (jeu && jeu.id===id) fn() }, ms) }
+function etoiles(){
+  return '<div class="stars">' + Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("") + '</div>';
+}
+function partie(){
+  Reglages.stop();
+  const niv = R().niveau;
+  jeu = { id: ++numSerie, niv, tour:0, res:[], liste: serie(niv, T(), Reglages.sansDoublon()) };
+  tour();
+}
+function tour(){
+  if (jeu.tour>=T()) return fin();
+  const q = jeu.liste[jeu.tour], niv = jeu.niv, cols = niv==="facile" ? "c3" : "c5";
+  let fini = false, aide = false, vue = 0, chronoLance = false;
+  $("#main").innerHTML = etoiles() +
+    '<div class="zone"><div class="scene" id="scene" aria-label="Quantité à reconnaître">'+dessin(q)+
+      '<div class="cache" id="cache">👀<small>Regarde bien…</small></div></div>' +
+    '<div class="pad '+cols+'">' + q.choix.map(n=>'<button class="num" data-n="'+n+'">'+n+'</button>').join("") + '</div></div>' +
+    '<p class="msg" id="msg" aria-live="polite"></p>' +
+    '<div class="tools"><button class="pill" id="bRevoir" disabled>👀 Revoir</button></div>';
+  if (window.Illus) Illus.balayer($("#scene"));     // doigts en 3D tout de suite (images préchargées)
+  const btns = [...document.querySelectorAll(".num")], cache = $("#cache");
+  /* montrer la quantité un instant, puis la cacher */
+  const montrer = () => {
+    const n = ++vue; cache.hidden = true; $("#bRevoir").disabled = true;
+    plusTard(() => {
+      if (fini || n!==vue) return;
+      cache.hidden = false; cache.innerHTML = '?<small>Combien ?</small>'; $("#bRevoir").disabled = false;
+      if (!chronoLance){ chronoLance = true; Reglages.chrono(erreur) }
+    }, DUREE[niv]);
+  };
+  const finir = (ok, court) => {
+    if (fini) return; fini = true; Reglages.stop();
+    btns.forEach(b => b.disabled = true); $("#bRevoir").disabled = true; cache.hidden = true;
+    jeu.res[jeu.tour] = ok; jeu.tour++;
+    plusTard(tour, court ? 1300 : 3800);
+  };
+  const erreur = () => {
+    btns.find(b => +b.dataset.n===q.rep).classList.add("ok");
+    $("#msg").className = "msg err"; $("#msg").innerHTML = "C'était <b>"+q.rep+"</b> : "+q.explication+".";
+    Reglages.parler(q.dire, "erreur");
+    finir(false);
+  };
+  $("#bRevoir").onclick = () => { if (fini) return; aide = true; montrer() };
+  btns.forEach(b => b.onclick = () => {
+    if (fini) return;
+    if (+b.dataset.n===q.rep){
+      b.classList.add("ok"); buzz(); Reglages.parler(q.succes, "succes");
+      if (aide) { $("#msg").className = "msg"; $("#msg").textContent = "Bien, avec l'aide 👀 : pas d'étoile cette fois." }
+      finir(!aide, true);
+    } else { b.classList.add("bad"); erreur() }
+  });
+  plusTard(montrer, 700);
+}
+function fin(){
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+jeu.niv, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>' +
+    '<p class="hint">Trouvés du premier coup, sans revoir · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>

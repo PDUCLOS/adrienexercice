@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Phrase en étiquettes · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Phrase en étiquettes : remettre les mots dans l'ordre pour faire une phrase */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --tile:#fff3bf; --tile-ink:#5c3d00; --tile-line:#f2c94c;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#e67700; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --tile:#3d3417; --tile-ink:#ffe066; --tile-line:#8a6d1c;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#ffa94d; --on-accent:#1b1d21;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:max(12px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit;min-height:48px}
+.pill.gros{font-size:22px;padding:14px 22px;min-height:70px}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(12px,3vh,28px);padding-top:10px;width:min(100%,1100px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.6vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.ligne{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:clamp(8px,1.2vw,14px);min-height:clamp(90px,15vh,130px);width:100%;
+  background:var(--panel);border-radius:24px;box-shadow:var(--shadow);padding:clamp(10px,2vh,18px)}
+.ligne .vide{width:clamp(70px,10vw,110px);height:clamp(64px,10vh,88px);border:3px dashed var(--line);border-radius:14px}
+.ligne.ok{background:var(--ok)}
+.ligne.bad{animation:shake .35s;background:var(--err)}
+.tas{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(10px,1.6vw,18px);min-height:clamp(80px,12vh,110px)}
+.et{background:var(--tile);color:var(--tile-ink);border:3px solid var(--tile-line);border-radius:14px;min-height:clamp(70px,10.5vh,92px);min-width:80px;padding:6px clamp(14px,2vw,24px);
+  font-size:clamp(30px,5.2vh,46px);font-weight:700;box-shadow:var(--shadow);white-space:nowrap}
+.ligne .et{box-shadow:none}
+.et.used{visibility:hidden}
+body.cursive .et,body.cursive .resultat{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+body.cursive .et{font-size:clamp(24px,4.2vh,38px)}
+.resultat{font-size:clamp(34px,5.6vw,58px);font-weight:700;color:var(--ok-ink);text-align:center;min-height:1.3em;margin:0}
+body.cursive .resultat{font-size:clamp(28px,4.6vw,48px)}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.astuce{font-size:clamp(18px,2.4vw,22px);text-align:center;min-height:1.5em;margin:0}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow);min-height:70px}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🏷️ Phrase en étiquettes</h1>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=4"></script>
+<script src="../../../assets/illus.js?v=4"></script>
+<script>
+/* DONNEES */
+/*
+  Les étiquettes sont séparées par « | » (« Il y a » et « C'est » font une seule étiquette).
+  La phrase complète = les étiquettes + un point.
+  Difficile : la 3e case est l'étiquette piège (elle ne peut remplacer aucun mot : mauvais genre…).
+*/
+const FACILE = [
+  "Le|chat|dort","Le|rat|court","La|lune|brille","Il|est|petit","Elle|est|là","Papa|est|là","Léo|a|ri","Lila|a|lu",
+  "La|tortue|dort","C'est|un|rat","C'est|une|tulipe","Il y a|un|nid","Il y a|une|rose","Le|pirate|rit","La|moto|roule",
+  "Le|vélo|roule","Elle|est|petite","Maman|est|là","C'est|pour|lui","C'est|pour|elle","Le|renard|file","La|tarte|cuit"
+];
+const MOYEN = [
+  "Le|rat|est|petit","Léo|a|un|vélo","Lila|a|une|moto","Il y a|un|petit|rat","Elle|a|une|tulipe","Il|a|un|ananas",
+  "Papa|a|un|tapis","Le|pirate|a|un|trésor","La|lune|est|là","C'est|le|lit|de|Léo","Lila|est|sur|le|tapis",
+  "Léo|est|dans|le|lit","La|tarte|est|pour|Papa","Le|gâteau|est|pour|lui","Bonjour,|c'est|le|pirate","Elle|est|sur|la|moto",
+  "Il|est|sur|le|vélo","Le|rat|a|un|os","Elle|a|un|petit|chat","Il y a|une|petite|tortue","C'est|une|belle|salade","Le|chat|dort|là"
+];
+const DIFFICILE = [
+  ["Le|chat|est|sur|le|lit","la"],["La|tortue|dort|dans|le|nid","une"],["Il y a|un|rat|sur|le|tapis","une"],
+  ["Léo|a|un|vélo|rouge","elle"],["Lila|est|dans|la|piscine","le"],["Elle|a|une|petite|tortue","un"],
+  ["Papa|lit|le|journal","la"],["Le|pirate|a|un|trésor","une"],["La|lune|est|dans|le|ciel","une"],
+  ["C'est|un|cadeau|pour|Lila","une"],["Il|est|sur|la|moto","le"],["Elle|est|sous|le|lit","la"],
+  ["Le|rat|a|un|os","une"],["La|poule|est|sur|le|toit","une"],["Le|gâteau|est|pour|lui","la"],
+  ["La|tarte|est|pour|Maman","le"],["Le|chien|dort|sous|la|table","un"],["Lila|a|un|pull|rouge","une"],
+  ["Le|chat|est|dans|la|boîte","un"],["La|souris|mange|le|fromage","une"],["Il y a|un|nid|dans|l'arbre","une"],
+  ["Léo|est|dans|son|lit","la"]
+];
+const PROPRES = ["Léo","Lila"];
+/* une question : les étiquettes dans le bon ordre, la phrase, le piège éventuel */
+function question(niv, item){
+  const brut = niv === "difficile" ? item[0] : item, piege = niv === "difficile" ? item[1] : null;
+  const mots = brut.split("|");
+  const phrase = mots.join(" ") + ".";
+  let et = mots.slice();
+  if (niv === "facile") { if (!PROPRES.includes(et[0])) et[0] = et[0].charAt(0).toLowerCase() + et[0].slice(1) }
+  else et[et.length-1] += ".";     // moyen / difficile : la majuscule et le point sont sur les étiquettes
+  return { id:brut, phrase, et, piege };
+}
+const POOL = { facile:FACILE, moyen:MOYEN, difficile:DIFFICILE };
+/* FIN DONNEES */
+
+const KEY = "cp-etiquettes-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "3 étiquettes : « le | chat | dort ».",
+  moyen: "4 ou 5 étiquettes. La majuscule et le point aident à trouver le début et la fin.",
+  difficile: "5 ou 6 étiquettes, dont une étiquette piège qui ne va pas dans la phrase." } });
+const T = () => R().questions;
+
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+let jeu, serie = 0;
+const plusTard = (fn, ms) => { const id = serie; setTimeout(() => { if (id === serie) fn() }, ms) };
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+
+function partie(){
+  Reglages.stop(); serie++;
+  jeu = { tour:0, res:[], neuf:Reglages.sansDoublon() };
+  tour();
+}
+function tour(){
+  if (jeu.tour >= T()) return fin();
+  const niv = R().niveau;
+  const q = jeu.neuf(() => question(niv, pick(POOL[niv])), x => x.id);
+  const tas = q.et.concat(q.piege ? [q.piege] : []);
+  let ordre = shuffle(tas.map((_,i) => i));
+  for (let n = 0; n < 20 && ordre.slice(0,q.et.length).every((v,i) => v === i); n++) ordre = shuffle(ordre);   // jamais déjà rangé
+  let pose = [], erreurs = 0, fini = false, attente = false;
+  $("#main").innerHTML = etoiles() +
+    '<p class="consigne">Touche les étiquettes dans l\'ordre pour faire la phrase'+(q.piege?" (une étiquette ne sert pas !)":"")+'</p>' +
+    '<div class="ligne" id="ligne"></div>' +
+    '<p class="resultat" id="res"></p>' +
+    '<div class="tas" id="tas">'+ordre.map(i => '<button class="et" data-i="'+i+'">'+esc(tas[i])+'</button>').join("")+'</div>' +
+    '<div class="tools"><button class="pill gros" id="bBack">↩ Retirer</button></div>' +
+    '<p class="astuce" id="astuce"></p>';
+  const draw = () => {
+    $("#ligne").innerHTML = pose.map(i => '<span class="et">'+esc(tas[i])+'</span>').join("") +
+      Array.from({length:q.et.length - pose.length}, () => '<span class="vide"></span>').join("");
+    document.querySelectorAll("#tas .et").forEach(b => b.classList.toggle("used", pose.includes(+b.dataset.i)));
+  };
+  const terminer = ok => {
+    fini = true; Reglages.stop();
+    $("#res").textContent = q.phrase; $("#ligne").classList.add("ok");
+    document.querySelectorAll("button.et,#bBack").forEach(b => b.disabled = true);
+    jeu.res[jeu.tour] = ok; jeu.tour++; plusTard(tour, ok ? 2000 : 3400);
+  };
+  /* vérifie quand la ligne est pleine (par le texte : deux « le » sont pareils) */
+  const verifier = () => {
+    const bon = pose.every((i,k) => tas[i] === q.et[k]);
+    if (bon) { buzz(); $("#astuce").textContent = erreurs ? "" : "Bravo !"; Reglages.parler(q.phrase, "succes"); terminer(erreurs === 0); return }
+    erreurs++;
+    const l = $("#ligne"); l.classList.remove("bad"); void l.offsetWidth; l.classList.add("bad");
+    const piegeMis = q.piege && pose.some(i => tas[i] === q.piege);
+    const aide = piegeMis ? "Le mot « "+q.piege+" » ne va pas dans cette phrase." : (niv === "facile" ? "Ce n'est pas le bon ordre." : "Ce n'est pas le bon ordre. La majuscule va au début, le point à la fin.");
+    if (erreurs >= 2) {
+      $("#astuce").textContent = aide; Reglages.parler("Non. "+aide+" La phrase est : "+q.phrase, "erreur");
+      pose = q.et.map((_,k) => k); draw(); terminer(false); return;
+    }
+    $("#astuce").textContent = aide + " Essaie encore.";
+    Reglages.parler("Non. " + aide + " Écoute : " + q.phrase, "erreur");
+    attente = true;
+    plusTard(() => { if (fini) return; attente = false; pose = []; l.classList.remove("bad"); draw() }, 1400);
+  };
+  draw();
+  document.querySelectorAll("#tas .et").forEach(b => b.onclick = () => {
+    if (fini || attente || pose.length >= q.et.length) return;
+    pose.push(+b.dataset.i); draw();
+    if (pose.length === q.et.length) verifier();
+  });
+  $("#bBack").onclick = () => { if (fini || attente) return; pose.pop(); draw() };
+  Reglages.chrono(() => {
+    if (fini) return;
+    $("#astuce").textContent = "Voilà la phrase.";
+    Reglages.parler("Voilà la phrase : " + q.phrase, "erreur");
+    pose = q.et.map((_,k) => k); draw(); terminer(false);
+  });
+}
+function fin(){
+  Reglages.stop();
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    '<p class="hint">Phrases réussies du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+partie();
+</script>
+</body>
+</html>
