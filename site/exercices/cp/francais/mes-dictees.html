@@ -35,8 +35,9 @@ header h1{font-size:22px;margin:0 auto 0 0}
 .seg button.on{background:var(--panel);box-shadow:var(--shadow)}
 .seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
 main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,22px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.menu{display:flex;flex-direction:column;gap:4px;align-items:center;width:100%}
 .listes{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
-.listes button{padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:16px}
+.listes button{padding:8px 12px;border-radius:12px;background:var(--chip);font-weight:700;font-size:16px}
 .listes button.on{background:var(--accent);color:var(--on-accent)}
 .listes button .n{font-size:13px;opacity:.85}
 .stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.4vw,28px)}
@@ -93,20 +94,20 @@ body.cursive .case,body.cursive .tile,body.cursive .modele{font-family:"Playwrit
     - 1 = mot raté sur le cahier → il revient dans « Mes erreurs » jusqu'à 2 réussites de suite
 */
 const DICTEES = [
-  { id:"22-09", titre:"22 sept.", mots:[["bon-jour"],["li"],["op"],["ul"],["at",1],["pi-pe"],["pa-pa",1]] },
-  { id:"29-09", titre:"29 sept.", mots:[["ap"],["ul"],["un"],["u-ne"],["la"],["tu-li-pe",1],["pé-ta-le",1],["le lo-to"]] },
-  { id:"08-10", titre:"8 oct.",   mots:[["sa",1],["il y a"],["el-le"],["lui"],["u-ne pa-ro-le",1],["un pi-ra-te",1],["u-ne tas-se",1],["un é-pi",1]] },
-  { id:"13-10", titre:"13 oct.",  mots:[["or"],["is"],["il y a"],["pour",1],["c'est",1],["sur"],["un pa-ra-sol",1],["le tis-su"],["le pi-lo-te",1],["l'o-pé-ra"]] },
-  { id:"05-11", titre:"5 nov.",   mots:[["bon-jour",1],["il y a"],["pour"],["u-ne"],["sur"],["el-le"],["lui"],["la"],["dans"],["est"]] },
+  { id:"22-09", titre:"Classe · 22 sept.", mots:[["bon-jour"],["li"],["op"],["ul"],["at",1],["pi-pe"],["pa-pa",1]] },
+  { id:"29-09", titre:"Classe · 29 sept.", mots:[["ap"],["ul"],["un"],["u-ne"],["la"],["tu-li-pe",1],["pé-ta-le",1],["le lo-to"]] },
+  { id:"08-10", titre:"Classe · 8 oct.",   mots:[["sa",1],["il y a"],["el-le"],["lui"],["u-ne pa-ro-le",1],["un pi-ra-te",1],["u-ne tas-se",1],["un é-pi",1]] },
+  { id:"13-10", titre:"Classe · 13 oct.",  mots:[["or"],["is"],["il y a"],["pour",1],["c'est",1],["sur"],["un pa-ra-sol",1],["le tis-su"],["le pi-lo-te",1],["l'o-pé-ra"]] },
+  { id:"05-11", titre:"Classe · 5 nov.",   mots:[["bon-jour",1],["il y a"],["pour"],["u-ne"],["sur"],["el-le"],["lui"],["la"],["dans"],["est"]] },
   /* PROGRESSION d'après le manuel (leçons 44 à 50) : syllabes → mots → petite phrase */
-  { id:"p1", prog:1, titre:"① ge gi gue gui", mots:[["ge"],["gi"],["gue"],["gui"],["la gi-ra-fe"],["la ba-gue"],["le ma-nè-ge"],["la gui-ta-re"],["le pi-geon"],["la gi-ra-fe est i-ci"]] },
-  { id:"p2", prog:1, titre:"② s = z", mots:[["ise"],["ose"],["la mai-son"],["la chai-se"],["un bi-sou"],["la ce-ri-se"],["la tas-se"],["ar-ro-ser"],["il y a u-ne chai-se dans la mai-son"]] },
-  { id:"p3", prog:1, titre:"③ ié ion", mots:[["pia"],["ion"],["le ca-mion"],["le pia-no"],["la ri-viè-re"],["le pie[d]"],["un a-vion"],["le lion"],["sou-dain le lion sau-te"]] },
-  { id:"p4", prog:1, titre:"④ eil ill", mots:[["eil"],["euil"],["le so-leil"],["le ré-veil"],["u-ne bil-le"],["l'é-cu-reuil"],["le tra-vail"],["l'a-beil-le"],["l'a-beil-le est sur la feuil-le"]] },
-  { id:"p5", prog:1, titre:"⑤ y", mots:[["ya"],["yo"],["le yé-ti"],["le cra-yon"],["ro-yal"],["le ya-ourt"],["le vo-ya-ge"],["le yé-ti ne man-ge ja-mais"]] },
-  { id:"p6", prog:1, titre:"⑥ gn", mots:[["gna"],["gno"],["la mon-ta-gne"],["le cy-gne"],["u-ne li-gne"],["l'a-gneau"],["le pei-gne"],["le cham-pi-gnon"],["l'a-gneau est sur la mon-ta-gne"]] },
-  { id:"p7", prog:1, titre:"⑦ ien oin oui", mots:[["ien"],["oin"],["le chien"],["bien"],["rien"],["le coin"],["un point"],["oui"],["le chien est dans le coin"]] },
-  { id:"p8", prog:1, titre:"⑧ mots outils", mots:[["i-ci"],["là"],["a-vec"],["sans"],["moi"],["toi"],["tou-jours"],["ja-mais"],["les"],["sont"],["les chiens sont i-ci"]] }
+  { id:"p1", prog:1, titre:"1 · La girafe (ge, gi, gue, gui)", mots:[["ge"],["gi"],["gue"],["gui"],["la gi-ra-fe"],["la ba-gue"],["le ma-nè-ge"],["la gui-ta-re"],["le pi-geon"],["la gi-ra-fe est i-ci"]] },
+  { id:"p2", prog:1, titre:"2 · La maison (s fait z)", mots:[["ise"],["ose"],["la mai-son"],["la chai-se"],["un bi-sou"],["la ce-ri-se"],["la tas-se"],["ar-ro-ser"],["il y a u-ne chai-se dans la mai-son"]] },
+  { id:"p3", prog:1, titre:"3 · Le camion (ié, ion)", mots:[["pia"],["ion"],["le ca-mion"],["le pia-no"],["la ri-viè-re"],["le pie[d]"],["un a-vion"],["le lion"],["sou-dain le lion sau-te"]] },
+  { id:"p4", prog:1, titre:"4 · Le soleil (eil, ill, euil)", mots:[["eil"],["euil"],["le so-leil"],["le ré-veil"],["u-ne bil-le"],["l'é-cu-reuil"],["le tra-vail"],["l'a-beil-le"],["l'a-beil-le est sur la feuil-le"]] },
+  { id:"p5", prog:1, titre:"5 · Le yéti (y)", mots:[["ya"],["yo"],["le yé-ti"],["le cra-yon"],["ro-yal"],["le ya-ourt"],["le vo-ya-ge"],["le yé-ti ne man-ge ja-mais"]] },
+  { id:"p6", prog:1, titre:"6 · La montagne (gn)", mots:[["gna"],["gno"],["la mon-ta-gne"],["le cy-gne"],["u-ne li-gne"],["l'a-gneau"],["le pei-gne"],["le cham-pi-gnon"],["l'a-gneau est sur la mon-ta-gne"]] },
+  { id:"p7", prog:1, titre:"7 · Le chien (ien, oin, oui)", mots:[["ien"],["oin"],["le chien"],["bien"],["rien"],["le coin"],["un point"],["oui"],["le chien est dans le coin"]] },
+  { id:"p8", prog:1, titre:"8 · Les mots outils", mots:[["i-ci"],["là"],["a-vec"],["sans"],["moi"],["toi"],["tou-jours"],["ja-mais"],["les"],["sont"],["les chiens sont i-ci"]] }
 ];
 /* Aides ciblées, d'après les erreurs du cahier */
 const ASTUCES = [
@@ -152,12 +153,11 @@ let choix = "erreurs", jeu;
 
 function barre(){
   const n=aRevoir().length;
-  return '<div class="listes">'+
-    '<button data-l="erreurs" class="'+(choix==="erreurs"?"on":"")+'">🎯 Mes erreurs <span class="n">('+n+')</span></button>'+
+  return '<div class="menu"><p class="hint">Dictées de la classe :</p><div class="listes"><button data-l="erreurs" class="'+(choix==="erreurs"?"on":"")+'">🎯 Mes erreurs <span class="n">('+n+')</span></button>'+
     DICTEES.filter(d=>!d.prog).map(d=>'<button data-l="'+d.id+'" class="'+(choix===d.id?"on":"")+'">'+d.titre+'</button>').join("")+'</div>'+
-    '<div class="listes">'+DICTEES.filter(d=>d.prog).map(d=>{
+    '<p class="hint" style="margin-top:4px">Dictées du manuel, dans l\'ordre des leçons :</p><div class="listes">'+DICTEES.filter(d=>d.prog).map(d=>{
       const fait = d.mots.every(m=>{ const s=suivi[cle(m)]; return s && s.ok>0 });   // ✓ quand chaque mot a été réussi une fois
-      return '<button data-l="'+d.id+'" class="'+(choix===d.id?"on":"")+'">'+d.titre+(fait?" ✓":"")+'</button>' }).join("")+'</div>';
+      return '<button data-l="'+d.id+'" class="'+(choix===d.id?"on":"")+'">'+d.titre+(fait?" ✓":"")+'</button>' }).join("")+'</div></div>';
 }
 function brancherBarre(){ document.querySelectorAll(".listes button").forEach(b=>b.onclick=()=>{ choix=b.dataset.l; partie() }) }
 
