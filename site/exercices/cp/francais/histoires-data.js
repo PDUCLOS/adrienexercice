@@ -101,5 +101,27 @@ window.HISTOIRES = [
     questions:[ {q:"Pour qui est le pull au début ?", r:["pour Léo","pour papi","pour Lila"]}, {q:"Pourquoi Léo rit ?", r:["le pull est trop petit","le pull est salé","le pull est dans le nid"]}, {q:"Qui a le pull à la fin ?", r:["Tina la tortue","le renard","papa"]} ] },
   { id:"note", niveau:"difficile", titre:"La no·te de Ni·na", scene:{fond:"maison", haut:"📝", bas:"👧👨🐀🥧"},
     lignes:["Ni·na a un pa·pier pour pa·pa.", "Sur le pa·pier, il y a u·ne no·te :", "« Pa·pa, la tar·te est sur le pla[t]. Pas pour le ra[t] ! »", "Pa·pa li[t] la no·te. Il ri[t].", "Il y a un ra[t] sur le pla[t] !", "La tar·te est par·tie. Pa·pa et Ni·na ri[ent]."],
-    questions:[ {q:"Pour qui est le papier ?", r:["pour papa","pour le rat","pour Léo"]}, {q:"Où est la tarte d'après la note ?", r:["sur le plat","dans la tasse","sur l'île"]}, {q:"Qui a pris la tarte ?", r:["le rat","papa","Nina"]} ] }
+    questions:[ {q:"Pour qui est le papier ?", r:["pour papa","pour le rat","pour Léo"]}, {q:"Où est la tarte d'après la note ?", r:["sur le plat","dans la tasse","sur l'île"]}, {q:"Qui a pris la tarte ?", r:["le rat","papa","Nina"]} ] },
+  /* ---------------- D'APRÈS LE MANUEL (leçons 44 à 50) : ge/gui, s = z, ion, eil/ill, y, gn, ien/oin ---------------- */
+  { id:"manege", niveau:"difficile", titre:"Le ma·nè·ge", scene:{fond:"jour", haut:"🎠", bas:"👧🦒🎸"},
+    lignes:["I·ci, il y a un ma·nè·ge.", "Li·la mon·te sur u·ne gi·ra·fe.", "Sa ma·man jou·e de la gui·ta·re.", "Un pi·geon se po·se sur la ca·ge.", "Li·la ri[t] : el·le a·dore le ma·nè·ge !"],
+    questions:[ {q:"Sur quoi monte Lila ?", r:["une girafe","un pigeon","une guitare"]}, {q:"Que fait maman ?", r:["elle joue de la guitare","elle lit","elle dort"]}, {q:"Où se pose le pigeon ?", r:["sur la cage","sur le manège","sur la guitare"]} ] },
+  { id:"maison", niveau:"moyen", titre:"La mai·son", scene:{fond:"maison", haut:"☀️", bas:"🏠🪑🍒"},
+    lignes:["Quand il fai[t] beau, on sor[t] les chai·ses.", "Pa·pa ar·ro·se les ro·ses.", "Ma sœur man·ge des ce·ri·ses.", "Moi, je fais un bi·sou à ma·man.", "J'ai·me ma mai·son !"],
+    questions:[ {q:"Que fait-on quand il fait beau ?", r:["on sort les chaises","on dort","on lit"]}, {q:"Qui arrose les roses ?", r:["papa","maman","ma sœur"]}, {q:"Que mange ma sœur ?", r:["des cerises","du gruyère","une pomme"]} ] },
+  { id:"pacha", niveau:"difficile", titre:"Où est Pa·cha ?", scene:{fond:"maison", haut:"🐾", bas:"👧🐈⌨️🥩"},
+    lignes:["Pa·cha, le chat de Li·la, a dis·pa·ru.", "Il y a des tra·ces sur le cla·vier.", "Li·la cher·che dans l'es·ca·lier.", "Sou·dain, ma·man crie : « Où est ma vian·de ? »", "Pa·cha est dans le jar·din a·vec la vian·de !"],
+    questions:[ {q:"Qui a disparu ?", r:["Pacha","Lila","maman"]}, {q:"Où sont les traces ?", r:["sur le clavier","sur le lit","sur le camion"]}, {q:"Qu'a pris Pacha ?", r:["la viande","le clavier","un pigeon"]} ] },
+  { id:"arbre", niveau:"difficile", titre:"L'ar·bre et les a·ni·maux", scene:{fond:"jardin", haut:"☀️🐦", bas:"🌳🐿️🐝"},
+    lignes:["Dans l'ar·bre, il y a un é·cu·reuil.", "Il se ba·lan·ce sur u·ne bran·che.", "U·ne a·beil·le est sur u·ne feuil·le.", "Le so·leil bril·le.", "Pour·quoi les oi·seaux par·tent-ils ? Un bû·che·ron ar·ri·ve !"],
+    questions:[ {q:"Qui se balance sur la branche ?", r:["l'écureuil","l'abeille","le bûcheron"]}, {q:"Où est l'abeille ?", r:["sur une feuille","dans le nid","sur le soleil"]}, {q:"Pourquoi les oiseaux partent-ils ?", r:["un bûcheron arrive","il pleut","il fait nuit"]} ] },
+  { id:"yeti", niveau:"difficile", titre:"Le jeu du yé·ti", scene:{fond:"maison", haut:"🃏", bas:"👧👦🧀"},
+    lignes:["Li·la, O·mar et Ma·ri·ne jou·ent au yé·ti.", "Li·la ti·re u·ne car·te a·vec du gru·yè·re.", "Ma·ri·ne a u·ne car·te a·vec du ya·ourt.", "Le yé·ti ne man·ge ja·mais de ya·ourt !", "É·lio est en co·lè·re : « Vous tri·chez ! »"],
+    questions:[ {q:"À quoi jouent les enfants ?", r:["au yéti","au ballon","au manège"]}, {q:"Qu'a la carte de Lila ?", r:["du gruyère","du yaourt","de la viande"]}, {q:"Pourquoi Élio est-il en colère ?", r:["les autres trichent","il a faim","il a perdu son chien"]} ] },
+  { id:"montagne", niveau:"difficile", titre:"À la mon·ta·gne", scene:{fond:"jour", haut:"⛰️", bas:"🐑🍄🦢"},
+    lignes:["Sur la mon·ta·gne, il y a un a·gneau.", "Il man·ge près d'un cham·pi·gnon.", "En bas, un cy·gne na·ge sur le lac.", "Ga·bin me·su·re la li·gne a·vec son pei·gne !", "L'a·gneau rit, et le cy·gne aus·si."],
+    questions:[ {q:"Qui est sur la montagne ?", r:["un agneau","un cygne","un chien"]}, {q:"Que fait le cygne ?", r:["il nage","il mange","il dort"]}, {q:"Près de quoi mange l'agneau ?", r:["un champignon","un peigne","une ligne"]} ] },
+  { id:"metier", niveau:"difficile", titre:"Plus tard", scene:{fond:"jour", haut:"🔧", bas:"🧒🐕🐧"},
+    lignes:["Da·mien se·ra mé·ca·ni·cien.", "Ma·ri·ne i·ra loin a·vec ses chiens.", "El·le ob·ser·ve·ra les pin·gouins.", "O·mar se·ra chi·rur·gien, com·me son pa·pa.", "Et Li·la ? Peut-ê·tre ra·con·teu·se d'his·toi·res !"],
+    questions:[ {q:"Que sera Damien ?", r:["mécanicien","chirurgien","magicien"]}, {q:"Qu'observera Marine ?", r:["les pingouins","les lions","les pigeons"]}, {q:"Que sera peut-être Lila ?", r:["raconteuse d'histoires","chirurgien","mécanicienne"]} ] }
 ];

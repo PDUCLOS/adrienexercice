@@ -128,7 +128,24 @@ const MOTS_DEPART = [
   { mot:"sur",     phrase:"Le chat est ___ le tapis.",           leurres:["pour","et"] },
   { mot:"dans",    phrase:"Le poisson est ___ l'eau.",           leurres:["pour","et"] },
   { mot:"est",     phrase:"La tarte ___ sur le plat.",           leurres:["et","c'est"] },
-  { mot:"et",      phrase:"Papa ___ maman.",                     leurres:["est","sur"] }
+  { mot:"et",      phrase:"Papa ___ maman.",                     leurres:["est","sur"] },
+  /* mots outils du manuel, leçons 44 à 50 et « Je fais le point 4 » */
+  { mot:"ici",       phrase:"Viens ___, Léo !",                         leurres:["jamais","sans"] },
+  { mot:"quand",     phrase:"Je mets mon bonnet ___ il fait froid.",    leurres:["pourquoi","ici"] },
+  { mot:"soudain",   phrase:"___, le chat saute sur la table.",         leurres:["toujours","avec"] },
+  { mot:"pourquoi",  phrase:"___ pleures-tu ?",                         leurres:["quand","ici"] },
+  { mot:"jamais",    phrase:"Le yéti ne mange ___ de gruyère.",         leurres:["toujours","avec"] },
+  { mot:"toujours",  phrase:"Le soleil se lève ___ le matin.",          leurres:["jamais","sans"] },
+  { mot:"parce que", phrase:"Je mange ___ j'ai faim.",                  leurres:["pourquoi","quand"] },
+  { mot:"peut-être", phrase:"Il va ___ pleuvoir.",                      leurres:["jamais","ici"] },
+  { mot:"avec",      phrase:"Léo joue ___ son chien.",                  leurres:["sans","sur"] },
+  { mot:"sans",      phrase:"Le chat dort ___ bruit.",                  leurres:["avec","dans"] },
+  { mot:"moi",       phrase:"Ce gâteau est pour ___ !",                 leurres:["il","elle"] },
+  { mot:"toi",       phrase:"Et ___, tu viens ?",                       leurres:["lui","moi"] },
+  { mot:"là",        phrase:"Le chien est ___, sous la table.",         leurres:["la","le"] },
+  { mot:"sont",      phrase:"Les chats ___ dans le jardin.",            leurres:["est","et"] },
+  { mot:"les",       phrase:"Lila arrose ___ fleurs.",                  leurres:["le","la"] },
+  { mot:"des",       phrase:"Il y a ___ pommes dans le panier.",        leurres:["un","une"] }
 ];
 const KEY = "cp-mots-vedettes-v1";
 /* Phrases en plus pour « Comprendre » : plus de variété (les mots ajoutés dans « Mes mots » gardent leur propre phrase) */
@@ -166,6 +183,8 @@ function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
 
 /* ----- données : liste de mots (modifiable) + réussites par mot ----- */
 let mots = (()=>{ try{ const l=JSON.parse(lsGet(KEY+"-liste")); return Array.isArray(l)&&l.length?l:MOTS_DEPART.slice() }catch(e){ return MOTS_DEPART.slice() } })();
+/* une seule fois : ajouter à une liste déjà personnalisée les nouveaux mots de départ (manuel leçons 44-50) */
+try{ if(!lsGet(KEY+"-fusion2")){ const ont=new Set(mots.map(m=>m.mot.toLowerCase())); MOTS_DEPART.forEach(m=>{ if(!ont.has(m.mot.toLowerCase())) mots.push(m) }); lsSet(KEY+"-liste",JSON.stringify(mots)); lsSet(KEY+"-fusion2","1") } }catch(e){}
 let stats = (()=>{ try{ return JSON.parse(lsGet(KEY+"-stats"))||{} }catch(e){ return {} } })();
 const saveMots = () => lsSet(KEY+"-liste", JSON.stringify(mots));
 function note(mot, ok){ const s=stats[mot]||(stats[mot]={ok:0,ko:0}); ok?s.ok++:s.ko++; lsSet(KEY+"-stats",JSON.stringify(stats)) }
