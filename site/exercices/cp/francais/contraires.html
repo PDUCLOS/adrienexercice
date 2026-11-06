@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Les contraires · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Les contraires (mots de sens opposé) : trouver le contraire + memory des contraires */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --mark:#fff3bf; --mark-ink:#a14d00; --dos:#5f3dc4; --dos-ink:#ffffff; --tile:#e7f1fc; --tile-ink:#1c7ed6;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#7048e8; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --mark:#3d3418; --mark-ink:#ffd43b; --dos:#7950f2; --dos-ink:#ffffff; --tile:#1d2d3d; --tile-ink:#4dabf7;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#9775fa;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:12px 16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,22px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.4vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.carte{background:var(--panel);border-radius:28px;box-shadow:var(--shadow);padding:clamp(12px,2.6vh,26px) clamp(20px,4vw,48px);display:flex;flex-direction:column;align-items:center;gap:6px;max-width:100%}
+.pic{font-size:clamp(80px,16vh,150px);line-height:1}
+.phrase{font-size:clamp(30px,5vw,52px);font-weight:700;text-align:center;line-height:1.3}
+.phrase.petite{font-size:clamp(24px,3.8vw,40px);color:var(--muted)}
+mark{background:var(--mark);color:var(--mark-ink);border-radius:10px;padding:0 .2em}
+.trou{display:inline-flex;justify-content:center;min-width:3ch;padding:0 .25em;border-radius:12px;border:4px dashed var(--line);color:var(--muted)}
+.trou.ok{border-style:solid;border-color:var(--ok-ink);color:var(--ok-ink);background:var(--ok)}
+body.cursive .phrase,body.cursive .choix b,body.cursive .mcard b{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+.choix{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,860px)}
+.choix button{background:var(--tile);color:var(--tile-ink);border-radius:24px;min-height:76px;padding:clamp(10px,2vh,20px) 8px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:4px solid transparent;min-width:0}
+.choix .e{font-size:clamp(50px,9vh,84px);line-height:1}
+.choix b{font-size:clamp(30px,5.4vh,50px);line-height:1.15;overflow-wrap:anywhere}
+.choix button.ok{border-color:var(--ok-ink);background:var(--ok);color:var(--ok-ink)}
+.choix button.bad{border-color:var(--err-ink);background:var(--err);color:var(--err-ink);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.astuce{font-size:clamp(18px,2.4vw,22px);text-align:center;min-height:1.5em;margin:0;max-width:900px}
+.astuce.non{color:var(--err-ink)}.astuce.oui{color:var(--ok-ink)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.tools .pill{min-height:70px;font-size:20px;padding:10px 20px}
+/* memory */
+.memo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-auto-rows:var(--h,120px);gap:clamp(8px,1.4vw,14px);width:min(100%,900px)}
+.mcard{border-radius:20px;box-shadow:var(--shadow);border:4px solid transparent;position:relative;min-width:0;padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;background:var(--dos);color:var(--dos-ink)}
+.mcard .dos{font-size:clamp(34px,6vh,54px);font-weight:700}
+.mcard .face{display:none;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.mcard .e{font-size:min(calc(var(--h,120px) * .45),70px);line-height:1}
+.mcard b{font-size:clamp(20px,3.4vh,32px);line-height:1.1;overflow-wrap:anywhere;text-align:center}
+.mcard.up,.mcard.trouve{background:var(--panel);color:var(--ink)}
+.mcard.up .dos,.mcard.trouve .dos{display:none}
+.mcard.up .face,.mcard.trouve .face{display:flex}
+.mcard.trouve{border-color:var(--ok-ink);background:var(--ok);color:var(--ok-ink)}
+.mcard.bad{border-color:var(--err-ink);animation:shake .35s}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow);min-height:70px}
+.hint{color:var(--muted);font-size:16px;text-align:center;margin:0}
+.paires{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:900px}
+.paires span{background:var(--panel);border-radius:12px;padding:6px 10px;font-size:18px;box-shadow:var(--shadow)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>🔄 Les contraires</h1>
+  <div class="seg" role="group" aria-label="Activité" id="modes">
+    <button data-m="contraire" class="on">🔄 Le contraire</button>
+    <button data-m="memory">🃏 Memory</button>
+  </div>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=5"></script>
+<script src="../../../assets/illus.js?v=5"></script>
+<script>
+/* DONNEES */
+/*
+  Les paires de contraires (manuel p.124 « mots de sens opposé »).
+  [nature, famille, mot A, emoji A, mot B, emoji B, phrase, forme A, forme B]
+  - nature : "adj", "verbe" ou "mot" (petits mots : jour, avant, dedans…). Les mauvaises réponses sont de la même nature.
+  - famille : sens proche (taille, vitesse…). Une mauvaise réponse ne vient jamais de la même famille
+    (sinon « petit » pourrait passer pour le contraire de « gros »), et le memory ne met qu'une paire par famille.
+  - phrase : {} = la place du mot ; les deux formes doivent aller dans la phrase.
+    Si chaque mot a besoin de sa phrase (« Léo n'est jamais… »), on met [phrase A, phrase B].
+  - formes : le mot tel qu'il est dans la phrase (verbes conjugués) ; sinon le mot lui-même.
+  - emoji : null s'il n'y a pas de bonne image (la paire ne sort alors pas en facile).
+*/
+const LISTE = [
+  /* adjectifs (phrase au masculin) */
+  ["adj","proprete","propre","🧼","sale","🐷","Le chien est {}."],
+  ["adj","humeur","triste","😢","gai","😄","Le clown est {}."],
+  ["adj","taille","petit","🐭","grand","🦒","Le chien est {}."],
+  ["adj","beaute","laid","👹","beau","🦚","Le marié est {}."],
+  ["adj","temperature","chaud","🔥","froid","🧊","Le thé est {}."],
+  ["adj","quantite","plein","📬","vide","📭","Le panier est {}."],
+  ["adj","taille","lourd","🏋️","léger","🪶","Le sac est {}."],
+  ["adj","taille","long","🐍","court","🐛","Le crayon est {}."],
+  ["adj","taille","haut","🏢","bas","🏠","Le mur est {}."],
+  ["adj","age","vieux","👴","jeune","👶","Mon voisin est {}."],
+  ["adj","vitesse","rapide","🐆","lent","🐢","Le cheval est {}."],
+  ["adj","force","fort","💪","faible",null,"Le robot est {}."],
+  ["adj","eau","mouillé","💦","sec","🌵","Le linge est {}."],
+  ["adj","ouverture","ouvert","🔓","fermé","🔒","Le magasin est {}."],
+  ["adj","taille","gros","🐋","mince","🦩","Le chat est {}."],
+  ["adj","durete","dur","🪨","mou","🧸","Le lit est {}."],
+  ["adj","lumiere","clair","💡","sombre","🌑","Le salon est {}."],
+  ["adj","bonte","gentil","😇","méchant","😈","Le loup est {}."],
+  ["adj","gout","sucré","🍬","salé","🧂","Le gâteau est {}."],
+  ["adj","rang","premier","🥇","dernier",null,"Léo est {}."],
+  ["adj","argent","riche","💰","pauvre",null,"Le roi est {}."],
+  ["adj","voix","calme","😌","bruyant","📢","Le bébé est {}."],
+  ["adj","sommeil","réveillé","⏰","endormi","😴","Le bébé est {}."],
+  ["adj","durete","facile",null,"difficile",null,"Le jeu est {}."],
+  ["adj","sommeil","debout","🧍","assis","🪑","Le garçon est {}."],
+  ["adj","verite","vrai","✅","faux","❌","C'est {}."],
+  ["adj","lumiere","blanc","⬜","noir","⬛","Le chat est {}."],
+  ["adj","taille","large",null,"étroit",null,"Le chemin est {}."],
+  ["adj","age","neuf","✨","vieux","🕸️","Le pantalon est {}."],
+  /* verbes (conjugués dans la phrase) */
+  ["verbe","ouverture","ouvrir","📖","fermer","📕","Léo {} la porte.","ouvre","ferme"],
+  ["verbe","humeur","rire","😂","pleurer","😭","Le bébé {}.","rit","pleure"],
+  ["verbe","reparation","casser","💥","réparer","🔧","Papa {} le vélo.","casse","répare"],
+  ["verbe","echange","recevoir","🎁","donner","🤲","Lila {} un cadeau.","reçoit","donne"],
+  ["verbe","haut-bas","monter","⬆️","descendre","⬇️","Le chat {} l'escalier.","monte","descend"],
+  ["verbe","deplacement","entrer",null,"sortir",null,"Le chat {} vite.","entre","sort"],
+  ["verbe","perte","gagner","🏆","perdre","😞","Omar {} la course.","gagne","perd"],
+  ["verbe","lumiere","allumer","💡","éteindre","🌑","Maman {} la lampe.","allume","éteint"],
+  ["verbe","echange","acheter","🛒","vendre","🏷️","Papi {} une voiture.","achète","vend"],
+  ["verbe","quantite","remplir","🪣","vider",null,"Léo {} le seau.","remplit","vide"],
+  ["verbe","sommeil","se coucher","🛏️","se lever","🌅","Léo se {} tôt.","couche","lève"],
+  ["verbe","debut","commencer",null,"finir","🏁","Léo {} son dessin.","commence","finit"],
+  ["verbe","pousse","pousser",null,"tirer",null,"Léo {} la porte.","pousse","tire"],
+  ["verbe","echange","lancer","🤾","attraper","🧤","Omar {} le ballon.","lance","attrape"],
+  ["verbe","sommeil","dormir","😴","se réveiller","⏰","Le chat {}.","dort","se réveille"],
+  ["verbe","voix","parler","🗣️","se taire","🤐","Léo {}.","parle","se tait"],
+  ["verbe","gout","aimer","❤️","détester","💔","Lila {} les épinards.","aime","déteste"],
+  ["verbe","deplacement","arriver","🛬","partir","🛫","Le train {}.","arrive","part"],
+  ["verbe","avance","avancer","⏩","reculer","⏪","La voiture {}.","avance","recule"],
+  ["verbe","habit","mettre","🧢","enlever",null,"Léo {} son bonnet.","met","enlève"],
+  ["verbe","cache","cacher","🙈","montrer","👉","Lila {} le trésor.","cache","montre"],
+  ["verbe","perte","trouver","🔍","perdre","😞","Léo {} sa clé.","trouve","perd"],
+  ["verbe","accord","accepter","👍","refuser","👎","Papa {} le cadeau.","accepte","refuse"],
+  ["verbe","voix","crier","📣","chuchoter","🤫","Léo {} dans la classe.","crie","chuchote"],
+  ["verbe","reparation","construire","🏗️","démolir","🚜","Le maçon {} le mur.","construit","démolit"],
+  ["verbe","temperature","chauffer","🔥","refroidir","🧊","Maman {} la soupe.","chauffe","refroidit"],
+  ["verbe","habit","attacher",null,"détacher",null,"Léo {} son chien.","attache","détache"],
+  /* petits mots : quand, où, comment, combien… */
+  ["mot","temps","jour","☀️","nuit","🌙","Il fait {}."],
+  ["mot","temps","avant",null,"après",null,"Je me lave les mains {} le repas."],
+  ["mot","position","dedans","🏠","dehors","🌳","Le chat joue {}."],
+  ["mot","frequence","toujours",null,"jamais",null,["Léo est {} en retard.","Léo n'est {} en retard."]],
+  ["mot","compagnie","avec",null,"sans",null,"Léo joue {} son ami."],
+  ["mot","position","ici","👇","là-bas","👉","Le chat dort {}."],
+  ["mot","vitesse","vite","🐇","lentement","🐌","Le chat court {}."],
+  ["mot","position","devant",null,"derrière",null,"Le chat est {} la porte."],
+  ["mot","position","sur",null,"sous",null,"Le chat est {} la table."],
+  ["mot","temps","tôt","🐓","tard","🦉","Léo se lève {}."],
+  ["mot","quantite","beaucoup",null,"peu",null,"Léo mange {}."],
+  ["mot","bonte","bien",null,"mal",null,"Léo dort {}."],
+  ["mot","verite","oui","🙆","non","🙅","Je dis {}."],
+  ["mot","position","près",null,"loin",null,"Mon école est {} d'ici."],
+  ["mot","temps","matin","🌄","soir","🌆","Le {}, je bois du lait."],
+  ["mot","saison","été","🏖️","hiver","⛄","C'est l'{}."],
+  ["mot","quantite","plus","➕","moins","➖","Léo a {} de billes."],
+  ["mot","cote","gauche","⬅️","droite","➡️","Lève la main {}."],
+  ["mot","quantite","tout",null,"rien",null,["Léo mange {}.","Léo ne mange {}."]],
+  ["mot","compagnie","ensemble","👥","seul","👤",["Léo et Lila jouent {}.","Léo joue {}."]]
+];
+const PAIRES = LISTE.map((r,i)=>({ id:i, t:r[0], f:r[1], a:r[2], ea:r[3], b:r[4], eb:r[5], pha:[].concat(r[6])[0], phb:[].concat(r[6]).slice(-1)[0], fa:r[7]||r[2], fb:r[8]||r[4] }));
+/* contraires, dans les deux sens, pour les mots et pour les formes (« perd » a deux contraires) */
+const OPP = {};
+const lier = (x,y) => { (OPP[x]=OPP[x]||new Set()).add(y); (OPP[y]=OPP[y]||new Set()).add(x) };
+PAIRES.forEach(p => { lier(p.a,p.b); lier(p.fa,p.fb) });
+const NB_CHOIX = { facile:2, moyen:3, difficile:4 };
+const NB_PAIRES = { facile:4, moyen:6, difficile:8 };
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const avecImages = p => !!(p.ea && p.eb);
+const cote = (p,s) => ({ mot: s?p.b:p.a, forme: s?p.fb:p.fa, e: s?p.eb:p.ea, ph: s?p.phb:p.pha });
+const dansPhrase = c => c.ph.replace("{}",c.forme);
+/* une question : la paire p, le sens (0 : A → B, 1 : B → A), la sorte ("mot" ou "phrase") */
+function poolQuestions(niv){ return niv==="facile" ? PAIRES.filter(avecImages) : PAIRES }
+function question(p, niv, sorte, dir){
+  const de = cote(p,dir), vers = cote(p,1-dir), interdit = OPP[de.forme] || new Set();
+  const vus = new Set([de.forme, vers.forme]), cands = [];
+  shuffle(PAIRES.filter(x => x.t===p.t && x.f!==p.f)).forEach(x => [0,1].forEach(s => {
+    const c = cote(x,s);
+    if (niv==="facile" && (!c.e || c.e===de.e || c.e===vers.e)) return;
+    if (vus.has(c.forme) || interdit.has(c.forme)) return;
+    vus.add(c.forme); cands.push({ ...c, opp: cote(x,1-s).forme });
+  }));
+  const leurres = shuffle(cands).slice(0, NB_CHOIX[niv]-1);
+  return { p, sorte, de, vers, choix: shuffle([{ ...vers, bon:true }, ...leurres]) };
+}
+/* plateau du memory : une paire par famille, aucun mot ni image en double */
+function plateau(niv){
+  const n = NB_PAIRES[niv], pool = shuffle((niv==="difficile" ? PAIRES : PAIRES.filter(avecImages)).slice());
+  const familles = new Set(), mots = new Set(), images = new Set(), pris = [];
+  for (const p of pool){
+    if (pris.length>=n) break;
+    if (familles.has(p.f) || mots.has(p.a) || mots.has(p.b)) continue;
+    if (niv!=="difficile" && (images.has(p.ea) || images.has(p.eb))) continue;
+    familles.add(p.f); mots.add(p.a); mots.add(p.b); images.add(p.ea); images.add(p.eb); pris.push(p);
+  }
+  return pris;
+}
+/* FIN DONNEES */
+
+const KEY = "cp-contraires-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Le contraire : avec l'image, 2 mots au choix. Memory : 4 paires avec images.",
+  moyen: "Le contraire : avec l'image, 3 mots au choix. Memory : 6 paires avec images.",
+  difficile: "Sans image, 4 mots au choix, et des phrases à changer : « Le marié est laid. → Le marié est … ». Memory : 8 paires, mots seuls." } });
+const T = () => R().questions;
+
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+let mode = "contraire", jeu, serie = 0;
+/* minuteur annulé si une nouvelle partie commence entre-temps */
+const plusTard = (fn, ms) => { const id = serie; setTimeout(() => { if (id === serie) fn() }, ms) };
+function etoiles(n, on){ return '<div class="stars">'+Array.from({length:n},(_,i)=>'<span class="'+on(i)+'">⭐</span>').join("")+'</div>' }
+
+function partie(){
+  Reglages.stop(); serie++;
+  document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
+  jeu = { tour:0, res:[], rates:[], neuf:Reglages.sansDoublon() };
+  const titre = mode==="memory" ? "🃏 Memory des contraires" : "🔄 Le contraire";
+  const txt = mode==="memory" ? "Retourne deux cartes : trouve les mots contraires." : "Trouve le mot qui veut dire tout l'inverse.";
+  $("#main").innerHTML = '<div class="end"><h2>'+titre+'</h2><p class="consigne">'+txt+'</p><button class="go" id="bGo">▶ Commencer</button></div>';
+  $("#bGo").onclick = () => mode==="memory" ? memory() : tour();   // premier toucher : la tablette peut parler
+}
+
+/* ---------- LE CONTRAIRE ---------- */
+function tour(){
+  if (jeu.tour >= T()) return fin();
+  const niv = R().niveau, pool = poolQuestions(niv);
+  const q = jeu.neuf(() => {
+    const sorte = niv==="difficile" && jeu.tour%2 ? "phrase" : "mot";
+    return question(pool[Math.floor(Math.random()*pool.length)], niv, sorte, Math.random()<.5?0:1);
+  }, x => x.p.id);
+  const { p, de, vers } = q, image = niv!=="difficile";
+  const [avant, apres] = de.ph.split("{}"), [avantV, apresV] = vers.ph.split("{}");
+  const phraseDe = esc(avant)+'<mark>'+esc(de.forme)+'</mark>'+esc(apres);
+  let carte, dit;
+  if (q.sorte==="phrase"){
+    carte = '<div class="phrase petite">'+phraseDe+'</div><div class="phrase">→ '+esc(avantV)+'<span class="trou" id="trou">?</span>'+esc(apresV)+'</div>';
+    dit = dansPhrase(de)+" Et le contraire ? "+vers.ph.replace("{}","hmm");
+  } else {
+    carte = (image && de.e ? '<div class="pic">'+de.e+'</div>' : '')+'<div class="phrase">'+phraseDe+'</div>';
+    dit = dansPhrase(de)+" Quel est le contraire de "+de.forme+" ?";
+  }
+  const n = q.choix.length;
+  $("#main").innerHTML = etoiles(T(), i => i<jeu.tour ? (jeu.res[i]?"on":"") : (i===jeu.tour?"cur":"")) +
+    '<p class="consigne">'+(q.sorte==="phrase" ? "Dis le contraire : quel mot va dans le trou ?" : "Quel est le contraire du mot jaune ?")+'</p>' +
+    '<div class="carte">'+carte+'</div>' +
+    '<div class="choix" style="--n:'+(n===4?2:n)+'">'+q.choix.map((c,i)=>'<button data-i="'+i+'">'+(niv==="facile"&&c.e?'<span class="e">'+c.e+'</span>':'')+'<b>'+esc(c.forme)+'</b></button>').join("")+'</div>' +
+    '<p class="astuce" id="astuce"></p>' +
+    '<div class="tools"><button class="pill" id="bSay">🔊 Réécouter</button></div>';
+  Reglages.parler(dit,"consigne");
+  $("#bSay").onclick = () => Reglages.parler(dit,"consigne");
+  const btns = [...document.querySelectorAll(".choix button")];
+  let essai = 0, fini = false;
+  const finir = ok => {
+    if (fini) return; fini = true;
+    btns.forEach((b,i)=>{ b.disabled=true; if (q.choix[i].bon) b.classList.add("ok") });
+    if (q.sorte==="phrase"){ const t=$("#trou"); t.textContent=vers.forme; t.classList.add("ok") }
+    const a = $("#astuce"); a.className="astuce oui";
+    a.textContent = "Le contraire de « "+de.forme+" », c'est « "+vers.forme+" »."+(q.sorte==="phrase" ? " "+dansPhrase(vers) : "");
+    if (!ok) jeu.rates.push(p);
+    jeu.res[jeu.tour] = ok; jeu.tour++; plusTard(tour, ok?1700:2800);
+  };
+  Reglages.chrono(() => finir(false));
+  btns.forEach((b,i) => b.onclick = () => {
+    if (fini) return;
+    const c = q.choix[i];
+    if (c.bon){ Reglages.stop(); buzz(); Reglages.parler(q.sorte==="phrase" ? dansPhrase(vers) : de.forme+", "+vers.forme, "succes"); finir(essai===0) }
+    else {
+      essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); b.disabled = true;
+      const expl = "Non. « "+c.forme+" », c'est le contraire de « "+c.opp+" ». Cherche le contraire de « "+de.forme+" ».";
+      const a = $("#astuce"); a.className="astuce non"; a.textContent = expl;
+      Reglages.parler(expl,"erreur");
+    }
+  });
+}
+function fin(){
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-contraire-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  const rates = [...new Set(jeu.rates)];
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    (rates.length ? '<p class="hint">À revoir :</p><div class="paires">'+rates.map(p=>'<span>'+esc(p.a)+' ↔ '+esc(p.b)+'</span>').join("")+'</div>' : '')+
+    '<p class="hint">Trouvés du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+
+/* ---------- MEMORY DES CONTRAIRES ---------- */
+function memory(){
+  const niv = R().niveau, paires = plateau(niv), np = paires.length, images = niv!=="difficile";
+  const cartes = shuffle(paires.flatMap(p => [{ p, mot:p.a, e:p.ea, autre:p.b }, { p, mot:p.b, e:p.eb, autre:p.a }]));
+  const rangs = Math.ceil(cartes.length/4);
+  const m = { up:[], lock:false, trouve:0, coups:0, erreurs:0 };
+  const dessinerEtoiles = () => { $("#st").outerHTML = etoiles(np, i => i<m.trouve?"on":"").replace('class="stars"','class="stars" id="st"') };
+  $("#main").innerHTML = etoiles(np, ()=>"").replace('class="stars"','class="stars" id="st"') +
+    '<p class="consigne">Retourne deux cartes : trouve les contraires.</p>' +
+    '<div class="memo" style="--h:clamp(72px,calc((100vh - 300px) / '+rangs+'),170px)">' +
+    cartes.map((c,i)=>'<button class="mcard" data-i="'+i+'" aria-label="Carte"><span class="dos">?</span><span class="face">'+(images&&c.e?'<span class="e">'+c.e+'</span>':'')+'<b>'+esc(c.mot)+'</b></span></button>').join("") + '</div>' +
+    '<p class="astuce" id="astuce"></p>';
+  Reglages.parler("Retourne deux cartes. Trouve les mots contraires.","consigne");
+  const btns = [...document.querySelectorAll(".mcard")];
+  btns.forEach((b,i) => b.onclick = () => {
+    if (m.lock || b.classList.contains("trouve") || m.up.includes(i)) return;
+    b.classList.add("up"); m.up.push(i);
+    if (m.up.length < 2){ Reglages.parler(cartes[i].mot,"consigne"); $("#astuce").textContent=""; return }
+    const [i1,i2] = m.up, c1 = cartes[i1], c2 = cartes[i2]; m.coups++;
+    if (c1.p === c2.p){
+      m.up = []; m.trouve++; buzz();
+      btns[i1].classList.add("trouve"); btns[i2].classList.add("trouve");
+      const a=$("#astuce"); a.className="astuce oui"; a.textContent="Oui ! « "+c1.mot+" » et « "+c2.mot+" » sont des contraires.";
+      Reglages.parler(c2.mot,"consigne"); Reglages.parler(c1.mot+", "+c2.mot+" : ce sont des contraires.","succes");
+      dessinerEtoiles();
+      if (m.trouve===np) plusTard(()=>finMemory(m), 1800);
+    } else {
+      m.erreurs++; m.lock = true;
+      [i1,i2].forEach(k=>{ btns[k].classList.remove("bad"); void btns[k].offsetWidth; btns[k].classList.add("bad") });
+      const expl = "Non. « "+c1.mot+" » et « "+c2.mot+" » ne sont pas des contraires. Le contraire de « "+c1.mot+" », c'est « "+c1.autre+" ».";
+      const a=$("#astuce"); a.className="astuce non"; a.textContent=expl;
+      Reglages.parler(expl,"erreur");
+      plusTard(()=>{ [i1,i2].forEach(k=>btns[k].classList.remove("up","bad")); m.up=[]; m.lock=false }, 2400);
+    }
+  });
+}
+function finMemory(m){
+  const k=KEY+"-best-memory-"+R().niveau, ancien=lsGet(k), best=ancien===null?m.erreurs:Math.min(m.erreurs,+ancien); lsSet(k,best);
+  const msg = m.erreurs===0 ? "Parfait ! 🎉" : m.erreurs<=3 ? "Très bien !" : "Bravo, tout est trouvé !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+m.coups+' coups</div>'+
+    '<p class="hint">'+m.erreurs+' erreur'+(m.erreurs>1?"s":"")+' · Record : '+best+' erreur'+(best>1?"s":"")+' (moins, c\'est mieux)</p>'+
+    '<button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>{ mode=b.dataset.m; partie() });
+partie();
+</script>
+</body>
+</html>

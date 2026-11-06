@@ -1,0 +1,392 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Un ou plusieurs · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Un ou plusieurs ? Singulier / pluriel : au pluriel, on ajoute -nt au verbe (manuel p.125) */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --sg:#1971c2; --sg-soft:#e7f1fc; --pl:#e8590c; --pl-soft:#fff0e6; --mark:#fff3bf; --mark-ink:#a14d00;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#e8590c; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --sg:#4dabf7; --sg-soft:#1d2d3d; --pl:#ff922b; --pl-soft:#3a2a1c; --mark:#3d3418; --mark-ink:#ffd43b;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#ff922b;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:12px 16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,22px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.4vw,30px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vw,24px);color:var(--muted);margin:0;text-align:center}
+.carte{background:var(--panel);border-radius:28px;box-shadow:var(--shadow);padding:clamp(12px,2.6vh,26px) clamp(18px,4vw,44px);display:flex;flex-direction:column;align-items:center;gap:8px;max-width:100%}
+.scn{display:flex;align-items:flex-end;justify-content:center;gap:clamp(4px,1vw,10px);font-size:clamp(60px,12vh,112px);line-height:1}
+.scn .obj{font-size:.62em}
+.scn .sep{width:clamp(10px,3vw,36px)}
+.phrase{font-size:clamp(30px,5vw,52px);font-weight:700;text-align:center;line-height:1.3}
+.trou{display:inline-flex;justify-content:center;min-width:4ch;padding:0 .25em;border-radius:12px;border:4px dashed var(--line);color:var(--muted)}
+.trou.ok{border-style:solid;border-color:var(--ok-ink);color:var(--ok-ink);background:var(--ok)}
+.fin{color:var(--pl);text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:4px}
+body.cursive .phrase,body.cursive .choix b,body.cursive .mots button,body.cursive .bac i{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+.choix{display:grid;grid-template-columns:repeat(var(--n,2),minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,860px)}
+.choix button{border-radius:24px;min-height:76px;padding:clamp(10px,2vh,20px) 8px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:4px solid transparent;min-width:0;background:var(--chip)}
+.choix .sg{background:var(--sg-soft);color:var(--sg)}
+.choix .pl{background:var(--pl-soft);color:var(--pl)}
+.choix b{font-size:clamp(32px,6vh,56px);line-height:1.1;overflow-wrap:anywhere}
+.choix small{font-size:18px;font-weight:700;opacity:.85}
+.choix .e{font-size:30px}
+.choix button.ok{border-color:var(--ok-ink);background:var(--ok);color:var(--ok-ink)}
+.choix button.bad{border-color:var(--err-ink);background:var(--err);color:var(--err-ink);animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+/* mots à toucher (trouver le verbe) */
+.mots{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(6px,1.2vw,12px);max-width:960px}
+.mots button{background:var(--panel);border:3px solid var(--line);border-radius:18px;min-height:76px;min-width:70px;padding:6px 14px;font-size:clamp(30px,5vh,48px);font-weight:700;box-shadow:var(--shadow)}
+.mots button.ok{background:var(--mark);color:var(--mark-ink);border-color:var(--mark-ink)}
+.mots button.bad{background:var(--err);color:var(--err-ink);border-color:var(--err-ink);animation:shake .35s}
+/* bacs à trier */
+.bacs{display:grid;grid-template-columns:1fr 1fr;gap:clamp(10px,2vw,20px);width:min(100%,860px)}
+.bac{border-radius:24px;min-height:clamp(120px,22vh,200px);padding:12px;box-shadow:var(--shadow);border:4px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px}
+.bac.sg{background:var(--sg-soft);color:var(--sg)}.bac.pl{background:var(--pl-soft);color:var(--pl)}
+.bac b{font-size:clamp(26px,4.4vh,40px)}
+.bac .e{font-size:clamp(34px,6vh,54px);line-height:1}
+.bac i{font-style:normal;font-size:16px;color:var(--muted);line-height:1.2}
+.bac.ok{border-color:var(--ok-ink)}
+.bac.bad{border-color:var(--err-ink);animation:shake .35s}
+.astuce{font-size:clamp(18px,2.4vw,22px);text-align:center;min-height:1.5em;margin:0;max-width:900px}
+.astuce.non{color:var(--err-ink)}.astuce.oui{color:var(--ok-ink)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.tools .pill{min-height:70px;font-size:20px;padding:10px 20px}
+.end{text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.end h2{font-size:clamp(30px,5vw,44px);margin:0}
+.big{font-size:clamp(50px,9vw,80px);font-weight:700}
+.regle{font-size:clamp(20px,3vw,28px);background:var(--panel);border-radius:18px;padding:12px 20px;box-shadow:var(--shadow);margin:0}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow);min-height:70px}
+.hint{color:var(--muted);font-size:16px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>👥 Un ou plusieurs ?</h1>
+  <div class="seg" role="group" aria-label="Activité" id="modes">
+    <button data-m="completer" class="on">✏️ Compléter</button>
+    <button data-m="trier">🧺 Trier</button>
+  </div>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=5"></script>
+<script src="../../../assets/illus.js?v=5"></script>
+<script>
+/* DONNEES */
+/*
+  Qui fait l'action : s, emojis (un par personnage), n (1 = un seul, 2 = plusieurs), g ("m" / "f").
+*/
+const SUJETS = [
+  {s:"il",e:["👦"],n:1,g:"m"}, {s:"elle",e:["👧"],n:1,g:"f"},
+  {s:"Lila",e:["👧"],n:1,g:"f"}, {s:"Élio",e:["👦"],n:1,g:"m"}, {s:"Omar",e:["👦"],n:1,g:"m"},
+  {s:"Marine",e:["👧"],n:1,g:"f"}, {s:"Romane",e:["👧"],n:1,g:"f"}, {s:"Paco",e:["👦"],n:1,g:"m"},
+  {s:"le garçon",e:["👦"],n:1,g:"m"}, {s:"la fille",e:["👧"],n:1,g:"f"}, {s:"un enfant",e:["🧒"],n:1,g:"m"}, {s:"le clown",e:["🤡"],n:1,g:"m"},
+  {s:"ils",e:["👦","👦"],n:2,g:"m"}, {s:"elles",e:["👧","👧"],n:2,g:"f"},
+  {s:"Lila et Romane",e:["👧","👧"],n:2,g:"f"}, {s:"Élio et Omar",e:["👦","👦"],n:2,g:"m"},
+  {s:"Marine et Paco",e:["👧","👦"],n:2,g:"m"}, {s:"Lila et Paco",e:["👧","👦"],n:2,g:"m"},
+  {s:"les garçons",e:["👦","👦","👦"],n:2,g:"m"}, {s:"les filles",e:["👧","👧","👧"],n:2,g:"f"},
+  {s:"des enfants",e:["🧒","🧒","🧒"],n:2,g:"m"}, {s:"les clowns",e:["🤡","🤡"],n:2,g:"m"}
+];
+/*
+  Les phrases : [verbe avec il / elle, emoji de la chose, complément au singulier, complément au pluriel].
+  Verbes en -er : au pluriel on ajoute -nt, et ça se dit pareil (mange / mangent).
+  Le complément au pluriel prend juste un s (pas de gâteaux, oiseaux…). Sans pluriel : le complément ne change pas.
+*/
+const PHRASES = [
+  ["mange","🧇","une gaufre","des gaufres"], ["mange","🍎","une pomme","des pommes"], ["mange","🍌","une banane","des bananes"],
+  ["joue","⚽","au ballon"], ["joue","🙈","à cache-cache"], ["joue","🥁","du tambour"],
+  ["chante","🎵","une chanson","des chansons"], ["chante","🎤","fort"],
+  ["regarde","📺","la télé"], ["regarde","🐠","le poisson","les poissons"],
+  ["apporte","🥧","une tarte","des tartes"], ["apporte","💐","une fleur","des fleurs"],
+  ["lave","🚗","la voiture","les voitures"], ["lave","🚲","le vélo","les vélos"],
+  ["arrose","🌷","la fleur","les fleurs"], ["arrose","🪴","le jardin"],
+  ["danse","💃","dans la cour"], ["danse","🕺","le rock"],
+  ["saute","🪢","à la corde"], ["saute","💦","dans la flaque"],
+  ["dessine","🏠","une maison","des maisons"], ["dessine","⭐","une étoile","des étoiles"], ["dessine","☀️","un soleil","des soleils"],
+  ["nage","🏊","dans la piscine"], ["nage","🌊","dans la mer"],
+  ["colle","🖼️","une image","des images"], ["coupe","📄","une feuille","des feuilles"],
+  ["range","🧸","le jouet","les jouets"], ["ramasse","🍂","la feuille","les feuilles"],
+  ["cherche","🔑","la clé","les clés"], ["trouve","💰","un trésor","des trésors"],
+  ["lance","🏀","le ballon"], ["porte","🎒","un sac","des sacs"],
+  ["écoute","📖","une histoire","des histoires"], ["caresse","🐈","le chat","les chats"],
+  ["gonfle","🎈","un ballon","des ballons"], ["souffle","🕯️","la bougie","les bougies"],
+  ["colorie","🖍️","un dessin","des dessins"], ["déguste","🍦","une glace","des glaces"],
+  ["prépare","🥞","une crêpe","des crêpes"], ["pousse","🛒","un chariot","des chariots"],
+  ["tire","🪢","la corde"], ["grimpe","🌳","à l'arbre"], ["rigole","😂","fort"],
+  ["cuisine","🍲","une soupe","des soupes"], ["plante","🌱","une graine","des graines"],
+  ["admire","🎆","le feu d'artifice"], ["attrape","🦋","un papillon","des papillons"],
+  ["câline","🐕","le chien","les chiens"], ["lave","🍽️","l'assiette","les assiettes"],
+  ["fabrique","🎭","un masque","des masques"], ["décore","🎄","le sapin","les sapins"],
+  ["ferme","🪟","la fenêtre","les fenêtres"], ["allume","💡","la lampe","les lampes"],
+  ["brosse","🐴","le poney","les poneys"], ["pêche","🎣","un poisson","des poissons"],
+  ["mange","🍓","une fraise","des fraises"]
+].map((r,i)=>({ id:i, v:r[0], e:r[1], sg:r[2], pl:r[3]||null }));
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const auHasard = a => a[Math.floor(Math.random()*a.length)];
+const formes = v => ({ sg:v, pl:v+"nt", inf:v.slice(0,-1)+"er", tu:v+"s" });
+const seul = sj => sj.g==="f" ? "est toute seule" : "est tout seul";
+/* « Élio et Omar : ils sont plusieurs » / « Ils sont plusieurs » */
+const nombreux = sj => /^(ils|elles)$/.test(sj.s) ? cap(sj.s)+" sont plusieurs" : cap(sj.s)+" : "+(sj.g==="f" ? "elles" : "ils")+" sont plusieurs";
+/* « ce que fait Lila » / « ce qu'il fait » / « ce que font Élio et Omar » */
+function ceQue(sj){
+  if (/^(il|elle|ils|elles)$/.test(sj.s)) return "ce qu'"+sj.s+" "+(sj.n===1?"fait":"font");
+  return "ce que "+(sj.n===1?"fait":"font")+" "+sj.s;
+}
+/* une phrase : objN = 1 ou 2 (le complément au singulier ou au pluriel) */
+function phrase(t, sj, objN){
+  const f = formes(t.v), verbe = sj.n===1 ? f.sg : f.pl;
+  const comp = objN===2 && t.pl ? t.pl : t.sg;
+  const sujet = cap(sj.s).split(" "), reste = comp ? comp.split(" ") : [];
+  const mots = [...sujet, verbe, ...reste];
+  return { t, sj, objN, f, verbe, comp, mots, iVerbe:sujet.length, nSujet:sujet.length, texte: mots.join(" ")+"." };
+}
+/* petits groupes de noms pour le tri : « une gaufre » / « des gaufres » */
+const GROUPES = [];
+PHRASES.forEach(t => { if (t.pl && /^(le|la|un|une) /.test(t.sg) && !GROUPES.some(g=>g.sg===t.sg)) GROUPES.push({ sg:t.sg, pl:t.pl }) });
+[["le garçon","les garçons"],["la fille","les filles"],["un enfant","des enfants"],["le clown","les clowns"]].forEach(([sg,pl])=>GROUPES.push({sg,pl}));
+/* une question : sorte "trou" (choisir le verbe), "verbe" (toucher le verbe), "tri" (un seul / plusieurs) */
+function questionSP(niv, sorte, t){
+  const n = Math.random()<.5 ? 1 : 2, sj = auHasard(SUJETS.filter(x=>x.n===n));
+  const objN = niv==="difficile" ? (Math.random()<.5?1:2) : n;
+  const q = { sorte, niv, ...phrase(t, sj, objN) };
+  if (sorte==="trou"){
+    const f = q.f, liste = niv==="facile" ? [f.sg,f.pl] : niv==="moyen" ? [f.sg,f.pl,f.inf] : [f.sg,f.pl,f.inf,f.tu];
+    q.choix = niv==="facile" ? liste : shuffle(liste.slice());
+  }
+  return q;
+}
+function groupeSP(g){
+  const n = Math.random()<.5 ? 1 : 2, texte = n===1 ? g.sg : g.pl, [art, ...nom] = texte.split(" ");
+  return { sorte:"groupe", n, texte, art, nom:nom.join(" "), fem: /^(la|une)$/.test(art) };
+}
+/* FIN DONNEES */
+
+const KEY = "cp-singulier-pluriel-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Avec l'image. Compléter : mange ou mangent. Trier : des phrases avec l'image.",
+  moyen: "Avec l'image. Compléter : 3 mots au choix (mange, mangent, manger). Trier : sans image, avec aussi des noms (une gaufre / des gaufres).",
+  difficile: "Sans image. Compléter : 4 mots au choix, ou trouver le verbe dans la phrase puis dire singulier ou pluriel. Pièges : « Lila mange des gaufres »." } });
+const T = () => R().questions;
+
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+let mode = "completer", jeu, serie = 0;
+const plusTard = (fn, ms) => { const id = serie; setTimeout(() => { if (id === serie) fn() }, ms) };
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+/* l'image : les personnages, puis la chose (3 fois si elle est au pluriel) */
+function scene(q){
+  const obj = q.objN===2 && q.t.pl ? [q.t.e,q.t.e,q.t.e] : [q.t.e];
+  return '<div class="scn">'+q.sj.e.map(e=>'<span class="illus">'+e+'</span>').join("")+'<span class="sep"></span>'+obj.map(e=>'<span class="illus obj">'+e+'</span>').join("")+'</div>';
+}
+const piege = q => q.objN!==q.sj.n && q.t.pl ? " « "+q.comp+" », ce n'est pas qui fait l'action." : "";
+/* explications des erreurs */
+function explVerbe(q, mauvais){
+  const S = cap(q.sj.s), f = q.f;
+  if (q.sj.n===1){
+    if (mauvais===f.pl) return "Non. "+S+" "+seul(q.sj)+" : au singulier, pas de n, t à la fin du verbe. On écrit : "+f.sg+".";
+    if (mauvais===f.inf) return "Non. « "+f.inf+" », c'est le nom du verbe, il ne va pas ici. "+S+" "+seul(q.sj)+" : "+f.sg+".";
+    return "Non. Avec un s à la fin, c'est pour « tu » : tu "+f.tu+". "+S+" "+seul(q.sj)+" : "+f.sg+".";
+  }
+  if (mauvais===f.sg) return "Non. "+nombreux(q.sj)+". Au pluriel, on ajoute n, t au verbe : "+f.pl+".";
+  if (mauvais===f.inf) return "Non. « "+f.inf+" », c'est le nom du verbe, il ne va pas ici. "+nombreux(q.sj)+". On écrit : "+f.pl+".";
+  return "Non. Avec un s à la fin, c'est pour « tu ». "+nombreux(q.sj)+". Au pluriel, on ajoute n, t : "+f.pl+".";
+}
+function explNombre(q){
+  const S = cap(q.sj.s);
+  if (q.sj.n===1) return "Non. « "+q.verbe+" » n'a pas de n, t à la fin : c'est le singulier. "+S+" "+seul(q.sj)+"."+piege(q);
+  return "Non. « "+q.verbe+" » finit par n, t : c'est le pluriel. "+nombreux(q.sj)+"."+piege(q);
+}
+function explGroupe(q){
+  const un = q.fem ? "une seule" : "un seul";
+  if (q.n===2) return "Non. Avec « "+q.art+" » et le s à la fin de « "+q.nom+" », il y en a plusieurs.";
+  return "Non. Avec « "+q.art+" », il y en a "+un+" : pas de s à « "+q.nom+" ».";
+}
+
+function partie(){
+  Reglages.stop(); serie++;
+  document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
+  jeu = { tour:0, res:[], neuf:Reglages.sansDoublon(), tri:{1:[],2:[]} };
+  $("#main").innerHTML = '<div class="end"><h2>'+(mode==="trier"?"🧺 Un seul ou plusieurs ?":"✏️ Mange ou mangent ?")+'</h2>'+
+    '<p class="regle">Omar mange une gaufre.<br>Élio et Omar mange<span class="fin">nt</span> des gaufres.</p>'+
+    '<p class="consigne">Au pluriel, on ajoute <b>-nt</b> au verbe.</p><button class="go" id="bGo">▶ Commencer</button></div>';
+  $("#bGo").onclick = tour;   // premier toucher : la tablette peut parler
+}
+function tour(){
+  if (jeu.tour >= T()) return fin();
+  const niv = R().niveau;
+  if (mode==="trier"){
+    const groupe = niv!=="facile" && Math.random()<.3;
+    const q = groupe ? jeu.neuf(()=>groupeSP(auHasard(GROUPES)), x=>"g"+x.texte.split(" ").pop().replace(/s$/,""))
+                     : jeu.neuf(()=>questionSP(niv,"tri",auHasard(PHRASES)), x=>"p"+x.t.id);
+    return trier(q, niv);
+  }
+  const sorte = niv==="difficile" && jeu.tour%2 ? "verbe" : "trou";
+  const q = jeu.neuf(()=>questionSP(niv,sorte,auHasard(PHRASES)), x=>"p"+x.t.id);
+  return sorte==="verbe" ? toucherVerbe(q) : completer(q, niv);
+}
+/* fin d'une question : on note, on passe à la suivante */
+function suivant(ok, ms){ Reglages.stop(); jeu.res[jeu.tour]=ok; jeu.tour++; plusTard(tour, ms || (ok?1700:2800)) }
+function dire(txt, cls){ const a=$("#astuce"); a.className="astuce "+(cls||""); a.textContent=txt }
+
+/* ---------- (a) COMPLÉTER : mange ou mangent ? ---------- */
+function completer(q, niv){
+  const image = niv!=="difficile";
+  const trouHtml = q.mots.map((m,i)=>i===q.iVerbe?'<span class="trou" id="trou">?</span>':esc(m)).join(" ")+".";
+  const dit = q.mots.map((m,i)=>i===q.iVerbe?"hmm":m).join(" ")+". Quel mot va dans le trou ?";
+  $("#main").innerHTML = etoiles() + '<p class="consigne">Quel mot va dans le trou ?</p>' +
+    '<div class="carte">'+(image?scene(q):'')+'<div class="phrase">'+trouHtml+'</div></div>' +
+    '<div class="choix" style="--n:'+(q.choix.length===4?2:q.choix.length)+'">'+q.choix.map((c,i)=>{
+      const cls = niv==="facile" ? (c===q.f.sg?"sg":"pl") : "";
+      const lab = niv==="facile" ? '<small>'+(c===q.f.sg?"un seul":"plusieurs")+'</small>' : '';
+      return '<button class="'+cls+'" data-i="'+i+'"><b>'+esc(c)+'</b>'+lab+'</button>' }).join("")+'</div>' +
+    '<p class="astuce" id="astuce"></p><div class="tools"><button class="pill" id="bSay">🔊 Réécouter</button></div>';
+  Reglages.parler(dit,"consigne"); $("#bSay").onclick=()=>Reglages.parler(dit,"consigne");
+  const btns=[...document.querySelectorAll(".choix button")];
+  let essai=0, fini=false;
+  const finir = ok => {
+    if (fini) return; fini=true;
+    btns.forEach((b,i)=>{ b.disabled=true; if (q.choix[i]===q.verbe) b.classList.add("ok") });
+    const t=$("#trou"); t.textContent=q.verbe; t.classList.add("ok");
+    dire(q.sj.n===1 ? "Un seul : "+q.verbe+"." : "Plusieurs : "+q.f.sg+" + nt = "+q.verbe+".", "oui");
+    suivant(ok);
+  };
+  Reglages.chrono(()=>finir(false));
+  btns.forEach((b,i)=>b.onclick=()=>{
+    if (fini) return;
+    const c=q.choix[i];
+    if (c===q.verbe){ buzz(); Reglages.parler(q.texte,"succes"); finir(essai===0) }
+    else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); b.disabled=true;
+      const e=explVerbe(q,c); dire(e,"non"); Reglages.parler(e,"erreur") }
+  });
+}
+
+/* ---------- (c) TROUVER LE VERBE, puis singulier ou pluriel ---------- */
+function toucherVerbe(q){
+  const dit = q.texte+" Touche le verbe : le mot qui dit ce que l'on fait.";
+  $("#main").innerHTML = etoiles() + '<p class="consigne" id="cons">Touche le verbe : le mot qui dit ce que l\'on fait.</p>' +
+    '<div class="mots">'+q.mots.map((m,i)=>'<button data-i="'+i+'">'+esc(m)+(i===q.mots.length-1?".":"")+'</button>').join("")+'</div>' +
+    '<div class="choix" id="nb" style="visibility:hidden"><button class="sg" data-n="1"><b>singulier</b><small>👤 un seul</small></button><button class="pl" data-n="2"><b>pluriel</b><small>👥 plusieurs</small></button></div>' +
+    '<p class="astuce" id="astuce"></p><div class="tools"><button class="pill" id="bSay">🔊 Réécouter</button></div>';
+  let etape=1, essai=0, fini=false;
+  const consigne2 = "« "+q.verbe+" » : singulier ou pluriel ?";
+  Reglages.parler(dit,"consigne");
+  $("#bSay").onclick=()=>Reglages.parler(etape===1?dit:consigne2,"consigne");
+  const mots=[...document.querySelectorAll(".mots button")], nb=[...document.querySelectorAll("#nb button")];
+  const finir = ok => {
+    if (fini) return; fini=true;
+    mots.forEach((b,i)=>{ b.disabled=true; if (i===q.iVerbe) b.classList.add("ok") });
+    $("#nb").style.visibility="visible";
+    nb.forEach(b=>{ b.disabled=true; if (+b.dataset.n===q.sj.n) b.classList.add("ok") });
+    dire("Le verbe, c'est « "+q.verbe+" » : "+(q.sj.n===1?"singulier, un seul.":"pluriel, plusieurs (n, t)."), "oui");
+    suivant(ok, ok?1900:3000);
+  };
+  Reglages.chrono(()=>finir(false));
+  mots.forEach((b,i)=>b.onclick=()=>{
+    if (fini || etape!==1) return;
+    if (i===q.iVerbe){
+      buzz(); etape=2; b.classList.add("ok"); mots.forEach(x=>x.disabled=true);
+      $("#cons").textContent="Le verbe « "+q.verbe+" » : singulier ou pluriel ?"; $("#nb").style.visibility="visible"; dire("");
+      Reglages.parler(consigne2,"consigne");
+      return;
+    }
+    essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad");
+    const m=q.mots[i];
+    const e = m==="et" ? "Non. « et » relie deux mots. Le verbe dit "+ceQue(q.sj)+"."
+      : i<q.nSujet ? "Non. « "+m+" », c'est qui fait l'action. Le verbe dit "+ceQue(q.sj)+"."
+      : "Non. « "+m+" » n'est pas le verbe. Le verbe dit "+ceQue(q.sj)+".";
+    dire(e,"non"); Reglages.parler(e,"erreur");
+  });
+  nb.forEach(b=>b.onclick=()=>{
+    if (fini || etape!==2) return;
+    if (+b.dataset.n===q.sj.n){ buzz(); Reglages.parler(q.texte,"succes"); finir(essai===0) }
+    else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); b.disabled=true;
+      const e=explNombre(q); dire(e,"non"); Reglages.parler(e,"erreur") }
+  });
+}
+
+/* ---------- (b) TRIER : un seul ou plusieurs ? ---------- */
+function trier(q, niv){
+  const groupe = q.sorte==="groupe", bon = groupe ? q.n : q.sj.n;
+  const image = !groupe && niv==="facile";
+  const texte = groupe ? q.texte : q.texte;
+  const dit = groupe ? q.texte+" : un seul ou plusieurs ?" : q.texte+" Qui fait l'action : un seul ou plusieurs ?";
+  const liste = n => jeu.tri[n].slice(-3).map(x=>'<i>'+esc(x)+'</i>').join("");
+  $("#main").innerHTML = etoiles() + '<p class="consigne">'+(groupe?"Un seul ou plusieurs ?":"Qui fait l'action : un seul ou plusieurs ?")+'</p>' +
+    '<div class="carte">'+(image?scene(q):'')+'<div class="phrase">'+esc(texte)+'</div></div>' +
+    '<div class="bacs"><button class="bac sg" data-n="1"><span class="e">👤</span><b>Un seul</b>'+liste(1)+'</button>' +
+    '<button class="bac pl" data-n="2"><span class="e">👥</span><b>Plusieurs</b>'+liste(2)+'</button></div>' +
+    '<p class="astuce" id="astuce"></p><div class="tools"><button class="pill" id="bSay">🔊 Réécouter</button></div>';
+  Reglages.parler(dit,"consigne"); $("#bSay").onclick=()=>Reglages.parler(dit,"consigne");
+  const btns=[...document.querySelectorAll(".bac")];
+  let essai=0, fini=false;
+  const finir = ok => {
+    if (fini) return; fini=true;
+    btns.forEach(b=>{ b.disabled=true; if (+b.dataset.n===bon) b.classList.add("ok") });
+    jeu.tri[bon].push(texte);
+    const ici = btns.find(b=>+b.dataset.n===bon); ici.querySelectorAll("i").forEach(x=>x.remove()); ici.insertAdjacentHTML("beforeend", liste(bon));
+    dire(groupe ? (bon===1?"Un seul : « "+q.art+" », pas de s.":"Plusieurs : « "+q.art+" » et un s à la fin.")
+                : (bon===1?"Un seul : « "+q.verbe+" », sans n, t.":"Plusieurs : « "+q.verbe+" », avec n, t."), "oui");
+    suivant(ok);
+  };
+  Reglages.chrono(()=>finir(false));
+  btns.forEach(b=>b.onclick=()=>{
+    if (fini) return;
+    if (+b.dataset.n===bon){ buzz(); Reglages.parler(texte,"succes"); finir(essai===0) }
+    else { essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad");
+      const e = groupe ? explGroupe(q) : explNombre(q); dire(e,"non"); Reglages.parler(e,"erreur") }
+  });
+}
+
+function fin(){
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+mode+"-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    '<p class="regle">Un seul : il mange. · Plusieurs : ils mange<span class="fin">nt</span>.</p>'+
+    '<p class="hint">Trouvés du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>{ mode=b.dataset.m; partie() });
+partie();
+</script>
+</body>
+</html>
