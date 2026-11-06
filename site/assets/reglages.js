@@ -146,8 +146,21 @@
     const s = etat ? etat.son : "erreur";
     if (s === "jamais" && quand !== "consigne") return;
     if (quand === "succes" && s !== "toujours") return;
-    try { const u = new SpeechSynthesisUtterance(texte); u.lang = "fr-FR"; u.rate = .8; speechSynthesis.cancel(); speechSynthesis.speak(u) } catch(x) {}
+    try {
+      const u = new SpeechSynthesisUtterance(texte); u.lang = "fr-FR"; u.rate = .8;
+      const v = voixFr(); if (v) u.voice = v;                         // voix française si la tablette en a une
+      if (speechSynthesis.speaking || speechSynthesis.pending) speechSynthesis.cancel();   // couper seulement si ça parle déjà
+      speechSynthesis.resume(); speechSynthesis.speak(u);
+    } catch(x) {}
   }
+  let _voix = null;
+  function voixFr(){
+    if (_voix) return _voix;
+    try { const vs = speechSynthesis.getVoices().filter(v => /^fr/i.test(v.lang));
+      _voix = vs.find(v => /fr[-_]FR/i.test(v.lang) && v.localService) || vs.find(v => /fr[-_]FR/i.test(v.lang)) || vs[0] || null } catch(x) {}
+    return _voix;
+  }
+  try { speechSynthesis.onvoiceschanged = () => { _voix = null; voixFr() } } catch(x) {}
   /* Pas deux fois la même question dans une série : const neuf = Reglages.sansDoublon(); neuf(() => question(), q => q.cle) */
   function sansDoublon(){
     const vus = new Set();
