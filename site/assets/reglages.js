@@ -131,7 +131,10 @@
   }
   /* Prononciation : la voix lit « é » tout seul « e accent aigu ». On le remplace par « et » (même son [é]).
      Branché sur toute la page : vaut pour tous les jeux, quelle que soit la façon dont ils font parler la tablette. */
-  const prononcer = t => String(t).replace(/(^|[\s,.;:!?«»"'’()\-])[éÉ](?=$|[\s,.;:!?«»"'’()\-])/g, "$1et");
+  const B = "(^|[\\s,.;:!?«»\"'’()\\-])", F = "(?=$|[\\s,.;:!?«»\"'’()\\-])";
+  const prononcer = t => String(t)
+    .replace(new RegExp(B+"[éÉ]"+F,"g"), "$1et")      // « é » seul → [é]
+    .replace(new RegExp(B+"[èêÈÊ]"+F,"g"), "$1ai");    // « è » seul → [è], pas « e accent grave »
   try {
     const parlerOrig = speechSynthesis.speak.bind(speechSynthesis);
     speechSynthesis.speak = u => { try { u.text = prononcer(u.text) } catch(x) {} parlerOrig(u) };

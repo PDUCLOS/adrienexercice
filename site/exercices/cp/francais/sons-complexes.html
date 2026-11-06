@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Les sons du manuel · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Playwrite+FR+Moderne:wght@400&display=swap" rel="stylesheet">
+<style>
+/* Les sons du manuel (leçons 44 à 50) : quelle écriture ? / j'entends / trier */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --tile:#e7f1fc; --tile-ink:#1c7ed6; --hl:#d9480f; --hl-soft:#fff0e6;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#0c8599; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --tile:#1d2d3d; --tile-ink:#4dabf7; --hl:#ff922b; --hl-soft:#3a2a1c;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#3bc9db; --on-accent:#10262b;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:12px 16px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+button:focus-visible{outline:3px solid var(--tile-ink);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+.seg .cur{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400;font-size:14px}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2.2vh,20px);padding-top:8px;width:min(100%,1000px);margin:0 auto}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(18px,3vh,28px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(18px,2.6vh,24px);color:var(--muted);margin:0;text-align:center}
+.carte{background:var(--panel);border-radius:26px;box-shadow:var(--shadow);padding:clamp(10px,2.2vh,22px) clamp(20px,4vw,44px);display:flex;flex-direction:column;align-items:center;gap:4px;min-width:min(100%,360px);max-width:100%}
+.pic{font-size:clamp(70px,15vh,140px);line-height:1}
+.pic.petit{font-size:clamp(50px,9vh,90px)}
+.listen{background:var(--accent);color:var(--on-accent);border-radius:50%;width:clamp(84px,14vh,120px);height:clamp(84px,14vh,120px);font-size:clamp(38px,6.5vh,56px);box-shadow:var(--shadow)}
+.mot{font-size:clamp(38px,7vh,66px);font-weight:700;text-align:center;line-height:1.25;overflow-wrap:anywhere}
+.mot.cache{visibility:hidden}
+.trou{display:inline-flex;justify-content:center;min-width:1.6ch;padding:0 .15em;margin:0 .04em;border-radius:12px;border:4px dashed var(--line);color:var(--muted);line-height:1.1}
+.trou.ok{border-style:solid;border-color:var(--ok-ink);color:var(--ok-ink);background:var(--ok)}
+.hl{color:var(--hl)}
+.mot .hl{background:var(--hl-soft);border-radius:8px;padding:0 .06em}
+body.cursive .mot,body.cursive .rep,body.cursive .son b,body.cursive .panier b,body.cursive .rates b{font-family:"Playwrite FR Moderne","Andika",cursive;font-weight:400}
+body.cursive .mot{font-size:clamp(30px,5.6vh,54px)}
+.choix{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:clamp(10px,2vw,20px);width:min(100%,calc(var(--n) * 230px))}
+.rep,.son,.panier{background:var(--panel);border:4px solid var(--line);border-radius:22px;min-height:84px;padding:clamp(10px,2vh,18px) 8px;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.rep{font-size:clamp(34px,6vh,58px);font-weight:700;color:var(--tile-ink);background:var(--tile);border-color:transparent}
+.son b{font-size:clamp(34px,6vh,56px);color:var(--tile-ink)}
+.son small,.panier small{font-size:clamp(15px,2.2vh,19px);color:var(--muted);font-weight:700}
+.panier{border-style:dashed}
+.panier .e{font-size:clamp(30px,5vh,46px);line-height:1}
+.panier b{font-size:clamp(26px,4.4vh,40px);color:var(--tile-ink);line-height:1.1}
+.panier.over{border-color:var(--tile-ink);background:var(--tile)}
+.ok{border-color:var(--ok-ink)!important;background:var(--ok)!important;color:var(--ok-ink)!important}
+.ok b{color:var(--ok-ink)!important}
+.bad{border-color:var(--err-ink)!important;background:var(--err)!important;color:var(--err-ink)!important;animation:shake .35s;opacity:.75}
+.bad b{color:var(--err-ink)!important}
+button:disabled{cursor:default}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.drag{touch-action:none;cursor:grab;position:relative;z-index:5}
+.drag.vole{transition:none;opacity:.9}
+.astuce{font-size:clamp(17px,2.4vh,22px);text-align:center;min-height:1.4em;margin:0;max-width:900px}
+.astuce b{color:var(--hl)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:clamp(10px,2vh,16px);align-items:center;max-width:900px}
+.end h2{font-size:clamp(28px,5vh,44px);margin:0}
+.big{font-size:clamp(46px,9vh,80px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:18px 30px;border-radius:18px;font-size:26px;font-weight:700;box-shadow:var(--shadow);min-height:70px}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+.lecons{display:flex;flex-wrap:wrap;justify-content:center;gap:8px}
+.lecons button{min-height:70px;min-width:84px;padding:6px 10px;border-radius:16px;background:var(--panel);border:3px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;color:var(--muted)}
+.lecons button b{font-size:19px}.lecons button small{font-size:14px}
+.lecons button.on{border-color:var(--tile-ink);background:var(--tile);color:var(--tile-ink)}
+.rates{display:flex;flex-wrap:wrap;justify-content:center;gap:8px 14px;font-size:clamp(20px,3vh,28px)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>📖 Les sons du manuel</h1>
+  <div class="seg" role="group" aria-label="Activité" id="modes">
+    <button data-m="ecrire" class="on">🔤 Quelle écriture ?</button>
+    <button data-m="entendre">👂 J'entends</button>
+    <button data-m="trier">🧺 Trier</button>
+  </div>
+  <div class="seg" role="group" aria-label="Écriture">
+    <button id="fScript" class="on">script</button>
+    <button id="fCursive" class="cur">cursive</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=6"></script>
+<script src="../../../assets/illus.js?v=6"></script>
+<script>
+/* DONNEES */
+/*
+  Les mots du manuel (leçons 44 à 50).
+  Chaque mot : ["mot avec [la partie cachée] entre crochets", emoji, son, options].
+  - emoji "" = pas d'image : le mot ne sert qu'au niveau difficile.
+  - son : le panier du mot (voir LECONS[...].sons).
+  - options : d = autres écritures proposées (à la place de DISTR), x = pas pour « J'entends »
+    (le mot contient aussi l'autre son), nt = pas pour « Trier ».
+*/
+const BRUT = {
+  44: [
+    ["[gi]rafe","🦒","doux"],["manè[ge]","🎠","doux"],["[ge]nou","🦵","doux",{d:["gue","je","gé"]}],
+    ["pi[ge]on","🕊️","doux",{d:["g","j","gue"]}],["[ge]ndarme","👮","doux",{d:["gue","ja","je"]}],
+    ["ar[ge]nt","💶","doux",{d:["gue","ja","je"]}],["ima[gi]ner","💭","doux"],["oran[ge]","🍊","doux"],
+    ["froma[ge]","🧀","doux"],["nua[ge]","☁️","doux"],["pla[ge]","🏖️","doux"],["bou[gi]e","🕯️","doux"],
+    ["épon[ge]","🧽","doux"],["sin[ge]","🙈","doux"],["na[ge]ur","🏊","doux",{d:["gue","je","g"]}],
+    ["plon[ge]ur","🤿","doux",{d:["gue","je","g"]}],["[gi]let","🦺","doux"],["nei[ge]","❄️","doux"],
+    ["pa[ge]","📃","doux"],["lu[ge]","🛷","doux"],["ima[ge]","🖼️","doux"],["dan[ge]r","⚠️","doux",{d:["gue","je","gé"]}],
+    ["[gi]ngembre","🫚","doux"],["ca[ge]","","doux"],["villa[ge]ois","","doux",{d:["g","j","gue"]}],["éta[ge]","","doux"],
+    ["[gui]tare","🎸","dur"],["ba[gue]","💍","dur"],["ba[gue]tte","🥖","dur"],["lan[gue]","👅","dur"],
+    ["va[gue]","🌊","dur"],["man[gue]","🥭","dur"],["[gu]épard","🐆","dur"],["[g]âteau","🎂","dur"],
+    ["[g]orille","🦍","dur"],["[g]are","🚉","dur"],["[g]ant","🧤","dur"],["[g]outte","💧","dur"],
+    ["[g]arçon","👦","dur"],["[g]aufre","🧇","dur"],["[g]olf","⛳","dur"],["dra[g]on","🐉","dur"],
+    ["wa[g]on","🚃","dur"],["escar[g]ot","🐌","dur"],["kan[g]ourou","🦘","dur"],["lé[g]ume","🥦","dur"],
+    ["fi[gue]","","dur"],["[gu]êpe","","dur"],["[gu]érir","","dur"],["[gui]chet","","dur"]
+  ],
+  45: [
+    ["mai[s]on","🏠","z"],["chai[s]e","🪑","z"],["bi[s]ou","😘","z"],["ceri[s]e","🍒","z",{x:1}],
+    ["ro[s]e","🌹","z"],["frai[s]e","🍓","z"],["vali[s]e","🧳","z"],["chemi[s]e","👔","z"],
+    ["va[s]e","🏺","z"],["oi[s]eau","🐦","z"],["ci[s]eaux","✂️","z",{x:1}],["mu[s]ique","🎵","z"],
+    ["rai[s]in","🍇","z"],["égli[s]e","⛪","z"],["fu[s]ée","🚀","z"],["vi[s]age","🙂","z"],
+    ["tré[s]or","💰","z"],["dé[s]ert","🏜️","z"],["ra[s]oir","🪒","z"],["cui[s]ine","🍳","z"],
+    ["poi[s]on","☠️","z"],["maga[s]in","🏪","z"],["u[s]ine","🏭","z"],["framboi[s]e","","z"],
+    ["ardoi[s]e","","z"],["arro[s]er","","z"],["ba[s]e","","z"],["s'amu[s]er","","z",{x:1}],
+    ["ta[ss]e","☕","s"],["poi[ss]on","🐟","s"],["bo[ss]e","🐫","s"],["vi[ss]er","🪛","s"],
+    ["bro[ss]e","🪥","s"],["sauci[ss]e","🌭","s"],["chau[ss]ette","🧦","s"],["chau[ss]ure","👟","s"],
+    ["héri[ss]on","🦔","s"],["prince[ss]e","👸","s"],["bou[ss]ole","🧭","s"],["a[ss]iette","🍽️","s"],
+    ["croi[ss]ant","🥐","s"],["de[ss]ert","🍰","s"],["cui[ss]e","🍗","s"],["cla[ss]e","🏫","s"],
+    ["boi[ss]on","🧃","s"],["de[ss]in","🖍️","s"],["maître[ss]e","👩‍🏫","s"],["cou[ss]in","","s"],
+    ["trou[ss]e","","s"],["ba[ss]e","","s"],["pa[ss]oire","","s"],["ca[ss]erole","","s"]
+  ],
+  46: [
+    ["cam[ion]","🚚","ion"],["av[ion]","✈️","ion"],["l[ion]","🦁","ion"],["p[ion]","♟️","ion"],
+    ["champ[ion]","🥇","ion"],["télévis[ion]","📺","ion"],["addit[ion]","➕","ion"],
+    ["p[ia]no","🎹","ia"],["v[ia]nde","🥩","ia",{x:1}],["d[ia]mant","💎","ia"],["d[ia]ble","😈","ia"],
+    ["tr[ia]ngle","📐","ia",{x:1}],["mar[ia]ge","💒","ia"],["rad[ia]teur","","ia"],
+    ["ch[io]t","🐕","io"],["v[io]lon","🎻","io"],["p[io]che","⛏️","io"],["rad[io]","📻","io"],
+    ["f[io]le","🧪","io"],["v[io]let","🟣","io"],
+    ["pan[ier]","🧺","ié"],["clav[ier]","⌨️","ié"],["év[ier]","🚰","ié"],["pap[ier]","📄","ié"],
+    ["cah[ier]","📓","ié"],["sangl[ier]","🐗","ié"],["pomp[ier]","🧑‍🚒","ié"],["cuisin[ier]","🧑‍🍳","ié"],
+    ["sorc[ier]","🧙","ié"],["ferm[ier]","🧑‍🌾","ié"],["ceris[ier]","🌸","ié"],["palm[ier]","🌴","ié"],
+    ["soul[ier]","👞","ié"],["plomb[ier]","🪠","ié"],["écol[ier]","🎒","ié"],["p[ie]d","🦶","ié",{d:["é","ei","i"],nt:1}],
+    ["tabl[ier]","","ié"],["escal[ier]","","ié"],
+    ["c[ie]l","🌤️","iè"],["m[ie]l","🍯","iè"],["p[ie]rre","🪨","iè"],["riv[iè]re","🏞️","iè"],
+    ["thé[iè]re","🫖","iè"],["lum[iè]re","💡","iè"],["barr[iè]re","🚧","iè"],["sorc[iè]re","🧙‍♀️","iè"],
+    ["f[iè]vre","🤒","iè"],["l[iè]vre","🐇","iè"],["p[iè]ce","🪙","iè"],["soup[iè]re","","iè"]
+  ],
+  47: [
+    ["b[ille]","🎱","ill"],["f[ille]","👧","ill"],["chen[ille]","🐛","ill"],["qu[ille]","🎳","ill"],
+    ["gor[ille]","🦍","ill"],["fam[ille]","👪","ill"],["myrt[ille]","🫐","ill"],["aigu[ille]","🪡","ill"],
+    ["béqu[ille]","🩼","ill"],["pap[ill]on","🦋","ill"],["coqu[ill]age","🐚","ill"],["b[ill]et","🎫","ill"],
+    ["cu[ill]ère","🥄","ill"],["br[ill]ant","✨","ill"],["lent[ille]","","ill"],["brind[ille]","","ill"],
+    ["sol[eil]","☀️","eil"],["rév[eil]","⏰","eil"],["ort[eil]","🦶","eil"],["appar[eil]","📷","eil"],
+    ["somm[eil]","😴","eil"],["ab[eille]","🐝","eil"],["or[eille]","👂","eil"],["bout[eille]","🍾","eil"],
+    ["corb[eille]","🗑️","eil"],["vi[eille]","👵","eil"],["gros[eille]","","eil"],
+    ["[ail]","🧄","ail"],["r[ail]","🛤️","ail"],["évent[ail]","🪭","ail"],["cor[ail]","🪸","ail"],
+    ["trav[ail]","👷","ail"],["p[aille]","🥤","ail"],["méd[aille]","🏅","ail"],["bat[aille]","⚔️","ail"],
+    ["m[aill]ot","🩱","ail"],["c[aill]ou","🪨","ail"],["port[ail]","","ail"],["vitr[ail]","","ail"],
+    ["épouvant[ail]","","ail"],["vol[aille]","","ail"],
+    ["écur[euil]","🐿️","euil"],["faut[euil]","💺","euil"],["chevr[euil]","🦌","euil"],["f[euille]","🍁","euil"],
+    ["[œil]","👁️","euil"],["s[euil]","","euil"],
+    ["gren[ouille]","🐸","ouil"],["citr[ouille]","🎃","ouil"],["n[ouille]","🍜","ouil"],["b[ouill]on","🍲","ouil"],
+    ["br[ouill]ard","🌫️","ouil"],["m[ouill]é","💦","ouil"],["chat[ouill]er","","ouil"],["f[ouill]er","","ouil"]
+  ],
+  48: [
+    ["cra[y]on","✏️","yii"],["ro[y]aume","🏰","yii"],["ro[y]al","👑","yii"],["ra[y]ure","🦓","yii"],
+    ["vo[y]age","🗺️","yii"],["jo[y]euse","😄","yii"],["netto[y]er","🧼","yii"],["bala[y]er","🧹","yii"],
+    ["effra[y]é","😱","yii"],["jo[y]au","💎","yii"],["envo[y]er","📨","yii"],["pa[y]er","💳","yii"],
+    ["gru[y]ère","🧀","yii",{x:1}],["no[y]au","","yii"],["abo[y]er","","yii"],["tu[y]au","","yii",{x:1}],
+    ["essu[y]er","","yii",{x:1}],
+    ["[y]oga","🧘","yj"],["[y]oyo","🪀","yj"],["[y]eux","👀","yj"],["[y]aourt","","yj"],["[y]éti","","yj"],["h[y]ène","","yj"],
+    ["st[y]lo","🖊️","yi"],["c[y]cliste","🚴","yi"],["g[y]mnaste","🤸","yi"],["c[y]clone","🌀","yi"],
+    ["c[y]gne","🦢","yi"],["d[y]namite","🧨","yi"],["bic[y]clette","🚲","yi"],["p[y]thon","🐍","yi"],
+    ["p[y]jama","","yi"],["x[y]lophone","","yi"]
+  ],
+  49: [
+    ["monta[gn]e","⛰️","gn"],["champi[gn]on","🍄","gn"],["cy[gn]e","🦢","gn"],["pei[gn]e","🪮","gn"],
+    ["a[gn]eau","🐑","gn"],["arai[gn]ée","🕷️","gn"],["châtai[gn]e","🌰","gn"],["oi[gn]on","🧅","gn"],
+    ["bai[gn]oire","🛁","gn"],["ga[gn]er","🏆","gn"],["campa[gn]e","🚜","gn"],["si[gn]er","✍️","gn"],
+    ["sai[gn]er","🩸","gn"],["co[gn]er","👊","gn"],["li[gn]e","","gn"],["mi[gn]on","","gn"],
+    ["lu[n]e","🌙","n"],["â[n]e","🫏","n"],["bana[n]e","🍌","n"],["caba[n]e","🛖","n"],
+    ["balei[n]e","🐋","n"],["grai[n]e","🌱","n"],["chaî[n]e","⛓️","n"],["lai[n]e","🧶","n"],
+    ["sirè[n]e","🧜‍♀️","n"],["ana[n]as","🍍","n"],["di[n]osaure","🦕","n"]
+  ],
+  50: [
+    ["ch[ien]","🐶","ien"],["b[ien]","👍","ien"],["l[ien]","🔗","ien"],["music[ien]","🧑‍🎤","ien"],
+    ["magic[ien]","🪄","ien"],["chirurg[ien]","🧑‍⚕️","ien"],["mécanic[ien]","🧑‍🔧","ien"],["coméd[ien]","🎭","ien"],
+    ["optic[ien]","👓","ien"],["gard[ien]","💂","ien"],["informatic[ien]","🧑‍💻","ien"],["pharmac[ien]","💊","ien"],
+    ["électric[ien]","🔌","ien"],["r[ien]","","ien"],
+    ["ping[ouin]","🐧","oin",{d:["oin","in","ien"],nt:1}],["f[oin]","🌾","oin",{d:["ouin","in","ein"]}],
+    ["p[oin]g","✊","oin"],["gr[oin]","🐽","oin"],["m[oin]s","➖","oin"],["s[oin]","🩹","oin",{d:["ion","ouin","in"]}],
+    ["p[oin]t","🔴","oin"],["p[oin]tu","📌","oin"],["c[oin]","","oin"],["bes[oin]","","oin"],
+    ["l[oin]","","oin"],["tém[oin]","","oin"],
+    ["[oui]","✅","oui"],["[oui]stiti","🐒","oui"],["ébl[oui]","😎","oui"],["réj[oui]","😃","oui"],
+    ["f[oui]ne","","oui"],["enf[oui]","","oui"]
+  ]
+};
+/* Les leçons : pour chaque son, le panier (tri, sub), le son entendu (h), des exemples, le nom dit à voix haute */
+const LECONS = {
+  44:{ nom:"g", titre:"ge, gi · gue, gui", sons:{
+    doux:{ h:"je", tri:"g doux", sub:"ge · gi", ex:["girafe","orange"], nom:"g doux" },
+    dur:{ h:"gue", tri:"g dur", sub:"ga · go · gu · gue · gui", ex:["guitare","gâteau"], nom:"g dur" } } },
+  45:{ nom:"s", titre:"s entre deux voyelles · ss", sons:{
+    z:{ h:"z", tri:"s → z", sub:"un seul s", ex:["maison","rose"], nom:"un s qui fait zeu" },
+    s:{ h:"s", tri:"ss → s", sub:"deux s", ex:["tasse","poisson"], nom:"deux s" } } },
+  46:{ nom:"ion", titre:"ié · iè · ia · ier · ion", sons:{
+    ion:{ h:"ion", tri:"ion", sub:"", ex:["camion","lion"], nom:"i, o, n" },
+    ia:{ h:"ia", tri:"ia", sub:"", ex:["piano","diamant"], nom:"i, a" },
+    io:{ h:"io", tri:"io", sub:"", ex:["violon","radio"], nom:"i, o" },
+    "ié":{ h:"ié", tri:"ié", sub:"ier · ied", ex:["panier","papier"], nom:"yé" },
+    "iè":{ h:"iè", tri:"iè", sub:"ie · iè", ex:["rivière","miel"], nom:"yè" } } },
+  47:{ nom:"ill", titre:"ill · ail · eil · euil · ouille", sons:{
+    ill:{ h:"ill", tri:"ill", sub:"ille", ex:["fille","papillon"], nom:"i, l, l" },
+    ail:{ h:"ail", tri:"ail", sub:"aille", ex:["paille","portail"], nom:"a, i, l" },
+    eil:{ h:"eil", tri:"eil", sub:"eille", ex:["soleil","abeille"], nom:"e, i, l" },
+    euil:{ h:"euil", tri:"euil", sub:"euille · œil", ex:["écureuil","feuille"], nom:"e, u, i, l" },
+    ouil:{ h:"ouil", tri:"ouill", sub:"ouille", ex:["grenouille","citrouille"], nom:"o, u, i, l, l" } } },
+  48:{ nom:"y", titre:"y", sons:{
+    yi:{ h:"i", tri:"y = i", sub:"", ex:["stylo","cygne"], nom:"y qui fait i" },
+    yii:{ h:"ye", tri:"y = i + i", sub:"entre deux voyelles", ex:["crayon","voyage"], nom:"y qui fait deux i" },
+    yj:{ h:"ye", tri:"y = ye", sub:"", ex:["yoyo","yoga"], nom:"y qui fait ye" } } },
+  49:{ nom:"gn", titre:"gn", sons:{
+    gn:{ h:"gn", tri:"gn", sub:"", ex:["montagne","peigne"], nom:"g, n" },
+    n:{ h:"n", tri:"n", sub:"", ex:["lune","banane"], nom:"n" } } },
+  50:{ nom:"ien", titre:"ien · oin · oui", sons:{
+    ien:{ h:"ien", tri:"ien", sub:"", ex:["chien","bien"], nom:"i, e, n" },
+    oin:{ h:"oin", tri:"oin", sub:"", ex:["point","foin"], nom:"o, i, n" },
+    oui:{ h:"oui", tri:"oui", sub:"", ex:["ouistiti","oui"], nom:"o, u, i" } } }
+};
+/* Les sons entendus (« J'entends ») : carte écrite + ce que dit la voix */
+const SONS = {
+  je:{carte:"je",dit:"je"}, gue:{carte:"gue",dit:"gueu"}, z:{carte:"z",dit:"zeu"}, s:{carte:"s",dit:"se"},
+  ion:{carte:"ion",dit:"yon"}, ia:{carte:"ia",dit:"ya"}, io:{carte:"io",dit:"yo"}, "ié":{carte:"ié",dit:"yé"}, "iè":{carte:"iè",dit:"yè"},
+  ill:{carte:"ill",dit:"iye"}, ail:{carte:"ail",dit:"aïe"}, eil:{carte:"eil",dit:"eille"}, euil:{carte:"euil",dit:"œil"}, ouil:{carte:"ouille",dit:"ouille"},
+  i:{carte:"i",dit:"i"}, ye:{carte:"ill",dit:"ye"}, gn:{carte:"gn",dit:"gne"}, n:{carte:"n",dit:"ne"},
+  ien:{carte:"ien",dit:"ien"}, oin:{carte:"oin",dit:"oin"}, oui:{carte:"oui",dit:"oui"}
+};
+/* Autres écritures proposées, de la plus utile (niveau facile) à la plus piège (difficile).
+   Clé : « son:partie » ou « partie ». C = c devant e, i, y ; ç ailleurs. */
+const DISTR = {
+  "gi":["gui","ji","ge"], "ge":["gue","je","j"], "gui":["gi","ji","gu"], "gue":["ge","je","gu"], "gu":["g","j","gh"], "g":["j","gu","ge"],
+  "s":["ss","z","C"], "ss":["s","C","z"],
+  "ion":["on","oin","yon"], "ia":["a","ai","ya"], "io":["o","oi","yo"], "ier":["er","ié","iez"], "ie":["è","ei","i"], "iè":["è","ié","ei"],
+  "ille":["ile","iye","il"], "ill":["il","y","ll"], "eil":["ail","eille","euil"], "eille":["aille","eil","euille"],
+  "ail":["eil","aille","euil"], "aille":["eille","ail","ouille"], "aill":["eill","ail","ay"],
+  "euil":["eil","euille","ouil"], "euille":["eille","euil","ouille"], "œil":["euil","eil","ail"],
+  "ouille":["ouil","euille","aille"], "ouill":["ouil","ouy","euill"],
+  "yii:y":["i","ill","ii"], "yj:y":["i","ill","j"], "yi:y":["i","ie","î"],
+  "gn":["n","ni","ng"], "n:n":["gn","ni","nn"],
+  "ien":["in","oin","ein"], "oin":["ion","ouin","ein"], "oui":["ui","wi","oi"]
+};
+const melange = a => { for (let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]] } return a };
+const MOTS = Object.entries(BRUT).flatMap(([l, liste]) => liste.map(([seg, e, son, o]) => {
+  const m = seg.match(/^([^\[]*)\[([^\]]+)\](.*)$/);
+  o = o || {};
+  return { lecon:+l, seg, mot:m[1]+m[2]+m[3], avant:m[1], h:m[2], apres:m[3], e, son, x:!!o.x, nt:!!o.nt, d:o.d };
+}));
+const ORDRE_LECONS = Object.keys(LECONS).map(Number);
+const entendu = w => LECONS[w.lecon].sons[w.son].h;
+/* un exemple du son, différent du mot lui-même */
+function exemple(lecon, cle, mot, parSon){
+  const s = LECONS[lecon].sons;
+  const ex = parSon ? s[cle].ex : Object.values(s).filter(x => x.h === cle).flatMap(x => x.ex);
+  return ex.find(x => x !== mot) || ex[0];
+}
+function distracteurs(w){
+  const base = w.d || DISTR[w.son+":"+w.h] || DISTR[w.h] || [];
+  return base.map(x => x === "C" ? (/^[eéèêiîy]/.test(w.apres) ? "c" : "ç") : x);
+}
+const NB = { facile:2, moyen:3, difficile:4 };
+/* une question : les choix, la bonne réponse */
+function question(w, mode, niv){
+  if (mode === "ecrire") {
+    const choix = melange([w.h, ...distracteurs(w).slice(0, NB[niv]-1)]);
+    return { w, mot:w.mot, choix, bon:w.h };
+  }
+  const L = LECONS[w.lecon];
+  if (mode === "entendre") {
+    const tous = [...new Set(Object.values(L.sons).map(s => s.h))], bon = entendu(w);
+    const n = niv === "facile" ? 2 : 3;
+    const pris = new Set([bon, ...melange(tous.filter(h => h !== bon)).slice(0, n-1)]);
+    return { w, mot:w.mot, choix:tous.filter(h => pris.has(h)), bon };   // toujours dans le même ordre
+  }
+  const tous = Object.keys(L.sons);
+  const pris = new Set([w.son, ...melange(tous.filter(s => s !== w.son)).slice(0, NB[niv]-1)]);
+  return { w, mot:w.mot, choix:tous.filter(s => pris.has(s)), bon:w.son };
+}
+/* la série : les mots possibles, et pour le niveau facile une leçon à la fois */
+function nouvelleSerie(mode, niv, actives, rot){
+  const pool = MOTS.filter(w => actives.includes(w.lecon) && (niv === "difficile" || w.e) && !(mode === "entendre" && w.x) && !(mode === "trier" && w.nt));
+  const avec = ORDRE_LECONS.filter(l => actives.includes(l) && pool.some(w => w.lecon === l));
+  const k = avec.length ? ((rot % avec.length) + avec.length) % avec.length : 0;
+  return { mode, niv, pool, ordre: avec.slice(k).concat(avec.slice(0, k)), vus: new Set() };
+}
+function tirer(S){
+  const libres = S.pool.filter(w => !S.vus.has(w.mot));
+  let cand = libres;
+  if (S.niv === "facile") for (const l of S.ordre) { const c = libres.filter(w => w.lecon === l); if (c.length) { cand = c; break } }
+  if (!cand.length) cand = S.pool;
+  return cand[Math.floor(Math.random()*cand.length)];
+}
+/* ----- les aides quand l'enfant se trompe ----- */
+const lettres = g => [...g].map(c => c === "œ" ? "o, e" : c).join(", ");
+const FAM47 = { ill:["ille","ill","ile","il","iye","y","ll"], ail:["ail","aille","aill","ay"], eil:["eil","eille","eill"],
+  euil:["euil","euille","euill","œil"], ouil:["ouil","ouille","ouill","ouy"] };
+function regleEcrit(w, c){
+  const h = w.h, L = w.lecon, ditBon = SONS[entendu(w)].dit;
+  if (L === 44) {
+    if (w.son === "doux") {
+      if (/^gu/.test(c)) return "Avec g, u, on entend gueu. Ici on entend je : devant e ou i, g fait je.";
+      if (/^j/.test(c)) return "On entend bien je, mais ce mot s'écrit avec un g. Devant e ou i, g fait je.";
+      if (c === "g") return "Devant o ou u, g tout seul fait gueu. Pour entendre je, on ajoute un e.";
+      return "Devant e ou i, g fait je.";
+    }
+    if (h === "g") {
+      if (c === "j") return "j fait je. Devant a, o, u, g fait gueu.";
+      if (c === "gu") return "Devant a, o, u, pas besoin du u : g fait déjà gueu.";
+      return "Avec un e, on entendrait je. Devant a, o, u, g tout seul fait gueu.";
+    }
+    if (/^j/.test(c)) return "j fait je. Pour entendre gueu, on écrit g, u.";
+    if (c === "gu") return "Il manque une lettre.";
+    if (c === "gh") return "Pour entendre gueu ici, on écrit g, u.";
+    return "Devant e ou i, g tout seul fait je. Pour entendre gueu, on ajoute un u.";
+  }
+  if (L === 45) {
+    if (w.son === "z") {
+      if (c === "ss") return "Deux s font se. Ici on entend zeu : un seul s entre deux voyelles.";
+      if (c === "z") return "On entend zeu, mais ce mot s'écrit avec un s : entre deux voyelles, s fait zeu.";
+      return c+" fait se. Ici on entend zeu : un seul s entre deux voyelles.";
+    }
+    if (c === "s") return "Un seul s entre deux voyelles fait zeu. Pour entendre se, on écrit deux s.";
+    if (c === "z") return "z fait zeu. Ici on entend se : on écrit deux s.";
+    return "On entend bien se, mais ce mot s'écrit avec deux s.";
+  }
+  if (L === 46) {
+    if (!c.includes("i")) return "Écoute bien : on entend le i. On entend "+ditBon+".";
+    if (/^y/.test(c)) return "Ce son s'écrit avec un i, pas avec un y.";
+    if (c === "i") return "Écoute bien : on entend "+ditBon+", pas seulement i.";
+    if (c.indexOf("i") > 0) return "Attention à l'ordre des lettres : le i vient d'abord.";
+    if (w.son === "ié") return h === "ier" ? "À la fin du mot, on écrit i, e, r." : "Dans ce mot, il n'y a pas d'accent.";
+    return "Écoute : on entend yè, avec è.";
+  }
+  if (L === 47) {
+    const fam = Object.keys(FAM47).find(f => FAM47[f].includes(c));
+    if (fam !== w.son) return "Écoute : on entend "+ditBon+", comme dans "+exemple(L, entendu(w), w.mot)+".";
+    if (h === "œil") return "Œil s'écrit avec o et e collés, puis i, l.";
+    if (["iye","y","ouy","ay"].includes(c)) return "Ce son s'écrit avec i, l, l.";
+    if (c === "ll") return "Il faut un i avant les deux l.";
+    if (w.son === "ill" && /^il/.test(c) && !c.startsWith("ill")) return "Avec un seul l, on lit il. Pour entendre iye, on écrit deux l.";
+    if (h.endsWith("e") && !c.endsWith("e")) return "Ici, le mot finit par l, l, e.";
+    if (!h.endsWith("e") && c.endsWith("e")) return w.apres ? "Ici, pas de e." : "Ici, le mot finit par un seul l, sans e.";
+    if (w.apres && h.endsWith("ll")) return "Au milieu du mot, on écrit deux l.";
+    return "Ce son s'écrit "+lettres(h)+".";
+  }
+  if (L === 48) {
+    if (w.son === "yii") {
+      if (c === "i") return "Ici on écrit un y : entre deux voyelles, y fait deux i.";
+      if (c === "ii") return "Les deux i s'écrivent avec un seul y.";
+      return "Ce mot s'écrit avec un y : entre deux voyelles, y fait deux i.";
+    }
+    if (w.son === "yj") {
+      if (c === "j") return "j fait je. Ici on entend ye : on écrit un y.";
+      return "Ici on entend ye, et on l'écrit avec un y.";
+    }
+    return "On entend i, mais dans ce mot, i s'écrit y, comme dans "+exemple(L, "yi", w.mot, true)+".";
+  }
+  if (L === 49) {
+    if (w.son === "gn") {
+      if (c === "n") return "Écoute : on entend gne, pas ne.";
+      if (c === "ni") return "Le son gne s'écrit avec g et n.";
+      return "Attention à l'ordre : d'abord g, puis n.";
+    }
+    if (c === "gn") return "On entend ne, pas gne : juste un n.";
+    if (c === "ni") return "Pas de i : on entend ne.";
+    return "Un seul n dans ce mot.";
+  }
+  /* leçon 50 */
+  if (w.son === "ien") {
+    if (c === "in") return "Écoute : on entend i, puis in.";
+    if (c === "oin") return "o, i, n fait oin, comme dans point. Ici on entend ien.";
+    return "Attention à l'ordre : i, e, n.";
+  }
+  if (w.son === "oin") {
+    if (h === "ouin" && c === "oin") return "Dans ce mot, il y a aussi un u.";
+    if (c === "ion") return "Attention à l'ordre : o, i, n fait oin.";
+    if (c === "ouin") return "Pas de u ici.";
+    if (c === "ien") return "On entend oin, pas ien.";
+    return "On entend oin.";
+  }
+  if (c === "ui") return "On entend ou, puis i.";
+  if (c === "oi") return "o, i fait oi, comme dans roi. Ici on entend oui.";
+  return "Le son oui s'écrit o, u, i.";
+}
+function aideEcrit(w, c){
+  const r = regleEcrit(w, c);
+  return { r, dit: "Non. "+r+" On écrit "+lettres(w.h)+" : "+w.mot+"." };
+}
+function aideEntend(w, c){
+  const bon = entendu(w), ex = exemple(w.lecon, bon, w.mot);
+  return { dit: "Non, pas "+SONS[c].dit+". Dans "+w.mot+", on entend "+SONS[bon].dit+", comme dans "+ex+".", ex };
+}
+function regleTri(w){
+  const m = w.mot;
+  switch (w.son) {
+    case "doux": return "Dans "+m+", g est devant "+(w.h[1] || w.apres[0])+" : il fait je.";
+    case "dur": return w.h.startsWith("gu") ? "Dans "+m+", il y a g, u : on entend gueu." : "Dans "+m+", g est devant "+w.apres[0]+" : il fait gueu.";
+    case "z": return "Dans "+m+", il y a un seul s entre deux voyelles : il fait zeu.";
+    case "s": return "Dans "+m+", il y a deux s : on entend se.";
+    case "yi": return "Dans "+m+", y fait i.";
+    case "yii": return "Dans "+m+", y est entre deux voyelles : il fait deux i.";
+    case "yj": return "Dans "+m+", y fait ye.";
+    case "gn": return "Dans "+m+", il y a g, n : on entend gne.";
+    case "n": return "Dans "+m+", il y a juste un n : on entend ne.";
+  }
+  return "Dans "+m+", on voit "+lettres(w.h)+" : on entend "+SONS[entendu(w)].dit+".";
+}
+function aideTri(w){ return { dit: "Non. "+regleTri(w)+" Il va dans le panier "+LECONS[w.lecon].sons[w.son].nom+"." } }
+/* FIN DONNEES */
+
+const KEY = "cp-sons-complexes-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => partie(), niveaux: {
+  facile: "Une leçon à la fois, 2 choix, avec l'image.",
+  moyen: "Les leçons mélangées, 3 choix, avec l'image.",
+  difficile: "4 choix très proches, sans image : le mot est seulement dit à voix haute." } });
+const T = () => R().questions;
+
+/* écriture script / cursive (réglage commun aux exercices) */
+function setLook(c){ document.body.classList.toggle("cursive",c); $("#fScript").classList.toggle("on",!c); $("#fCursive").classList.toggle("on",c);
+  let l={}; try{ l=JSON.parse(lsGet("lecture-adrien-v1-look"))||{} }catch(e){} l.cursive=c; lsSet("lecture-adrien-v1-look",JSON.stringify(l)) }
+try{ setLook(!!(JSON.parse(lsGet("lecture-adrien-v1-look"))||{}).cursive) }catch(e){ setLook(false) }
+$("#fScript").onclick=()=>setLook(false); $("#fCursive").onclick=()=>setLook(true);
+
+/* leçons choisies par le parent (gardées sur la tablette) */
+let actives = (()=>{ try{ const l=JSON.parse(lsGet(KEY+"-lecons")); if (Array.isArray(l)) { const ok=l.map(Number).filter(x=>LECONS[x]); if (ok.length) return ok } }catch(e){} return ORDRE_LECONS.slice() })();
+const rot = () => +(lsGet(KEY+"-rot")||0);
+
+const MODES = {
+  ecrire:{ titre:"🔤 Quelle écriture ?", aide:"Regarde l'image, écoute le mot, puis touche les lettres qui manquent." },
+  entendre:{ titre:"👂 J'entends", aide:"Écoute le mot. Quel son entends-tu ?" },
+  trier:{ titre:"🧺 Trier", aide:"Lis le mot, puis range-le dans le bon panier." }
+};
+let mode = "ecrire", jeu, serie = 0;
+const plusTard = (fn, ms) => { const id = serie; setTimeout(() => { if (id === serie) fn() }, ms) };
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+/* le mot écrit, avec la partie du son en couleur */
+const motHL = w => esc(w.avant)+'<span class="hl">'+esc(w.h)+'</span>'+esc(w.apres);
+const nomLecon = l => "L"+l+" · "+LECONS[l].titre;
+
+function partie(){
+  Reglages.stop(); serie++;
+  const niv = R().niveau, S = nouvelleSerie(mode, niv, actives, rot());
+  $("#main").innerHTML = '<div class="end"><h2>'+MODES[mode].titre+'</h2><p class="consigne">'+MODES[mode].aide+'</p>'+
+    '<div class="lecons" role="group" aria-label="Leçons">'+ORDRE_LECONS.map(l=>'<button data-l="'+l+'" class="'+(actives.includes(l)?"on":"")+'" aria-pressed="'+actives.includes(l)+'"><b>L'+l+'</b><small>'+esc(LECONS[l].nom)+'</small></button>').join("")+'</div>'+
+    '<p class="hint">'+(niv==="facile" && S.ordre.length ? "Leçon du jour : "+esc(nomLecon(S.ordre[0])) : "Leçons : "+actives.map(l=>"L"+l).join(", "))+' · '+S.pool.length+' mots</p>'+
+    '<button class="go" id="bGo">▶ Commencer</button></div>';
+  document.querySelectorAll(".lecons button").forEach(b => b.onclick = () => {
+    const l = +b.dataset.l;
+    if (actives.includes(l)) { if (actives.length === 1) { b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); return } actives = actives.filter(x=>x!==l) }
+    else actives = ORDRE_LECONS.filter(x => x===l || actives.includes(x));
+    lsSet(KEY+"-lecons", JSON.stringify(actives)); partie();
+  });
+  $("#bGo").onclick = () => {
+    if (!S.pool.length) return;
+    if (niv === "facile") lsSet(KEY+"-rot", rot()+1);   // la prochaine série change de leçon
+    jeu = { tour:0, res:[], rates:[], S, neuf:Reglages.sansDoublon() };
+    tour();
+  };
+}
+function tour(){
+  if (jeu.tour >= T()) return fin();
+  const niv = R().niveau;
+  const w = jeu.neuf(() => tirer(jeu.S), q => q.mot);
+  jeu.S.vus.add(w.mot);
+  const q = question(w, mode, niv);
+  jeu.essai = 0;
+  ({ ecrire: tourEcrire, entendre: tourEntendre, trier: tourTrier })[mode](q, niv);
+}
+/* bonne réponse ou temps écoulé : on passe à la suite */
+function suivant(ok, w, ms){
+  Reglages.stop(); document.querySelectorAll("#main button.rep,#main button.son,#main button.panier").forEach(b=>b.disabled=true);
+  jeu.res[jeu.tour] = ok; if (!ok) jeu.rates.push(w); jeu.tour++;
+  plusTard(tour, ms || (ok ? 1400 : 2200));
+}
+function erreur(b, txtHtml, dit){
+  jeu.essai++; b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad"); b.disabled = true;
+  $("#astuce").innerHTML = txtHtml; Reglages.parler(dit, "erreur");
+}
+function illustration(w, niv, petit){
+  return niv !== "difficile" && w.e ? '<div class="pic'+(petit?" petit":"")+'">'+w.e+'</div>' : '<button class="listen" id="bSay2" aria-label="Réécouter le mot">🔊</button>';
+}
+
+/* 1. QUELLE ÉCRITURE ? : le mot avec un trou, on choisit les bonnes lettres */
+function tourEcrire(q, niv){
+  const w = q.w;
+  $("#main").innerHTML = etoiles()+'<p class="consigne">Quelles lettres manquent ?</p>'+
+    '<div class="carte">'+illustration(w, niv)+'<div class="mot">'+esc(w.avant)+'<span class="trou" id="trou">?</span>'+esc(w.apres)+'</div></div>'+
+    '<div class="choix" style="--n:'+q.choix.length+'">'+q.choix.map((c,i)=>'<button class="rep" data-i="'+i+'">'+esc(c)+'</button>').join("")+'</div>'+
+    '<p class="astuce" id="astuce"></p><div class="tools"><button class="pill" id="bSay">🔊 Écouter le mot</button></div>';
+  const dire = () => Reglages.parler(w.mot, "consigne");
+  $("#bSay").onclick = dire; if ($("#bSay2")) $("#bSay2").onclick = dire;
+  plusTard(dire, 300);
+  const remplir = () => { const t = $("#trou"); t.textContent = w.h; t.classList.add("ok") };
+  const btns = [...document.querySelectorAll(".rep")];
+  btns.forEach(b => b.onclick = () => {
+    const c = q.choix[+b.dataset.i];
+    if (c === q.bon) { b.classList.add("ok"); remplir(); buzz(); Reglages.parler(w.mot, "succes"); suivant(jeu.essai === 0, w) }
+    else { const a = aideEcrit(w, c); erreur(b, "Non. "+esc(a.r)+" On écrit <b>"+esc(lettres(w.h))+"</b> : "+motHL(w)+".", a.dit) }
+  });
+  Reglages.chrono(() => { remplir(); btns.forEach(b => { if (q.choix[+b.dataset.i] === q.bon) b.classList.add("ok") }); suivant(false, w) });
+}
+
+/* 2. J'ENTENDS : la tablette dit le mot, on touche le son entendu */
+function tourEntendre(q, niv){
+  const w = q.w;
+  $("#main").innerHTML = etoiles()+'<p class="consigne">Écoute bien. Quel son entends-tu ?</p>'+
+    '<div class="carte">'+illustration(w, niv)+'<div class="mot cache" id="mot">'+motHL(w)+'</div></div>'+
+    '<div class="choix" style="--n:'+q.choix.length+'">'+q.choix.map((c,i)=>'<button class="son" data-i="'+i+'"><b>'+esc(SONS[c].carte)+'</b><small>'+esc(exemple(w.lecon, c, w.mot))+'</small></button>').join("")+'</div>'+
+    '<p class="astuce" id="astuce"></p><div class="tools"><button class="pill" id="bSay">🔊 Réécouter</button></div>';
+  const dire = () => Reglages.parler(w.mot, "consigne");
+  $("#bSay").onclick = dire; if ($("#bSay2")) $("#bSay2").onclick = dire;
+  plusTard(dire, 300);
+  const montrer = () => $("#mot").classList.remove("cache");
+  const btns = [...document.querySelectorAll(".son")];
+  btns.forEach(b => b.onclick = () => {
+    const c = q.choix[+b.dataset.i];
+    if (c === q.bon) { b.classList.add("ok"); montrer(); buzz(); Reglages.parler(w.mot, "succes"); suivant(jeu.essai === 0, w) }
+    else { const a = aideEntend(w, c); erreur(b, "Non. Dans « "+motHL(w)+" », on entend <b>"+esc(SONS[q.bon].carte)+"</b>, comme dans "+esc(a.ex)+".", a.dit) }
+  });
+  Reglages.chrono(() => { montrer(); btns.forEach(b => { if (q.choix[+b.dataset.i] === q.bon) b.classList.add("ok") }); suivant(false, w) });
+}
+
+/* 3. TRIER : on lit le mot et on le range (toucher le panier, ou glisser le mot dedans) */
+function tourTrier(q, niv){
+  const w = q.w, L = LECONS[w.lecon];
+  const vu = niv === "facile" ? motHL(w) : esc(w.mot);
+  $("#main").innerHTML = etoiles()+'<p class="consigne">Lis le mot. Dans quel panier va-t-il ?</p>'+
+    '<div class="carte">'+(niv !== "difficile" && w.e ? '<div class="pic petit">'+w.e+'</div>' : '')+'<div class="mot drag" id="mot">'+vu+'</div></div>'+
+    '<div class="choix" style="--n:'+q.choix.length+'">'+q.choix.map((c,i)=>{ const s=L.sons[c];
+      return '<button class="panier" data-i="'+i+'"><span class="e">🧺</span><b>'+esc(s.tri)+'</b><small>'+esc((s.sub?s.sub+" · ":"")+exemple(w.lecon, c, w.mot, true))+'</small></button>' }).join("")+'</div>'+
+    '<p class="astuce" id="astuce"></p><div class="tools"><button class="pill" id="bSay">🔊 Lire le mot</button></div>';
+  $("#bSay").onclick = () => Reglages.parler(w.mot, "consigne");
+  if (jeu.tour === 0) plusTard(() => Reglages.parler("Lis le mot, puis range-le dans le bon panier.", "consigne"), 300);
+  const btns = [...document.querySelectorAll(".panier")];
+  const choisir = b => {
+    if (b.disabled) return;
+    const c = q.choix[+b.dataset.i];
+    if (c === q.bon) { b.classList.add("ok"); $("#mot").innerHTML = motHL(w); buzz(); Reglages.parler(w.mot, "succes"); suivant(jeu.essai === 0, w) }
+    else { const a = aideTri(w); erreur(b, "Non. "+esc(regleTri(w))+" <b>"+motHL(w)+"</b> va dans le panier <b>"+esc(L.sons[q.bon].tri)+"</b>.", a.dit) }
+  };
+  btns.forEach(b => b.onclick = () => choisir(b));
+  /* glisser le mot vers un panier */
+  const m = $("#mot"); let x0, y0, actif = false;
+  const sous = e => { m.style.visibility = "hidden"; const el = document.elementFromPoint(e.clientX, e.clientY); m.style.visibility = ""; return el && el.closest(".panier") };
+  m.addEventListener("pointerdown", e => { if (btns.every(b=>b.disabled)) return; actif = true; x0 = e.clientX; y0 = e.clientY; m.classList.add("vole"); try { m.setPointerCapture(e.pointerId) } catch(x) {} });
+  m.addEventListener("pointermove", e => { if (!actif) return; m.style.transform = "translate("+(e.clientX-x0)+"px,"+(e.clientY-y0)+"px)";
+    const p = sous(e); btns.forEach(b => b.classList.toggle("over", b === p && !b.disabled)) });
+  const lacher = e => { if (!actif) return; actif = false; const p = sous(e); m.style.transform = ""; m.classList.remove("vole"); btns.forEach(b => b.classList.remove("over")); if (p) choisir(p) };
+  m.addEventListener("pointerup", lacher); m.addEventListener("pointercancel", () => { actif = false; m.style.transform = ""; m.classList.remove("vole") });
+  Reglages.chrono(() => { m.innerHTML = motHL(w); btns.forEach(b => { if (q.choix[+b.dataset.i] === q.bon) b.classList.add("ok") }); suivant(false, w) });
+}
+
+function fin(){
+  Reglages.stop();
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+mode+"-"+R().niveau, best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML='<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>'+
+    (jeu.rates.length ? '<p class="hint">À revoir :</p><div class="rates">'+jeu.rates.map(w=>'<b>'+motHL(w)+'</b>').join("")+'</div>' : '')+
+    '<p class="hint">Trouvés du premier coup · Record : '+best+' / '+T_+'</p><button class="go" id="bAgain">▶ Rejouer</button></div>';
+  $("#bAgain").onclick=partie;
+}
+function setMode(m){
+  mode = m; document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on", b.dataset.m===m)); partie();
+}
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>setMode(b.dataset.m));
+partie();
+</script>
+</body>
+</html>
