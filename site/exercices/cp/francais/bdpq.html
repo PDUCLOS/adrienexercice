@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>b d p q · CP</title>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* b d p q : entendre, construire, écrire, lire — chaque lettre a sa couleur et son repère (bâton / ventre) */
+:root{
+  --bg:#f6f3ec; --panel:#ffffff; --ink:#1f2328; --muted:#6b6f76; --line:#d9d4c7; --chip:#efeadf;
+  --b:#1971c2; --d:#e8590c; --p:#2f9e44; --q:#9c36b5;
+  --ok:#d3f9d8; --ok-ink:#2b8a3e; --err:#ffe3e3; --err-ink:#c92a2a; --accent:#0c8599; --on-accent:#ffffff;
+  --shadow:0 2px 10px rgba(0,0,0,.08);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1d21; --panel:#26292e; --ink:#eceef1; --muted:#a3a8b0; --line:#3a3e45; --chip:#33373d;
+    --b:#4dabf7; --d:#ff922b; --p:#51cf66; --q:#da77f2;
+    --ok:#1e3a26; --ok-ink:#8ce99a; --err:#4a1f22; --err-ink:#ffa8a8; --accent:#22b8cf;
+    --shadow:0 2px 10px rgba(0,0,0,.4); color-scheme:dark;
+  }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Andika",system-ui,sans-serif;touch-action:manipulation;-webkit-user-select:none;user-select:none;
+  display:flex;flex-direction:column;min-height:100vh;padding-block:12px 18px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;border:0;cursor:pointer;touch-action:manipulation}
+button:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+header h1{font-size:22px;margin:0 auto 0 0}
+.home,.pill{display:inline-flex;align-items:center;gap:6px;padding:10px 14px;border-radius:12px;background:var(--chip);font-weight:700;font-size:17px;text-decoration:none;color:inherit}
+.seg{display:flex;flex-wrap:wrap;gap:4px;background:var(--chip);border-radius:12px;padding:4px}
+.seg button{padding:8px 12px;border-radius:9px;font-size:16px;font-weight:700;background:transparent}
+.seg button.on{background:var(--panel);box-shadow:var(--shadow)}
+main{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(10px,2.4vh,22px);padding-top:10px;width:min(100%,1000px);margin:0 auto}
+.cb{color:var(--b)}.cd{color:var(--d)}.cp{color:var(--p)}.cq{color:var(--q)}
+.stars{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;font-size:clamp(20px,3.4vw,28px)}
+.stars span{opacity:.2}.stars span.on{opacity:1}.stars span.cur{opacity:.6}
+.consigne{font-size:clamp(19px,2.8vw,26px);margin:0;text-align:center}
+.intro{color:var(--muted);font-size:17px;margin:0;text-align:center;max-width:720px}
+/* choix des lettres */
+.chips{display:flex;gap:12px;justify-content:center}
+.chip{width:clamp(70px,11vh,96px);height:clamp(70px,11vh,96px);border-radius:20px;font-size:clamp(46px,8vh,66px);font-weight:700;background:var(--panel);border:4px solid var(--line);opacity:.45;box-shadow:var(--shadow)}
+.chip.on{opacity:1;border-color:currentColor}
+/* repères */
+.reps{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.rep{background:var(--panel);border-radius:16px;box-shadow:var(--shadow);padding:8px 14px;display:flex;align-items:center;gap:10px;border-left:6px solid currentColor}
+.rep .lt{font-size:44px;line-height:1}
+.rep .e{font-size:34px;line-height:1}
+.rep small{font-size:14px;color:var(--ink);line-height:1.3}
+.reps.mini .rep{padding:4px 10px}.reps.mini .lt{font-size:30px}.reps.mini .e{font-size:24px}.reps.mini small{font-size:12px}
+/* questions */
+.listen{background:var(--accent);color:var(--on-accent);border-radius:50%;width:clamp(80px,13vh,110px);height:clamp(80px,13vh,110px);font-size:clamp(36px,6vh,52px);box-shadow:var(--shadow)}
+.cartes{display:grid;grid-template-columns:repeat(var(--n,3),minmax(0,1fr));gap:clamp(10px,2vw,18px);width:min(100%,900px)}
+.carte{background:var(--panel);border:4px solid var(--line);border-radius:22px;padding:clamp(10px,2.2vh,20px) 6px;font-size:clamp(44px,8.5vh,80px);font-weight:700;box-shadow:var(--shadow);min-width:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.carte .e{font-size:clamp(56px,10vh,92px);line-height:1}
+.carte.mot{font-size:clamp(34px,6vh,56px)}
+.ok{background:var(--ok)!important;color:var(--ok-ink)!important;border-color:var(--ok-ink)!important}
+.bad{background:var(--err)!important;border-color:var(--err-ink)!important;animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.grand{font-size:clamp(60px,12vh,110px);font-weight:700;line-height:1.1;text-align:center}
+.pic{font-size:clamp(90px,17vh,150px);line-height:1}
+.aide{min-height:1.4em;font-size:clamp(16px,2.2vw,20px);text-align:center;margin:0;color:var(--err-ink);font-weight:700;max-width:820px}
+/* construire la lettre */
+.atelier{display:flex;gap:clamp(16px,4vw,48px);align-items:center;flex-wrap:wrap;justify-content:center}
+.lettre{position:relative;width:140px;height:220px;background:var(--panel);border-radius:22px;box-shadow:var(--shadow)}
+.lettre i{position:absolute;display:block;transition:all .25s}
+.lettre .baton{width:18px;height:200px;top:10px;border-radius:9px;background:currentColor}
+.lettre .ventre{width:100px;height:100px;border:18px solid currentColor;border-radius:50%}
+.reglage{display:flex;flex-direction:column;gap:12px}
+.reglage b{font-size:18px}
+.reglage .seg button{font-size:20px;padding:12px 16px;min-width:130px}
+/* je cherche */
+.phrase{display:flex;flex-wrap:wrap;justify-content:center;background:var(--panel);border-radius:22px;box-shadow:var(--shadow);padding:clamp(12px,2.4vh,22px) clamp(12px,2vw,24px);max-width:100%}
+.phrase{gap:0 clamp(16px,2.4vw,30px)}
+.phrase .w{display:inline-flex}
+.phrase .lt{font-size:clamp(38px,6.6vh,60px);font-weight:700;background:transparent;border:3px solid transparent;border-radius:10px;padding:0;min-width:0;line-height:1.3}
+/* écrire */
+.slot{display:flex;gap:8px}
+.slot span{min-width:clamp(64px,10vh,88px);height:clamp(76px,12vh,104px);border-radius:16px;border:3px dashed var(--line);background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:clamp(44px,7.5vh,68px);font-weight:700;padding:0 8px}
+.slot span.f{border-style:solid;border-color:var(--ok-ink)}
+.tiles{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(8px,1.4vw,14px)}
+.tile{background:var(--panel);border:3px solid var(--line);border-radius:16px;min-width:clamp(64px,10vh,86px);padding:clamp(8px,1.6vh,14px) 12px;font-size:clamp(36px,6vh,54px);font-weight:700;box-shadow:var(--shadow)}
+.tile.v{background:var(--chip)}
+.tools{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.end{text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center}
+.end h2{font-size:clamp(28px,5vw,42px);margin:0}
+.big{font-size:clamp(46px,8vw,76px);font-weight:700}
+.go{background:var(--accent);color:var(--on-accent);padding:16px 28px;border-radius:18px;font-size:24px;font-weight:700;box-shadow:var(--shadow)}
+.hint{color:var(--muted);font-size:15px;text-align:center;margin:0}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <a class="home" href="../../../index.html#cp">← CP</a>
+  <h1>b d p q</h1>
+  <div class="seg" role="group" aria-label="Activité" id="modes">
+    <button data-m="entends" class="on">🔊 J'entends</button>
+    <button data-m="construis">🧩 Construis</button>
+    <button data-m="ecris">✍️ J'écris</button>
+    <button data-m="lis">📖 Je lis</button>
+    <button data-m="cherche">🔍 Je cherche</button>
+  </div>
+</header>
+<main id="main"></main>
+<script src="../../../assets/reglages.js?v=7"></script>
+<script src="../../../assets/illus.js?v=7"></script>
+<script>
+/* Les 4 lettres et leur repère : un mot, et la forme (bâton en haut ou en bas, ventre à droite ou à gauche) */
+const REP = {
+  b:{ e:"⚽", mot:"ballon", son:"beu", haut:true,  droite:true,  main:"main gauche, pouce en l'air" },
+  d:{ e:"🎲", mot:"dé",     son:"de",  haut:true,  droite:false, main:"main droite, pouce en l'air" },
+  p:{ e:"🍞", mot:"pain",   son:"peu", haut:false, droite:true,  main:"main gauche, pouce en bas" },
+  q:{ e:"🐓", mot:"coq",    son:"que", haut:false, droite:false, main:"main droite, pouce en bas" }
+};
+const TOUTES = ["b","d","p","q"];
+const VOY = ["a","i","o","u","é","e","ou"], VOYQ = ["a","i","o","e","é"];   // q s'écrit toujours qu
+/* Je lis (1) : mots qui ne diffèrent que par b, d, p ou q */
+const PAIRES = [
+  [["pile","🔋"],["bille","🎱"],["quille","🎳"]],
+  [["pain","🍞"],["bain","🛁"],["daim","🦌"]],
+  [["poire","🍐"],["boire","🥤"]],
+  [["poisson","🐟"],["boisson","🧃"]],
+  [["bouche","👄"],["douche","🚿"]],
+  [["bague","💍"],["dague","🗡️"]],
+  [["pomme","🍎"],["bombe","💣"]],
+  [["pied","🦶"],["bien","👍"]]
+].map(g => g.filter(w => w[0] !== "bien")).filter(g => g.length >= 2);
+/* Je cherche : des phrases pleines de b, d, p et q (comme les fiches « colorie chaque b ») */
+const PHRASES = [
+  "Le bébé boit son lait dans un bol.", "Papa dépose la poule dans la boîte.", "Le dauphin plonge sous le bateau.",
+  "Paul a un ballon bleu et un dé.", "Le coq picore du pain près de la porte.", "Bob prend le bus pour aller au parc.",
+  "Dans la boîte, il y a des billes et cinq quilles.", "Le pingouin boude au bord du bain.", "Le panda dort dans le bambou.",
+  "Pierre boit une bonne soupe de poireaux.", "Le dragon dépose un bouquet de pivoines.", "Quatre poupées dansent dans la cabane.",
+  "Une baleine bleue plonge dans le port.", "Pablo dessine un poisson et un dindon.", "Qui a pris la banane de Daphné ?",
+  "La pie a posé une bague dans le bouquet.", "Le bébé de la dame boude dans le parc.", "Dans le panier, il y a du pain et des pommes."
+];
+/* Je lis (2) : [mot, image, place de la lettre à reconnaître] */
+const MOTS = [
+  ["ballon","⚽",0],["banane","🍌",0],["bateau","⛵",0],["bus","🚌",0],["bébé","👶",0],["bol","🥣",0],["baleine","🐋",0],
+  ["bonbon","🍬",0],["bougie","🕯️",0],["biberon","🍼",0],["robe","👗",2],["arbre","🌳",2],["zèbre","🦓",2],["abeille","🐝",1],
+  ["dé","🎲",0],["dent","🦷",0],["douche","🚿",0],["dinosaure","🦕",0],["dauphin","🐬",0],["dragon","🐉",0],["dindon","🦃",0],
+  ["salade","🥗",4],["panda","🐼",3],["radis","🌶️",-1],["cadeau","🎁",2],["médaille","🏅",2],
+  ["pomme","🍎",0],["poisson","🐟",0],["pizza","🍕",0],["pain","🍞",0],["poire","🍐",0],["poule","🐔",0],["pingouin","🐧",0],
+  ["papillon","🦋",0],["lampe","💡",3],["soupe","🍲",3],["pied","🦶",0],["parapluie","☂️",0],
+  ["quille","🎳",0],["quatre","4️⃣",0],["coq","🐓",2],["cinq","5️⃣",3],["masque","🎭",3],["bouquet","💐",3]
+].filter(m => m[2] >= 0);
+
+const KEY = "cp-bdpq-v1";
+const $ = s => document.querySelector(s);
+const lsGet = k => { try { return localStorage.getItem(k) } catch(e) { return null } };
+const lsSet = (k,v) => { try { localStorage.setItem(k,v) } catch(e) {} };
+const rnd = n => Math.floor(Math.random()*n), pick = a => a[rnd(a.length)];
+const shuffle = a => { for (let i=a.length-1;i>0;i--){ const j=rnd(i+1); [a[i],a[j]]=[a[j],a[i]] } return a };
+function buzz(){ try{ navigator.vibrate&&navigator.vibrate(15) }catch(e){} }
+
+const R = Reglages.init({ key: KEY, onChange: () => accueil(), niveaux: {
+  facile: "2 choix. Chaque lettre a sa couleur, et les repères restent affichés.",
+  moyen: "3 choix, sans couleur. Le bouton 💡 montre les repères.",
+  difficile: "4 choix, sans couleur, et aussi des syllabes à l'envers : ab, od, ip…" } });
+const T = () => R().questions, NIV = () => R().niveau, NB = () => ({ facile:2, moyen:3, difficile:4 })[NIV()];
+
+let lettres = (()=>{ try{ const l=JSON.parse(lsGet(KEY+"-lettres")); return Array.isArray(l)&&l.length>=2 ? l : TOUTES.slice() }catch(e){ return TOUTES.slice() } })();
+const L = () => TOUTES.filter(x => lettres.includes(x));
+const desc = c => "bâton en " + (REP[c].haut ? "haut" : "bas") + ", ventre à " + (REP[c].droite ? "droite" : "gauche");
+const syl = (c, v, inv) => inv ? v + c : (c === "q" ? "qu" : c) + v;
+const couleur = () => NIV() === "facile";
+const sylHtml = (c, v, inv) => { const cons = '<span class="'+(couleur()?"c"+c:"")+'">'+(c==="q"&&!inv?"qu":c)+'</span>'; return inv ? v + cons : cons + v };
+/* met en couleur les b d p q d'un mot (niveau Facile) */
+const motHtml = w => couleur() ? w.replace(/[bdpq]/g, c => '<span class="c'+c+'">'+c+'</span>') : w;
+
+function repHtml(mini){
+  return '<div class="reps'+(mini?" mini":"")+'">' + L().map(c => '<div class="rep c'+c+'"><b class="lt">'+c+'</b><span class="e">'+REP[c].e+'</span><small><b>'+REP[c].mot+'</b><br>'+desc(c)+'<br>✋ '+REP[c].main+'</small></div>').join("") + '</div>';
+}
+
+let mode = "entends", jeu, G = 0;
+const TITRES = {
+  entends:"Écoute la syllabe, puis touche celle que tu entends.",
+  construis:"Fabrique la lettre : choisis où va le bâton et où va le ventre.",
+  ecris:"Écoute la syllabe, puis écris-la avec les lettres.",
+  lis:"Lis le mot, puis touche la bonne image. Ou regarde l'image et trouve le mot bien écrit.",
+  cherche:"Dans la phrase, touche toutes les lettres demandées."
+};
+function accueil(){
+  Reglages.stop(); try{ speechSynthesis.cancel() }catch(e){}
+  document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===mode));
+  $("#main").innerHTML = '<p class="consigne">'+TITRES[mode]+'</p>' +
+    '<p class="intro">Les lettres à travailler (au moins 2) :</p>' +
+    '<div class="chips">' + TOUTES.map(c => '<button class="chip c'+c+(lettres.includes(c)?" on":"")+'" data-c="'+c+'" aria-pressed="'+lettres.includes(c)+'">'+c+'</button>').join("") + '</div>' +
+    repHtml(false) + '<button class="go" id="bGo">▶ Commencer</button>' +
+    '<p class="hint">Astuce : commencer par 2 lettres (b et d, ou p et q), puis les mélanger toutes.</p>';
+  document.querySelectorAll(".chip").forEach(b => b.onclick = () => {
+    const c=b.dataset.c;
+    if (lettres.includes(c)) { if (lettres.length>2) lettres=lettres.filter(x=>x!==c) } else lettres.push(c);
+    lsSet(KEY+"-lettres", JSON.stringify(lettres)); accueil();
+  });
+  $("#bGo").onclick = serie;   // ce premier toucher autorise la voix sur iPad
+}
+document.querySelectorAll("#modes button").forEach(b => b.onclick = () => { mode=b.dataset.m; accueil() });
+
+function etoiles(){ return '<div class="stars">'+Array.from({length:T()},(_,i)=>'<span class="'+(i<jeu.tour?(jeu.res[i]?"on":""):(i===jeu.tour?"cur":""))+'">⭐</span>').join("")+'</div>' }
+function serie(){ jeu = { tour:0, res:[], neuf:Reglages.sansDoublon(), gen:++G }; suite() }
+function suite(){
+  if (jeu.tour >= T()) return fin();
+  const g = jeu.gen;
+  $("#main").innerHTML = etoiles() + '<div id="zone" style="display:contents"></div>' +
+    (NIV()==="facile" ? repHtml(true) : '<div class="tools"><button class="pill" id="bRep">💡 Repères</button></div><div id="reps" hidden>'+repHtml(true)+'</div>');
+  if ($("#bRep")) $("#bRep").onclick = () => { $("#reps").hidden = !$("#reps").hidden };
+  ACT[mode](ok => {
+    Reglages.stop(); jeu.res[jeu.tour] = ok; jeu.tour++;
+    setTimeout(() => { if (jeu.gen === g) suite() }, ok ? 1200 : 3000);
+  });
+}
+function fin(){
+  const T_=T(), n=jeu.res.filter(Boolean).length, k=KEY+"-best-"+mode+"-"+NIV(), best=Math.max(n,+(lsGet(k)||0)); lsSet(k,best);
+  const msg = n===T_ ? "Parfait ! 🎉" : n>=T_*.7 ? "Très bien !" : n>=T_/2 ? "Bien !" : "On continue !";
+  $("#main").innerHTML = '<div class="end"><h2>'+msg+'</h2><div class="big">'+n+' / '+T_+' ⭐</div>' +
+    '<p class="hint">Réussis du premier coup · Record : '+best+' / '+T_+'</p>' +
+    '<div class="tools"><button class="pill" id="bAcc">← Choisir les lettres</button><button class="go" id="bAgain">▶ Rejouer</button></div></div>';
+  $("#bAgain").onclick = serie; $("#bAcc").onclick = accueil;
+}
+function erreur(b, texte){
+  if (b){ b.classList.remove("bad"); void b.offsetWidth; b.classList.add("bad") }
+  $("#aide").textContent = texte; Reglages.parler(texte, "erreur");
+}
+/* boutons à choix : la bonne réponse = data-v === bon */
+function choixBoutons(bon, fini, aide){
+  let essai = 0;
+  const btns = [...document.querySelectorAll("#zone [data-v]")];
+  const montrer = () => btns.forEach(x => { x.disabled = true; if (x.dataset.v === bon) x.classList.add("ok") });
+  Reglages.chrono(() => { montrer(); $("#aide").textContent = aide(null); fini(false) });
+  btns.forEach(b => b.onclick = () => {
+    if (b.dataset.v === bon) { buzz(); montrer(); Reglages.parler("Bravo", "succes"); fini(essai === 0) }
+    else { essai++; erreur(b, aide(b.dataset.v)) }
+  });
+}
+
+const ACT = {
+  /* 🔊 J'entends : la tablette dit « ba », l'enfant touche « ba » parmi da, pa, qua */
+  entends(fini){
+    const q = jeu.neuf(() => {
+      const inv = NIV()==="difficile" && Math.random() < .35;
+      const ls = inv ? L().filter(x=>x!=="q") : L();
+      const c = pick(ls.length ? ls : L()), envers = inv && c !== "q";
+      return { c, v: pick(envers ? ["a","i","o","u"] : (c==="q" ? VOYQ : VOY)), inv: envers };
+    }, x => syl(x.c, x.v, x.inv));
+    const possibles = L().filter(x => x !== q.c && (q.inv ? x !== "q" : (x !== "q" || VOYQ.includes(q.v))));
+    const choix = shuffle([q.c, ...shuffle(possibles).slice(0, NB()-1)]);
+    const dit = syl(q.c, q.v, q.inv), dire = () => Reglages.parler(dit, "consigne");
+    $("#zone").innerHTML = '<p class="consigne">Écoute, puis touche la syllabe que tu entends</p>' +
+      '<button class="listen" id="bSay" aria-label="Réécouter">🔊</button>' +
+      '<div class="cartes" style="--n:'+choix.length+'">' + choix.map(c => '<button class="carte" data-v="'+c+'">'+sylHtml(c, q.v, q.inv)+'</button>').join("") + '</div>' +
+      '<p class="aide" id="aide"></p>';
+    $("#bSay").onclick = dire; setTimeout(dire, 300);
+    choixBoutons(q.c, fini, x => (x ? "Non : « "+syl(x,q.v,q.inv)+" », c'est la lettre "+x+", "+desc(x)+". " : "") +
+      "On entend « "+dit+" » : la lettre "+q.c+", "+desc(q.c)+", comme dans "+REP[q.c].mot+".");
+  },
+  /* 🧩 Construis : bâton en haut / en bas, ventre à gauche / à droite → la lettre se dessine */
+  construis(fini){
+    const c = jeu.neuf(() => pick(L()), x => x);
+    let haut = null, droite = null, essai = 0;
+    const dire = () => Reglages.parler("Fabrique la lettre du son "+REP[c].son+", comme dans "+REP[c].mot, "consigne");
+    $("#zone").innerHTML = '<p class="consigne">Fabrique la lettre du son « '+REP[c].son+' », comme dans <span class="e">'+REP[c].e+'</span> <b>'+REP[c].mot+'</b></p>' +
+      '<div class="atelier"><div class="lettre" id="lettre"><i class="baton" id="baton" hidden></i><i class="ventre" id="ventre" hidden></i></div>' +
+      '<div class="reglage"><b>Le bâton :</b><div class="seg" id="sH"><button data-h="1">⬆️ en haut</button><button data-h="0">⬇️ en bas</button></div>' +
+      '<b>Le ventre :</b><div class="seg" id="sD"><button data-d="0">⬅️ à gauche</button><button data-d="1">➡️ à droite</button></div>' +
+      '<div class="tools"><button class="pill" id="bSay">🔊 Écouter</button><button class="go" id="bOk" disabled>✓ C\'est ma lettre</button></div></div></div>' +
+      '<p class="aide" id="aide"></p>';
+    const lettreDe = (h, d) => TOUTES.find(x => REP[x].haut === h && REP[x].droite === d);
+    const dessin = () => {
+      const bat = $("#baton"), ven = $("#ventre"), box = $("#lettre");
+      document.querySelectorAll("#sH button").forEach(b => b.classList.toggle("on", haut !== null && (b.dataset.h==="1") === haut));
+      document.querySelectorAll("#sD button").forEach(b => b.classList.toggle("on", droite !== null && (b.dataset.d==="1") === droite));
+      box.className = "lettre" + (couleur() && haut !== null && droite !== null ? " c"+lettreDe(haut, droite) : "");
+      bat.hidden = haut === null; ven.hidden = droite === null && haut === null;
+      if (haut !== null) { ven.style.top = (haut ? 110 : 10) + "px" } else ven.style.top = "60px";
+      if (droite === null) { bat.style.left = "61px"; ven.style.left = "20px" }
+      else if (droite) { bat.style.left = "10px"; ven.style.left = "10px" }
+      else { bat.style.left = "112px"; ven.style.left = "30px" }
+      if (haut === null && droite !== null) ven.hidden = false;
+      $("#bOk").disabled = haut === null || droite === null;
+    };
+    dessin();
+    document.querySelectorAll("#sH button").forEach(b => b.onclick = () => { haut = b.dataset.h === "1"; dessin() });
+    document.querySelectorAll("#sD button").forEach(b => b.onclick = () => { droite = b.dataset.d === "1"; dessin() });
+    $("#bSay").onclick = dire; setTimeout(dire, 300);
+    const finir = ok => { document.querySelectorAll(".reglage button").forEach(x => x.disabled = true); $("#lettre").className = "lettre c"+c; $("#aide").innerHTML = '<span class="grand c'+c+'">'+c+'</span>'; fini(ok) };
+    Reglages.chrono(() => { haut = REP[c].haut; droite = REP[c].droite; dessin(); finir(false) });
+    $("#bOk").onclick = () => {
+      const faite = lettreDe(haut, droite);
+      if (faite === c) { buzz(); Reglages.parler("Bravo, c'est la lettre "+c, "succes"); finir(essai === 0) }
+      else { essai++; erreur($("#lettre"), "Ta lettre est un "+faite+" : "+desc(faite)+". Pour « "+REP[c].son+" », comme dans "+REP[c].mot+", il faut : "+desc(c)+".") }
+    };
+  },
+  /* ✍️ J'écris : la tablette dit « po », l'enfant touche p puis o */
+  ecris(fini){
+    const q = jeu.neuf(() => { const c = pick(L()); return { c, v: pick(c==="q" ? VOYQ : VOY) } }, x => x.c + x.v);
+    const dit = syl(q.c, q.v), dire = () => Reglages.parler(dit, "consigne");
+    let etape = 0, essai = 0;
+    $("#zone").innerHTML = '<p class="consigne">Écoute, puis écris la syllabe</p><button class="listen" id="bSay" aria-label="Réécouter">🔊</button>' +
+      '<div class="slot" id="slot"><span></span><span></span></div><p class="aide" id="aide"></p>' +
+      '<div class="tiles">' + shuffle(L().slice()).map(c => '<button class="tile" data-c="'+c+'">'+(c==="q"?"qu":c)+'</button>').join("") + '</div>' +
+      '<div class="tiles">' + VOY.map(v => '<button class="tile v" data-o="'+v+'">'+v+'</button>').join("") + '</div>';
+    const cases = [...document.querySelectorAll("#slot span")];
+    $("#bSay").onclick = dire; setTimeout(dire, 300);
+    const finir = ok => { document.querySelectorAll(".tile").forEach(t => t.disabled = true); cases[0].innerHTML = sylHtml(q.c,"").replace(/<\/span>$/,"</span>"); cases[0].className="f"; cases[1].textContent=q.v; cases[1].className="f"; fini(ok) };
+    Reglages.chrono(() => finir(false));
+    document.querySelectorAll(".tile[data-c]").forEach(t => t.onclick = () => {
+      if (etape !== 0) return;
+      const x = t.dataset.c;
+      if (x === q.c) { buzz(); etape = 1; cases[0].innerHTML = '<span class="'+(couleur()?"c"+x:"")+'">'+(x==="q"?"qu":x)+'</span>'; cases[0].className = "f"; $("#aide").textContent = "" }
+      else { essai++; erreur(t, "Non, "+x+" : "+desc(x)+". On entend « "+REP[q.c].son+" », comme dans "+REP[q.c].mot+" : "+desc(q.c)+".") }
+    });
+    document.querySelectorAll(".tile[data-o]").forEach(t => t.onclick = () => {
+      if (etape === 0) { $("#aide").textContent = "D'abord la lettre du début."; return }
+      if (t.dataset.o === q.v) { buzz(); Reglages.parler(dit, "succes"); finir(essai === 0) }
+      else { essai++; erreur(t, "Non, écoute bien la fin : « "+dit+" ».") }
+    });
+  },
+  /* 📖 Je lis : (1) mot écrit → bonne image ; (2) image → mot bien écrit (ballon / dallon / pallon) */
+  lis(fini){
+    const groupes = PAIRES.map(g => g.filter(w => L().includes(w[0][0]))).filter(g => g.length >= 2);
+    const typeMot = groupes.length && jeu.tour % 2 === 0;
+    if (typeMot) {
+      const q = jeu.neuf(() => { const g = pick(groupes); return { g, w: pick(g) } }, x => "A"+x.w[0]);
+      const choix = shuffle(q.g.slice()).slice(0, Math.max(2, NB()));
+      if (!choix.includes(q.w)) choix[0] = q.w;
+      $("#zone").innerHTML = '<p class="consigne">Lis le mot, puis touche la bonne image</p><div class="grand">'+motHtml(q.w[0])+'</div>' +
+        '<div class="cartes" style="--n:'+choix.length+'">' + shuffle(choix).map(w => '<button class="carte" data-v="'+w[0]+'"><span class="e">'+w[1]+'</span></button>').join("") + '</div><p class="aide" id="aide"></p>';
+      choixBoutons(q.w[0], fini, x => (x ? "Non, cette image, c'est : "+x+". " : "") + "Le mot écrit est « "+q.w[0]+" ». Regarde bien la première lettre : "+q.w[0][0]+", "+desc(q.w[0][0])+".");
+    } else {
+      const liste = MOTS.filter(m => L().includes(m[0][m[2]]));
+      const q = jeu.neuf(() => pick(liste), x => "B"+x[0]);
+      const lt = q[0][q[2]];
+      const variantes = shuffle(L().filter(x => x !== lt)).slice(0, NB()-1).map(x => q[0].slice(0,q[2]) + x + q[0].slice(q[2]+1));
+      const choix = shuffle([q[0], ...variantes]);
+      $("#zone").innerHTML = '<p class="consigne">Quel mot est bien écrit ?</p><div class="pic">'+q[1]+'</div>' +
+        '<div class="cartes" style="--n:'+choix.length+'">' + choix.map(w => '<button class="carte mot" data-v="'+w+'">'+motHtml(w)+'</button>').join("") + '</div><p class="aide" id="aide"></p>';
+      choixBoutons(q[0], fini, x => (x ? "Non, « "+x+" » n'est pas bien écrit. " : "") + "On écrit "+q[0]+", avec un "+lt+" : "+desc(lt)+".");
+    }
+  }
+};
+ACT.cherche = function(fini){
+  const q = jeu.neuf(() => { const ph = pick(PHRASES); const c = pick(L().filter(x => ph.toLowerCase().includes(x)).concat([])) || null; return { ph, c } }, x => x.ph + x.c);
+  if (!q.c) return ACT.cherche(fini);
+  const total = [...q.ph.toLowerCase()].filter(x => x === q.c).length;
+  let trouves = 0, erreurs = 0;
+  const dire = () => Reglages.parler("Touche toutes les lettres "+q.c+", comme dans "+REP[q.c].mot, "consigne");
+  $("#zone").innerHTML = '<p class="consigne">Touche toutes les lettres <b class="'+(couleur()?"c"+q.c:"")+'" style="font-size:1.6em">'+q.c+'</b> <span class="e">'+REP[q.c].e+'</span> ('+desc(q.c)+')</p>' +
+    '<div class="phrase" id="ph">' + q.ph.split(" ").map(m => '<span class="w">'+[...m].map(ch => '<button class="lt">'+ch+'</button>').join("")+'</span>').join("") + '</div>' +
+    '<div class="tools"><span class="pill" id="cpt">0 / '+total+'</span><button class="pill" id="bSay">🔊 Écouter</button></div><p class="aide" id="aide"></p>';
+  $("#bSay").onclick = dire; setTimeout(dire, 300);
+  Reglages.chrono(() => { document.querySelectorAll("#ph .lt").forEach(b => { b.disabled = true; if (b.textContent.toLowerCase() === q.c) b.classList.add("ok") }); fini(false) });
+  document.querySelectorAll("#ph .lt").forEach(b => b.onclick = () => {
+    const x = b.textContent.toLowerCase();
+    if (b.classList.contains("ok")) return;
+    if (x === q.c) { buzz(); b.classList.add("ok"); trouves++; $("#cpt").textContent = trouves+" / "+total; $("#aide").textContent = "";
+      if (trouves === total) { document.querySelectorAll("#ph .lt").forEach(y => y.disabled = true); Reglages.parler("Bravo", "succes"); fini(erreurs === 0) } }
+    else if ("bdpq".includes(x)) { erreurs++; erreur(b, "Non, ça c'est un "+x+" : "+desc(x)+". On cherche le "+q.c+" : "+desc(q.c)+".") }
+    else { erreurs++; erreur(b, "Non, ça c'est un "+x+". On cherche le "+q.c+".") }
+  });
+};
+accueil();
+</script>
+</body>
+</html>
